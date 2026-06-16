@@ -1,223 +1,119 @@
 [34mD[0m: started
-[34mD[0m: Pressed key: 259
-[34mD[0m: Pressed key: 113
-[34mD[0m: Exiting with status: 0
-[34mD[0m: started
 [34mD[0m: Pressed key: 98
 [34mD[0m: picked card slot2
 [34mD[0m: card event result=5
-[34mD[0m: new cards size: %d15
+[34mD[0m: card event result=5
+[34mD[0m: new cards size: 9
 [34mD[0m: Pressed key: 98
 [34mD[0m: picked card slot2
 [34mD[0m: card event result=5
-[34mD[0m: new cards size: %d14
+[34mD[0m: card event result=5
+[34mD[0m: new cards size: 8
 [34mD[0m: Pressed key: 98
 [34mD[0m: picked card slot2
-[34mD[0m: card event result=0
-[34mD[0m: new cards size: %d13
-[34mD[0m: player healt is 0
-[34mD[0m: Exiting with status: 0
-[34mD[0m: started
+[34mD[0m: card event result=-2
+[34mD[0m: card event result=-2
+[34mD[0m: new cards size: 7
+[34mD[0m: Pressed key: 98
+[34mD[0m: picked card slot2
+[34mD[0m: card event result=-2
+[34mD[0m: card event result=-2
+[34mD[0m: new cards size: 6
+[34mD[0m: Pressed key: 98
+[34mD[0m: picked card slot2
+[34mD[0m: card event result=-2
+[34mD[0m: card event result=-2
+[34mD[0m: new cards size: 5
+[34mD[0m: Pressed key: 108
+[34mD[0m: Pressed key: 98
+[34mD[0m: picked card slot2
+[34mD[0m: card event result=-1
+[34mD[0m: card event result=-1
+[34mD[0m: new cards size: 4
+[34mD[0m: Pressed key: 98
+[34mD[0m: picked card slot2
+[34mD[0m: card event result=-1
+[34mD[0m: card event result=-1
+[34mD[0m: new cards size: 3
 [34mD[0m: Pressed key: 97
 [34mD[0m: picked card slot1
 [34mD[0m: card event result=0
 [34mD[0m: card event result=0
-[34mD[0m: new cards size: %d15
+[34mD[0m: new cards size: 2
 [34mD[0m: player healt is 0
 [34mD[0m: Exiting with status: 0
 [34mD[0m: started
 [34mD[0m: Pressed key: 98
 [34mD[0m: picked card slot2
+[34mD[0m: game::player::hp=105
 [34mD[0m: card event result=5
-[34mD[0m: new cards size: %d15
+[34mD[0m: new cards size: 9
 [34mD[0m: Pressed key: 98
 [34mD[0m: picked card slot2
+[34mD[0m: game::player::hp=110
 [34mD[0m: card event result=5
-[34mD[0m: new cards size: %d14
-[34mD[0m: Pressed key: 98
-[34mD[0m: picked card slot2
-[34mD[0m: card event result=0
-[34mD[0m: new cards size: %d13
-[34mD[0m: player healt is 0
-[34mD[0m: Exiting with status: 0
-[34mD[0m: started
-[34mD[0m: Pressed key: 98
-[34mD[0m: picked card slot2
-[34mD[0m: card event result=5
-[34mD[0m: Pressed key: 98
-[34mD[0m: picked card slot2
-[34mD[0m: card event result=5
-[34mD[0m: Pressed key: 98
-[34mD[0m: picked card slot2
-[34mD[0m: card event result=5
-[34mD[0m: Pressed key: 98
-[34mD[0m: picked card slot2
-[34mD[0m: card event result=5
-[34mD[0m: Pressed key: 98
-[34mD[0m: picked card slot2
-[34mD[0m: card event result=5
-[34mD[0m: Pressed key: 98
-[34mD[0m: picked card slot2
-[34mD[0m: card event result=5
-[34mD[0m: Pressed key: 98
-[34mD[0m: picked card slot2
-[34mD[0m: card event result=5
-[34mD[0m: Pressed key: 98
-[34mD[0m: picked card slot2
-[34mD[0m: card event result=5
-[34mD[0m: Pressed key: 98
-[34mD[0m: picked card slot2
-[34mD[0m: card event result=5
-[34mD[0m: Pressed key: 98
-[34mD[0m: picked card slot2
-[34mD[0m: card event result=5
-[34mD[0m: Pressed key: 98
-[34mD[0m: picked card slot2
-[34mD[0m: card event result=5
-[34mD[0m: Pressed key: 98
-[34mD[0m: picked card slot2
-[34mD[0m: card event result=5
-[34mD[0m: Pressed key: 98
-[34mD[0m: picked card slot2
-[34mD[0m: card event result=5
-[34mD[0m: Pressed key: 98
-[34mD[0m: picked card slot2
-[34mD[0m: card event result=5
-[34mD[0m: Pressed key: 98
-[34mD[0m: picked card slot2
-[34mD[0m: card event result=5
-[34mD[0m: Pressed key: 98
-[34mD[0m: picked card slot2
-[34mD[0m: card event result=5
-[34mD[0m: Pressed key: 98
-[34mD[0m: picked card slot2
-[34mD[0m: card event result=5
-[34mD[0m: Pressed key: 98
-[34mD[0m: picked card slot2
-[34mD[0m: card event result=5
-[34mD[0m: Pressed key: 98
-[34mD[0m: picked card slot2
-[34mD[0m: card event result=5
-[34mD[0m: Pressed key: 98
-[34mD[0m: picked card slot2
-[34mD[0m: card event result=5
-[34mD[0m: Pressed key: 98
-[34mD[0m: picked card slot2
-[34mD[0m: card event result=5
-[34mD[0m: Pressed key: 98
-[34mD[0m: picked card slot2
-[34mD[0m: card event result=5
-[34mD[0m: Pressed key: 98
-[34mD[0m: picked card slot2
-[34mD[0m: card event result=5
-[34mD[0m: Pressed key: 98
-[34mD[0m: picked card slot2
-[34mD[0m: card event result=5
-[34mD[0m: Pressed key: 98
-[34mD[0m: picked card slot2
-[34mD[0m: card event result=5
-[34mD[0m: Pressed key: 98
-[34mD[0m: picked card slot2
-[34mD[0m: card event result=5
-[34mD[0m: Pressed key: 98
-[34mD[0m: picked card slot2
-[34mD[0m: card event result=5
-[34mD[0m: Pressed key: 113
-[34mD[0m: Exiting with status: 0
-[34mD[0m: started
-[34mD[0m: Pressed key: 98
-[34mD[0m: picked card slot2
-[34mD[0m: card event result=5
-[34mD[0m: new cards size: %d15
-[34mD[0m: Pressed key: 98
-[34mD[0m: picked card slot2
-[34mD[0m: card event result=5
-[34mD[0m: new cards size: %d14
+[34mD[0m: new cards size: 8
 [34mD[0m: Pressed key: 99
 [34mD[0m: picked card slot3
+[34mD[0m: game::player::hp=115
 [34mD[0m: card event result=5
-[34mD[0m: new cards size: %d13
-[34mD[0m: Pressed key: 99
-[34mD[0m: picked card slot3
+[34mD[0m: new cards size: 7
+[34mD[0m: Pressed key: 98
+[34mD[0m: picked card slot2
+[34mD[0m: game::player::hp=113
 [34mD[0m: card event result=-2
-[34mD[0m: new cards size: %d12
+[34mD[0m: new cards size: 6
 [34mD[0m: Pressed key: 99
 [34mD[0m: picked card slot3
-[34mD[0m: card event result=5
-[34mD[0m: new cards size: %d11
-[34mD[0m: Pressed key: 99
-[34mD[0m: picked card slot3
-[34mD[0m: card event result=5
-[34mD[0m: new cards size: %d10
-[34mD[0m: Pressed key: 99
-[34mD[0m: picked card slot3
-[34mD[0m: card event result=5
-[34mD[0m: new cards size: %d9
-[34mD[0m: Pressed key: 99
-[34mD[0m: picked card slot3
+[34mD[0m: game::player::hp=111
 [34mD[0m: card event result=-2
-[34mD[0m: new cards size: %d8
-[34mD[0m: Pressed key: 99
-[34mD[0m: picked card slot3
+[34mD[0m: new cards size: 5
+[34mD[0m: Pressed key: 98
+[34mD[0m: picked card slot2
+[34mD[0m: game::player::hp=109
 [34mD[0m: card event result=-2
-[34mD[0m: new cards size: %d7
+[34mD[0m: new cards size: 4
 [34mD[0m: Pressed key: 99
 [34mD[0m: picked card slot3
+[34mD[0m: game::player::hp=107
 [34mD[0m: card event result=-2
-[34mD[0m: new cards size: %d6
+[34mD[0m: new cards size: 3
 [34mD[0m: Pressed key: 99
 [34mD[0m: picked card slot3
-[34mD[0m: card event result=-2
-[34mD[0m: new cards size: %d5
-[34mD[0m: Pressed key: 99
-[34mD[0m: picked card slot3
+[34mD[0m: game::player::hp=106
 [34mD[0m: card event result=-1
-[34mD[0m: new cards size: %d4
+[34mD[0m: new cards size: 2
 [34mD[0m: Pressed key: 99
 [34mD[0m: picked card slot3
+[34mD[0m: game::player::hp=105
 [34mD[0m: card event result=-1
-[34mD[0m: new cards size: %d3
+[34mD[0m: new cards size: 1
 [34mD[0m: Pressed key: 99
 [34mD[0m: picked card slot3
+[34mD[0m: game::player::hp=104
 [34mD[0m: card event result=-1
-[34mD[0m: new cards size: %d2
+[34mD[0m: new cards size: 0
 [34mD[0m: Pressed key: 99
 [34mD[0m: picked card slot3
-[34mD[0m: card event result=-1
-[34mD[0m: new cards size: %d1
-[34mD[0m: Pressed key: 99
-[34mD[0m: picked card slot3
-[34mD[0m: card event result=-1
-[34mD[0m: new cards size: %d0
-[34mD[0m: Pressed key: 99
-[34mD[0m: picked card slot3
+[34mD[0m: game::player::hp=103
 [34mD[0m: card event result=-1
 [34mD[0m: Pressed key: 99
 [34mD[0m: picked card slot3
+[34mD[0m: game::player::hp=102
 [34mD[0m: card event result=-1
 [34mD[0m: Pressed key: 99
 [34mD[0m: picked card slot3
-[34mD[0m: Pressed key: 99
-[34mD[0m: picked card slot3
-[34mD[0m: Pressed key: 99
-[34mD[0m: picked card slot3
-[34mD[0m: Pressed key: 99
-[34mD[0m: picked card slot3
-[34mD[0m: Pressed key: 99
-[34mD[0m: picked card slot3
-[34mD[0m: Pressed key: 99
-[34mD[0m: picked card slot3
+[34mD[0m: Pressed key: 98
+[34mD[0m: picked card slot2
+[34mD[0m: game::player::hp=101
+[34mD[0m: card event result=-1
+[34mD[0m: Pressed key: 98
+[34mD[0m: picked card slot2
+[34mD[0m: game::player::hp=100
+[34mD[0m: card event result=-1
 [34mD[0m: Pressed key: 97
 [34mD[0m: picked card slot1
+[34mD[0m: game::player::hp=0
 [34mD[0m: card event result=0
-[34mD[0m: card event result=0
-[34mD[0m: player healt is 0
-[34mD[0m: Exiting with status: 0
-[34mD[0m: started
-[34mD[0m: Pressed key: 97
-[34mD[0m: picked card slot1
-[34mD[0m: card event result=0
-[34mD[0m: card event result=0
-[34mD[0m: new cards size: %d9
-[34mD[0m: player healt is 0
+[34mD[0m: player health is 0
 [34mD[0m: Exiting with status: 0

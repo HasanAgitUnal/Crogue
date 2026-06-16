@@ -10,16 +10,14 @@ const std::string logfile = "./build/debug.log";
 std::vector<std::shared_ptr<card_t>> &cards = test::cards;
 
 void handle_slot(card_slot_t &slot) {
-
         if (!slot.front) {
                 return;
         }
 
-        {
-                int result = slot.front->event();
-                minilog::fdebug(logfile, "card event result=", result);
-                minilog::fdebug(logfile, "card event result=", result);
-        }
+        int result = slot.front->event();
+        game::player::hp += result;
+        minilog::fdebug(logfile, "game::player::hp=", game::player::hp);
+        minilog::fdebug(logfile, "card event result=", result);
 
         // Update card slot
         slot.front = slot.back;
@@ -88,7 +86,7 @@ int main(int argc, char **argv) {
                 }
 
                 if (game::player::hp == 0) {
-                        minilog::fdebug(logfile, "player healt is 0");
+                        minilog::fdebug(logfile, "player health is 0");
                         break;
                 }
         }
