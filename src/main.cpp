@@ -1,9 +1,10 @@
 #include <ncurses.h>
+#include <cstdlib>
 #include <memory>
 #include <string>
 
+#include "cards.hpp"
 #include "minilog.hpp"
-#include "test.hpp"
 #include "types.hpp"
 
 const std::string logfile = "./build/debug.log";
@@ -26,11 +27,11 @@ void handle_slot(card_slot_t &slot) {
         } else {
                 slot.back = game::card_set.back();
                 game::card_set.pop_back();
-                minilog::fdebug(logfile, "new game::card_set size: ", game::card_set.size());
+                minilog::fdebug(logfile, "new card_set size: ", game::card_set.size());
         }
 }
 
-void draw_cards() {
+void draw_slots() {
         auto pop_card = []() -> std::shared_ptr<card_t> {
                 if (game::card_set.empty())
                         return nullptr;
@@ -44,6 +45,26 @@ void draw_cards() {
                 s->back = pop_card();
                 s->front = pop_card();
         }
+}
+
+void setup_test() {
+        create_card(5, "Zombie", []() { return -1; });
+        create_card(3, "spider", []() { return -2; });
+        create_card(4, "healing", []() { return +5; });
+        create_card(1, "god", []() {
+                game::player::hp = 0;
+                return 0;
+        });
+}
+
+// for now it just exits
+int exit_gate() {
+        clear();
+        printw("You are exiting from dungeon with your loot!");
+        getch();
+        endwin();
+        exit(0);
+        return 0;
 }
 
 /*
@@ -60,7 +81,11 @@ int main(int argc, char **argv) {
         minilog::fdebug(logfile, "started");
 
         setup_test();
+        create_card(1, "~ Exit Gate ~", exit_gate);
+        minilog::fdebug(logfile, "deck size: ", game::deck.size());
         draw_cards();
+        minilog::fdebug(logfile, "card_set size: ", game::card_set.size());
+        draw_slots();
 
         int key;
         while (key != 'q') {
@@ -94,6 +119,9 @@ int main(int argc, char **argv) {
 
                 if (game::player::hp == 0) {
                         minilog::fdebug(logfile, "player health is 0");
+                        clear();
+                        printw("You died stupid!");
+                        getch();
                         break;
                 }
         }

@@ -15,6 +15,8 @@ struct card_slot_t {
 
 namespace game {
 
+inline std::vector<std::pair<int, std::shared_ptr<card_t>>> deck;  // count and card pairs
+
 inline std::vector<std::shared_ptr<card_t>> card_set;
 
 inline card_slot_t slot1;
