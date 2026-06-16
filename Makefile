@@ -1,0 +1,62 @@
+PROGRAM := crogue
+CC := gcc
+CXX := g++
+CPPFLAGS := -Iinclude -MMD -MP -Llibs
+CFLAGS := -lstdc++
+CXXFLAGS :=
+LDFLAGS := -lncursesw
+CXXFILES := $(wildcard src/*.cpp)
+CFILES := $(wildcard src/*.c)
+OBJFILES := $(patsubst src/%.cpp,build/%.o,$(CXXFILES)) $(patsubst src/%.c,build/%.o,$(CFILES))
+DEPS := $(OBJFILES:.o=.d)
+
+default: build
+
+all: clean default
+
+buildstart:
+	@mkdir -p build
+	@printf "[ \033[34mBUILD\033[0m ] CC: $(CC)\n"
+	@printf "[ \033[34mBUILD\033[0m ] CXX: $(CXX)\n"
+	@printf "[ \033[34mBUILD\033[0m ] CFLAGS: $(CFLAGS)\n"
+	@printf "[ \033[34mBUILD\033[0m ] CXXFLAGS: $(CXXFLAGS)\n"
+	@printf "[ \033[34mBUILD\033[0m ] CPPFLAGS: $(CPPFLAGS)\n"
+	@printf "[ \033[34mBUILD\033[0m ] LDFLAGS: $(LDFLAGS)\n"
+	@printf "[ \033[34mBUILD\033[0m ] started\n"
+
+build: buildstart build/$(PROGRAM)
+	@printf "[ \033[34mBUILD\033[0m ] finished\n"
+
+dbuild: CPPFLAGS += -DDEBUG
+dbuild: build
+
+build/$(PROGRAM): $(OBJFILES)
+	@printf "[ \033[34mBUILD\033[0m ] [ \033[35mAPP\033[0m ] *.o -> $@\n"
+	$(CXX) $(OBJFILES) -o $@ $(LDFLAGS)
+
+build/%.o: src/%.cpp
+	@printf "[ \033[34mBUILD\033[0m ] [ \033[31mCXX\033[0m ] $< -> $@\n"
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $< -o $@
+
+build/%.o: src/%.c
+	@printf "[ \033[34mBUILD\033[0m ] [ \033[33mC\033[0m   ] $< -> $@\n"
+	$(CC) $(CPPFLAGS) $(CFLAGS) -c $< -o $@
+
+run: build
+	@printf "[  \033[32mRUN\033[0m  ] started\n"
+	@./build/$(PROGRAM) && printf "[ \033[32mRUN\033[0m   ] finished with status: ${?}\n"
+
+drun: dbuild run
+
+log: build
+	@printf "[  \033[36mLOG\033[0m  ] Viewing:\n"
+	@-tail -f build/debug.log
+
+clean:
+	@printf "[ \033[93mCLEAN\033[0m ] started\n"
+	@rm -rf build
+	@printf "[ \033[93mCLEAN\033[0m ] finished\n"
+
+-include $(DEPS)
+
+.PHONY: default all build dbuild run log clean buildstart
