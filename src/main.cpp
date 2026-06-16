@@ -7,7 +7,6 @@
 #include "types.hpp"
 
 const std::string logfile = "./build/debug.log";
-std::vector<std::shared_ptr<card_t>> &cards = test::cards;
 
 void handle_slot(card_slot_t &slot) {
         if (!slot.front) {
@@ -22,12 +21,22 @@ void handle_slot(card_slot_t &slot) {
         // Update card slot
         slot.front = slot.back;
 
-        if (cards.empty()) {
+        if (game::card_set.empty()) {
                 slot.back = nullptr;
         } else {
-                slot.back = cards.back();
-                cards.pop_back();
-                minilog::fdebug(logfile, "new cards size: ", cards.size());
+                slot.back = game::card_set.back();
+                game::card_set.pop_back();
+                minilog::fdebug(logfile, "new game::card_set size: ", game::card_set.size());
+        }
+}
+
+void draw_cards() {
+        game::slot1 = {*(&game::card_set.back() - 1), game::card_set.back()};
+        game::slot2 = {*(&game::card_set.back() - 3), *(&game::card_set.back() - 2)};
+        game::slot3 = {*(&game::card_set.back() - 5), *(&game::card_set.back() - 4)};
+
+        for (int i = 0; i < 6; i++) {
+                game::card_set.pop_back();
         }
 }
 
@@ -45,24 +54,17 @@ int main(int argc, char **argv) {
         minilog::fdebug(logfile, "started");
 
         setup_test();
-
-        // Initialize card slots
-        card_slot_t c1 = {*(&cards.back() - 1), cards.back()};
-        card_slot_t c2 = {*(&cards.back() - 3), *(&cards.back() - 2)};
-        card_slot_t c3 = {*(&cards.back() - 5), *(&cards.back() - 4)};
-
-        for (int i = 0; i < 6; i++) {
-                cards.pop_back();
-        }
+        game::card_set = test::cards;
+        draw_cards();
 
         int key;
         while (key != 'q') {
                 clear();
 
                 // ui
-                mvprintw(0, 0, "[a] %s", c1.front != nullptr ? c1.front->name.c_str() : "---");
-                mvprintw(1, 0, "[b] %s", c2.front != nullptr ? c2.front->name.c_str() : "---");
-                mvprintw(2, 0, "[c] %s", c3.front != nullptr ? c3.front->name.c_str() : "---");
+                mvprintw(0, 0, "[a] %s", game::slot1.front != nullptr ? game::slot1.front->name.c_str() : "---");
+                mvprintw(1, 0, "[b] %s", game::slot2.front != nullptr ? game::slot2.front->name.c_str() : "---");
+                mvprintw(2, 0, "[c] %s", game::slot3.front != nullptr ? game::slot3.front->name.c_str() : "---");
                 mvprintw(3, 0, "HP: %d", game::player::hp);
 
                 refresh();
@@ -73,15 +75,15 @@ int main(int argc, char **argv) {
                 switch (key) {
                         case 'a':
                                 minilog::fdebug(logfile, "picked card slot1");
-                                handle_slot(c1);
+                                handle_slot(game::slot1);
                                 break;
                         case 'b':
                                 minilog::fdebug(logfile, "picked card slot2");
-                                handle_slot(c2);
+                                handle_slot(game::slot2);
                                 break;
                         case 'c':
                                 minilog::fdebug(logfile, "picked card slot3");
-                                handle_slot(c3);
+                                handle_slot(game::slot3);
                                 break;
                 }
 
