@@ -7,6 +7,31 @@
 #include "types.hpp"
 
 const std::string logfile = "./build/debug.log";
+std::vector<std::shared_ptr<card_t>> &cards = test::cards;
+
+void handle_slot(card_slot_t &slot) {
+
+        if (!slot.front) {
+                return;
+        }
+
+        {
+                int result = slot.front->event();
+                minilog::fdebug(logfile, "card event result=", result);
+                minilog::fdebug(logfile, "card event result=", result);
+        }
+
+        // Update card slot
+        slot.front = slot.back;
+
+        if (cards.empty()) {
+                slot.back = nullptr;
+        } else {
+                slot.back = cards.back();
+                cards.pop_back();
+                minilog::fdebug(logfile, "new cards size: ", cards.size());
+        }
+}
 
 /*
  * Main
@@ -22,7 +47,6 @@ int main(int argc, char **argv) {
         minilog::fdebug(logfile, "started");
 
         setup_test();
-        std::vector<std::shared_ptr<card_t>> &cards = test::cards;
 
         // Initialize card slots
         card_slot_t c1 = {*(&cards.back() - 1), cards.back()};
@@ -51,75 +75,15 @@ int main(int argc, char **argv) {
                 switch (key) {
                         case 'a':
                                 minilog::fdebug(logfile, "picked card slot1");
-                                if (!c1.front) {
-                                        break;
-                                }
-
-                                {
-                                        int result = c1.front->event();
-                                        minilog::fdebug(logfile, "card event result=", result);
-                                        minilog::fdebug(logfile, "card event result=", result);
-                                }
-
-                                // Update card slot
-                                c1.front = c1.back;
-
-                                if (cards.empty()) {
-                                        c1.back = nullptr;
-                                } else {
-                                        c1.back = cards.back();
-                                        cards.pop_back();
-                                        minilog::fdebug(logfile, "new cards size: %d", cards.size());
-                                }
-
+                                handle_slot(c1);
                                 break;
                         case 'b':
                                 minilog::fdebug(logfile, "picked card slot2");
-                                if (!c2.front) {
-                                        break;
-                                }
-
-                                {
-                                        int result = c2.front->event();
-                                        minilog::fdebug(logfile, "card event result=", result);
-                                        game::player::hp += result;
-                                }
-
-                                // Update card slot
-                                c2.front = c2.back;
-
-                                if (cards.empty()) {
-                                        c2.back = nullptr;
-                                } else {
-                                        c2.back = cards.back();
-                                        cards.pop_back();
-                                        minilog::fdebug(logfile, "new cards size: %d", cards.size());
-                                }
-
+                                handle_slot(c2);
                                 break;
                         case 'c':
                                 minilog::fdebug(logfile, "picked card slot3");
-                                if (!c3.front) {
-                                        break;
-                                }
-
-                                {
-                                        int result = c3.front->event();
-                                        minilog::fdebug(logfile, "card event result=", result);
-                                        game::player::hp += result;
-                                }
-
-                                // Update card slot
-                                c3.front = c3.back;
-
-                                if (cards.empty()) {
-                                        c3.back = nullptr;
-                                } else {
-                                        c3.back = cards.back();
-                                        cards.pop_back();
-                                        minilog::fdebug(logfile, "new cards size: %d", cards.size());
-                                }
-
+                                handle_slot(c3);
                                 break;
                 }
 
