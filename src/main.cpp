@@ -31,12 +31,18 @@ void handle_slot(card_slot_t &slot) {
 }
 
 void draw_cards() {
-        game::slot1 = {*(&game::card_set.back() - 1), game::card_set.back()};
-        game::slot2 = {*(&game::card_set.back() - 3), *(&game::card_set.back() - 2)};
-        game::slot3 = {*(&game::card_set.back() - 5), *(&game::card_set.back() - 4)};
-
-        for (int i = 0; i < 6; i++) {
+        auto pop_card = []() -> std::shared_ptr<card_t> {
+                if (game::card_set.empty())
+                        return nullptr;
+                auto c = game::card_set.back();
                 game::card_set.pop_back();
+                return c;
+        };
+
+        // Fill all slots
+        for (auto *s : {&game::slot1, &game::slot2, &game::slot3}) {
+                s->back = pop_card();
+                s->front = pop_card();
         }
 }
 
@@ -54,7 +60,6 @@ int main(int argc, char **argv) {
         minilog::fdebug(logfile, "started");
 
         setup_test();
-        game::card_set = test::cards;
         draw_cards();
 
         int key;

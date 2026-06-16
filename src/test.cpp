@@ -1,7 +1,8 @@
 #include "test.hpp"
+#include "types.hpp"
 
 void add_card(const std::string &name, std::function<int()> event) {
-        test::cards.push_back(std::make_shared<card_t>(card_t{name, std::move(event)}));
+        game::card_set.push_back(std::make_shared<card_t>(card_t{name, std::move(event)}));
 }
 
 void setup_test() {
