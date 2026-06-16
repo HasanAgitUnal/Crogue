@@ -27,24 +27,24 @@ buildstart:
 build: buildstart build/$(PROGRAM)
 	@printf "[ \033[34mBUILD\033[0m ] finished\n"
 
-dbuild: CPPFLAGS += -DDEBUG
+dbuild: CPPFLAGS += -DDEBUG -g
 dbuild: build
 
 build/$(PROGRAM): $(OBJFILES)
 	@printf "[ \033[34mBUILD\033[0m ] [ \033[35mAPP\033[0m ] *.o -> $@\n"
-	$(CXX) $(OBJFILES) -o $@ $(LDFLAGS)
+	@$(CXX) $(OBJFILES) -o $@ $(LDFLAGS)
 
 build/%.o: src/%.cpp
 	@printf "[ \033[34mBUILD\033[0m ] [ \033[31mCXX\033[0m ] $< -> $@\n"
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $< -o $@
+	@$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $< -o $@
 
 build/%.o: src/%.c
 	@printf "[ \033[34mBUILD\033[0m ] [ \033[33mC\033[0m   ] $< -> $@\n"
-	$(CC) $(CPPFLAGS) $(CFLAGS) -c $< -o $@
+	@$(CC) $(CPPFLAGS) $(CFLAGS) -c $< -o $@
 
 run: build
 	@printf "[  \033[32mRUN\033[0m  ] started\n"
-	@./build/$(PROGRAM) && printf "[ \033[32mRUN\033[0m   ] finished with status: ${?}\n"
+	@./build/$(PROGRAM) && printf "[  \033[32mRUN\033[0m  ] finished with status: ${?}\n"
 
 drun: dbuild run
 

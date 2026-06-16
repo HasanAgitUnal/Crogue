@@ -18,46 +18,40 @@ inline const std::string success = "\033[32mSUCCES:\033[0m ";
 
 }  // namespace msg
 
-// Send to stdout (just function version of std::cout)
 template <typename... MSG>
 inline void out(const MSG &...msg) {
         std::stringstream ss;
         (ss << ... << msg);
-        std::cout << ss.str() << '\n';
+        std::cout << ss.str() << "\n";
 }
 
-// Send to stderr
 template <typename... MSG>
 inline void err(const MSG &...msg) {
         std::stringstream ss;
         (ss << ... << msg);
-        std::cerr << ss.str() << '\n';
+        std::cerr << ss.str() << "\n";
 }
 
-// Send with msg::debug
 template <typename... MSG>
 inline void debug(const MSG &...msg) {
 #ifdef DEBUG
-        err(msg::debug, msg...);  // Use stderr to split normal and debug output
+        err(msg::debug, msg...);
 #endif
 }
 
-// Send with msg::fatal and exit with given status
 template <typename... MSG>
 inline void fatal(const char e_code, const MSG &...message) {
         err(msg::fatal, message...);
         exit(e_code);
 }
 
-// File version of out()
 template <typename... MSG>
 inline void fout(const std::string &log_file, const MSG &...msg) {
         static std::ofstream lfile(log_file, std::ios::app);
         (lfile << ... << msg);
-        lfile << '\n';
+        lfile << std::endl;
 }
 
-// File version of debug()
 template <typename... MSG>
 inline void fdebug(const std::string &filename, const MSG &...msg) {
 #ifdef DEBUG
@@ -65,7 +59,6 @@ inline void fdebug(const std::string &filename, const MSG &...msg) {
 #endif
 }
 
-// File version of fatal()
 template <typename... MSG>
 inline void ffatal(const std::string &filename, const MSG &...message) {
         fout(filename, msg::fatal, message...);
