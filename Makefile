@@ -50,7 +50,7 @@ drun: dbuild run
 
 log: build
 	@printf "[  \033[36mLOG\033[0m  ] Viewing:\n"
-	@-tail -f build/debug.log
+	@-tail -F build/debug.log
 
 clean:
 	@printf "[ \033[93mCLEAN\033[0m ] started\n"

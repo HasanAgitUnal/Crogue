@@ -1,17 +1,20 @@
+#include <ncurses.h>
 #include <algorithm>
 #include <random>
 
 #include "cards.hpp"
+#include "minilog.hpp"
 #include "types.hpp"
 
-void create_card(const int count, const std::string &name, std::function<int()> event) {
-        game::deck.push_back(std::pair{count, std::make_shared<card_t>(card_t{name, std::move(event)})});
+void create_card(const int count, const std::string &name, const card_type &type, std::function<int()> event) {
+        game::deck.push_back(std::pair{count, std::make_shared<card_t>(card_t{name, type, std::move(event)})});
 }
 
 void add_card(std::shared_ptr<card_t> cardptr) {
         game::card_set.push_back(cardptr);
 }
 
+// shuffles the deck and fills game::card_set
 void draw_cards() {
         for (auto pair : game::deck) {
                 int count = pair.first;
@@ -27,4 +30,76 @@ void draw_cards() {
         std::random_device rd;
         std::mt19937 g(rd());
         std::shuffle(game::card_set.begin(), game::card_set.end(), g);
+}
+
+void basic_card_event(const std::shared_ptr<card_t> card) {
+        int result = card->event();
+        game::player::hp += result;
+
+        minilog::fdebug(logfile, "card event result=", result);
+        minilog::fdebug(logfile, "game::player::hp=", game::player::hp);
+}
+
+// calls card event
+void card_event(const std::shared_ptr<card_t> card) {
+        minilog::fdebug(logfile, "card used: ", card->name);
+
+        switch (card->type) {
+                case BASIC:
+                        minilog::fdebug(logfile, "card type: basic");
+                        basic_card_event(card);
+                        break;
+
+                // same with basic because differance between basic, enemy and exit is just color on the ui
+                case EXIT:
+                        minilog::fdebug(logfile, "card type: exit gate");
+                        basic_card_event(card);
+                        break;
+
+                case ENEMY:
+                        minilog::fdebug(logfile, "card type: enemy");
+                        basic_card_event(card);
+                        break;
+
+                case ITEM:
+                        minilog::fdebug(logfile, "card type: item");
+                        game::player::inventory.push_back(card);
+        }
+}
+
+// does the job when a slot is picked by user
+void handle_slot(card_slot_t &slot) {
+        if (!slot.front) {
+                return;
+        }
+
+        card_event(slot.front);
+
+        // Update card slot
+        slot.front = slot.back;
+
+        if (game::card_set.empty()) {
+                slot.back = nullptr;
+        } else {
+                slot.back = game::card_set.back();
+                game::card_set.pop_back();
+                minilog::fdebug(logfile, "new card_set size: ", game::card_set.size());
+        }
+}
+
+// fils the slots
+void draw_slots() {
+        auto pop_card = []() -> std::shared_ptr<card_t> {
+                if (game::card_set.empty())
+                        return nullptr;
+                auto c = game::card_set.back();
+                game::card_set.pop_back();
+                return c;
+        };
+
+        // Fill all slots
+        for (auto *s : {&game::slot1, &game::slot2, &game::slot3}) {
+                s->back = pop_card();
+                s->front = pop_card();
+        }
 }
