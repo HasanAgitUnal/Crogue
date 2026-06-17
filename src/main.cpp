@@ -8,17 +8,17 @@
 #include "types.hpp"
 
 void setup_test() {
-        create_card(5, "Zombie", ENEMY, []() { return -1; });
-        create_card(3, "spider", ENEMY, []() { return -2; });
-        create_card(4, "healing", BASIC, []() { return 5; });
+        create_card(5, "Zombie", ENEMY, 0, []() { return -1; });
+        create_card(3, "spider", ENEMY, 2, []() { return -2; });
+        create_card(4, "healing", BASIC, 0, []() { return 5; });
         /*
         create_card(1, "god", ENEMY, []() {
                 game::player::hp = 0;
                 return 0;
         });
         */
-        create_card(15, "apple", ITEM, []() { return 1; });
-        create_card(10, "teleporter", ITEM, []() {
+        create_card(5, "apple", ITEM, 0, []() { return 1; });
+        create_card(1, "teleporter", ITEM, 3, []() {
                 // Skip 1 card from all slots
                 for (card_slot_t *slot : {&game::slot1, &game::slot2, &game::slot3}) {
                         if (!slot->front) {
@@ -39,16 +39,6 @@ void setup_test() {
 
                 return 0;
         });
-}
-
-// for now it just exits
-int exit_gate() {
-        clear();
-        printw("You are exiting from dungeon with your loot!");
-        getch();
-        endwin();
-        exit(0);
-        return 0;
 }
 
 void print_type(const std::shared_ptr<card_t> card, bool bold) {
@@ -153,7 +143,7 @@ int main(int argc, char **argv) {
 
         setup_test();
 
-        create_card(1, "~ Exit Gate ~", EXIT, exit_gate);
+        create_card(1, "~ Exit Gate ~", EXIT, 0, exit_gate);
         minilog::fdebug(logfile, "deck size: ", game::deck.size());
         draw_cards();
         minilog::fdebug(logfile, "card_set size: ", game::card_set.size());
@@ -164,6 +154,7 @@ int main(int argc, char **argv) {
                 clear();
 
                 // ui
+                mvprintw(0, 0, "%s", game::message.c_str());
                 print_slot(1, 'a', game::slot1);
                 print_slot(2, 'b', game::slot2);
                 print_slot(3, 'c', game::slot3);

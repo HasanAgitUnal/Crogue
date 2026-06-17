@@ -6,12 +6,43 @@
 #include "minilog.hpp"
 #include "types.hpp"
 
-void create_card(const int count, const std::string &name, const card_type &type, std::function<int()> event) {
-        game::deck.push_back(std::pair{count, std::make_shared<card_t>(card_t{name, type, std::move(event)})});
+// for now it just exits
+int exit_gate() {
+        minilog::fdebug(logfile, "player find an exit");
+        game::player::level++;
+        if (game::player::level == 5) {
+                clear();
+                printw("You are exiting from dungeon with your loot!");
+                refresh();
+                getch();
+
+                minilog::fdebug(logfile, "player reached level 5, exiting with status: 0");
+                endwin();
+                exit(0);
+        }
+
+        minilog::fdebug(logfile, "resetting the cards");
+        game::card_set = {};
+        minilog::fdebug(logfile, "deck size: ", game::deck.size());
+        draw_cards();
+        minilog::fdebug(logfile, "card_set size: ", game::card_set.size());
+        draw_slots();
+
+        game::message = "You are now at level: " + std::to_string(game::player::level);
+        return 0;
+}
+
+void create_card(const int count, const std::string &name, const card_type &type, const int min_level,
+                 std::function<int()> event) {
+
+        game::deck.push_back(
+            std::pair{count, std::make_shared<card_t>(card_t{name, type, min_level, std::move(event)})});
 }
 
 void add_card(std::shared_ptr<card_t> cardptr) {
-        game::card_set.push_back(cardptr);
+        if (cardptr->min_level <= game::player::level) {
+                game::card_set.push_back(cardptr);
+        }
 }
 
 // shuffles the deck and fills game::card_set

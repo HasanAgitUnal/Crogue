@@ -10,6 +10,7 @@ enum card_type { BASIC, ITEM, ENEMY, EXIT };
 struct card_t {
         std::string name;
         card_type type;
+        int min_level;
         std::function<int()> event;
 };
 
@@ -28,9 +29,12 @@ inline card_slot_t slot1;
 inline card_slot_t slot2;
 inline card_slot_t slot3;
 
+inline std::string message;
+
 namespace player {
 
 inline int hp = 100;
+inline int level = 0;
 
 inline std::vector<std::shared_ptr<card_t>> inventory;
 

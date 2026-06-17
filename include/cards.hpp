@@ -5,7 +5,11 @@
 
 #include "types.hpp"
 
-void create_card(const int count, const std::string &name, const card_type &type, std::function<int()> event);
+// for now it just exits
+int exit_gate();
+
+void create_card(const int count, const std::string &name, const card_type &type, const int min_level,
+                 std::function<int()> event);
 
 void draw_cards();
 
