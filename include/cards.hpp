@@ -12,3 +12,5 @@ void draw_cards();
 void handle_slot(card_slot_t &slot);
 
 void draw_slots();
+
+void basic_card_event(const std::shared_ptr<card_t> card);

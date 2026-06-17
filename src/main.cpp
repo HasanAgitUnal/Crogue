@@ -10,13 +10,35 @@
 void setup_test() {
         create_card(5, "Zombie", ENEMY, []() { return -1; });
         create_card(3, "spider", ENEMY, []() { return -2; });
-        create_card(4, "healing", BASIC, []() { return +5; });
+        create_card(4, "healing", BASIC, []() { return 5; });
         /*
         create_card(1, "god", ENEMY, []() {
                 game::player::hp = 0;
                 return 0;
         });
         */
+        create_card(15, "apple", ITEM, []() { return 1; });
+        create_card(10, "teleporter", ITEM, []() {
+                // Skip 1 card from all slots
+                for (card_slot_t *slot : {&game::slot1, &game::slot2, &game::slot3}) {
+                        if (!slot->front) {
+                                continue;
+                        }
+
+                        // Update card slot
+                        slot->front = slot->back;
+
+                        if (game::card_set.empty()) {
+                                slot->back = nullptr;
+                        } else {
+                                slot->back = game::card_set.back();
+                                game::card_set.pop_back();
+                                minilog::fdebug(logfile, "new card_set size: ", game::card_set.size());
+                        }
+                }
+
+                return 0;
+        });
 }
 
 // for now it just exits
@@ -73,6 +95,42 @@ void print_slot(const int line, const char c, const card_slot_t slot) {
         printw("%s", printname);
 }
 
+void print_inventory(int start_line) {
+        int max_y, max_x;
+        getmaxyx(stdscr, max_y, max_x);
+
+        int col_width = max_x / 5;
+
+        for (int r = 0; r < 2; ++r) {               // 2 lines
+                for (int c = 0; c < 5; ++c) {       // 5 cols
+                        int index = (c * 2) + r;    // 0, 2, 4, 6, 8 (up) | 1, 3, 5, 7, 9 (down)
+                        int x_pos = c * col_width;  // start x
+
+                        move(start_line + r, x_pos);
+
+                        printw("[");
+                        attron(COLOR_PAIR(5));
+                        printw("%d", index);
+                        attroff(COLOR_PAIR(5));
+                        printw("] ");
+
+                        std::string name = "-";
+                        if (index < game::player::inventory.size() && game::player::inventory[index] != nullptr) {
+                                name = game::player::inventory[index]->name;
+                        }
+
+                        // cut the name
+                        int available_space = col_width - 6;
+                        if (available_space > 0) {
+                                if (name.length() > (size_t)available_space) {
+                                        name = name.substr(0, available_space - 2) + "..";
+                                }
+                                printw("%s", name.c_str());
+                        }
+                }
+        }
+}
+
 /*
  * Main
  */
@@ -94,6 +152,7 @@ int main(int argc, char **argv) {
         minilog::fdebug(logfile, "started");
 
         setup_test();
+
         create_card(1, "~ Exit Gate ~", EXIT, exit_gate);
         minilog::fdebug(logfile, "deck size: ", game::deck.size());
         draw_cards();
@@ -105,10 +164,11 @@ int main(int argc, char **argv) {
                 clear();
 
                 // ui
-                print_slot(0, 'a', game::slot1);
-                print_slot(1, 'b', game::slot2);
-                print_slot(2, 'c', game::slot3);
-                mvprintw(3, 0, "HP: %d", game::player::hp);
+                print_slot(1, 'a', game::slot1);
+                print_slot(2, 'b', game::slot2);
+                print_slot(3, 'c', game::slot3);
+                mvprintw(4, 0, "HP: %d", game::player::hp);
+                print_inventory(5);
 
                 refresh();
 
@@ -127,6 +187,19 @@ int main(int argc, char **argv) {
                         case 'c':
                                 minilog::fdebug(logfile, "picked card slot3");
                                 handle_slot(game::slot3);
+                                break;
+                        case '0' ... '9':
+                                int index = key - '0';
+                                minilog::fdebug(logfile, "user tried to use item index: ", index);
+                                if (index < game::player::inventory.size()) {
+                                        if (game::player::inventory[index]) {
+                                                minilog::fdebug(logfile, "calling card event for item: ",
+                                                                game::player::inventory[index]->name);
+
+                                                basic_card_event(game::player::inventory[index]);
+                                                game::player::inventory[index] = nullptr;
+                                        }
+                                }
                                 break;
                 }
 

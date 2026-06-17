@@ -60,10 +60,41 @@ void card_event(const std::shared_ptr<card_t> card) {
                         minilog::fdebug(logfile, "card type: enemy");
                         basic_card_event(card);
                         break;
-
-                case ITEM:
+                case ITEM: {
                         minilog::fdebug(logfile, "card type: item");
-                        game::player::inventory.push_back(card);
+                        bool added = false;
+
+                        for (int i = 0; i < 10; i++) {
+                                if (i >= game::player::inventory.size()) {
+                                        game::player::inventory.push_back(card);
+                                        minilog::fdebug(logfile, "added item via push_back to index: ", i);
+                                        added = true;
+                                        break;
+                                }
+
+                                if (game::player::inventory[i] == nullptr) {
+                                        game::player::inventory[i] = card;
+                                        minilog::fdebug(logfile, "added item to empty slot: ", i);
+                                        added = true;
+                                        break;
+                                }
+                        }
+
+                        // Inventory full
+                        if (!added) {
+                                curs_set(2);
+                                mvprintw(0, 0, "Inventory full. Pick 0-9 to replace: ");
+
+                                int key = getch();
+                                if (key >= '0' && key <= '9') {
+                                        int index = key - '0';
+                                        game::player::inventory[index] = card;
+                                        minilog::fdebug(logfile, "replaced item at index: ", index);
+                                }
+                                curs_set(0);
+                        }
+                        break;
+                }
         }
 }
 
