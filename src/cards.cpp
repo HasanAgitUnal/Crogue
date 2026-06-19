@@ -128,13 +128,12 @@ void create_card(const int count, const std::string &name, const card_type &type
 void add_card(std::shared_ptr<card_t> cardptr) {
         // empty level_ids means always active card
         if (cardptr->level_ids.empty()) {
-                minilog::fdebug(logfile, "[setup] card is avabile for all levels. adding card with name: \"",
-                                cardptr->name, '"');
+                minilog::fdebug(logfile, "[setup] reason: global. adding card with name: \"", cardptr->name, '"');
                 game::card_set.push_back(cardptr);
 
         } else if (std::find(cardptr->level_ids.begin(), cardptr->level_ids.end(), game::levelid) !=
                    cardptr->level_ids.end()) {
-                minilog::fdebug(logfile, "[setup] level id is matching. adding card with name: \"", cardptr->name, '"');
+                minilog::fdebug(logfile, "[setup] reason: level id. adding card with name: \"", cardptr->name, '"');
                 game::card_set.push_back(cardptr);
         }
 }
