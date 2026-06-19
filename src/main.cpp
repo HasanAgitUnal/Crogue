@@ -11,15 +11,27 @@
 
 void setup_test() {
         // levels
-        int first = create_level(0, "Enterance I");
-        int second = create_level(10, "Enterance II");
-        int third = create_level(20, "Enterance III");
-        int fourth = create_level(30, "Enterance III");
-        create_level(40, "Enterance IV");
+        auto ef = create_level("Enterance I");
+        auto es = create_level("Enterance II");
+
+        create_biome("Enterance", 0,
+                     {
+                         ef,
+                         es,
+                     });
+
+        auto mf = create_level("Mines I");
+        auto ms = create_level("Mines II");
+
+        create_biome("Mines", 10,
+                     {
+                         mf,
+                         ms,
+                     });
 
         // cards
         create_card(5, "Zombie", ENEMY, {}, []() { return -1; });
-        create_card(3, "spider", ENEMY, {second, third}, []() { return -2; });
+        create_card(3, "spider", ENEMY, {mf->id, ms->id}, []() { return -2; });
         create_card(4, "healing", BASIC, {}, []() { return 5; });
         /*
         create_card(1, "god", ENEMY, []() {
@@ -28,10 +40,10 @@ void setup_test() {
         });
         */
         create_card(5, "apple", ITEM, {}, []() { return 1; });
-        create_card(1, "teleporter", ITEM, {third, fourth}, []() {
+        create_card(1, "teleporter", ITEM, {ef->id, mf->id}, []() {
                 // Skip 1 card from all slots
                 for (card_slot_t *slot : {&game::slot1, &game::slot2, &game::slot3}) {
-                        if (!slot->front) {
+                        if (!slot->front || slot->front->name == "~ Exit Gate ~") {
                                 continue;
                         }
 

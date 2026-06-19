@@ -22,6 +22,9 @@ int exit_gate() {
                 exit(0);
         }
 
+        game::levelid = game::levels[game::player::level]->id;
+        minilog::fdebug(logfile, "new level id: ", game::levelid);
+
         minilog::fdebug(logfile, "resetting the cards");
         game::card_set = {};
 
@@ -31,7 +34,6 @@ int exit_gate() {
         minilog::fdebug(logfile, "card_set size: ", game::card_set.size());
         draw_slots();
 
-        game::levelid = game::levels[game::player::level]->id;
         game::message = "You are now at level: " + game::levels[game::player::level]->name;
         return 0;
 }
@@ -49,10 +51,12 @@ int generate_unique_level_id() {
                 int new_id = dist(id_rng);
 
                 bool exists = false;
-                for (const auto &lvl : game::level_registry) {
-                        if (lvl->id == new_id) {
-                                exists = true;
-                                break;
+                for (const auto &biome : game::biomes) {
+                        for (const auto &lvl : biome->levels) {
+                                if (lvl->id == new_id) {
+                                        exists = true;
+                                        break;
+                                }
                         }
                 }
 
@@ -61,37 +65,49 @@ int generate_unique_level_id() {
         }
 }
 
-uint64_t create_level(const int difficulty, const std::string name) {
-        if (difficulty > 100 || difficulty < 0) {
-                endwin();
-                minilog::fatal(1, "while creating level: \"", name, "\" : difficulty value should be in range 0-100");
-        }
-
+std::shared_ptr<level_t> create_level(const std::string name) {
         std::shared_ptr<level_t> new_level = std::make_shared<level_t>();
         new_level->name = name;
-        new_level->difficulty = difficulty;
         new_level->id = generate_unique_level_id();
 
-        game::level_registry.push_back(new_level);
+        minilog::fdebug(logfile, "[setup] created level. id: \"", new_level->id, "\" name: \"", name, "\"");
+        return new_level;
+}
 
-        minilog::fdebug(logfile, "[setup] created level. difficulty: \"", difficulty, "\" name: \"", name, "\"");
-        return new_level->id;
+void create_biome(const std::string name, const int difficulty, const std::vector<std::shared_ptr<level_t>> &levels) {
+        if (difficulty > 100 || difficulty < 0) {
+                endwin();
+                minilog::fatal(1, "while creating biome: \"", name, "\" : difficulty value should be in range 0-100");
+        }
+
+        std::shared_ptr<biome_t> new_biome = std::make_shared<biome_t>();
+        new_biome->name = name;
+        new_biome->difficulty = difficulty;
+        new_biome->levels = levels;
+
+        game::biomes.push_back(new_biome);
+
+        minilog::fdebug(logfile, "created biome with name: \"", name, "\"");
 }
 
 void generate_levels() {
-        // copy the level_registry
-        std::vector<std::shared_ptr<level_t>> sorted_levels = game::level_registry;
+        // copy the biomes
+        std::vector<std::shared_ptr<biome_t>> sorted_biomes = game::biomes;
 
         // sort by difficulty
-        std::sort(sorted_levels.begin(), sorted_levels.end(),
-                  [](const std::shared_ptr<level_t> &a, const std::shared_ptr<level_t> &b) {
+        std::sort(sorted_biomes.begin(), sorted_biomes.end(),
+                  [](std::shared_ptr<biome_t> &a, std::shared_ptr<biome_t> &b) {
                           if (a->difficulty != b->difficulty) {
                                   return a->difficulty < b->difficulty;
                           }
-                          return a->id < b->id;
+                          return a->name < b->name;
                   });
 
-        game::levels = sorted_levels;
+        for (auto &biome : sorted_biomes) {
+                for (auto &level : biome->levels) {
+                        game::levels.push_back(level);
+                }
+        }
 
         minilog::fdebug(logfile, "Levels generated and sorted. Count: ", game::levels.size());
 }
@@ -112,10 +128,13 @@ void create_card(const int count, const std::string &name, const card_type &type
 void add_card(std::shared_ptr<card_t> cardptr) {
         // empty level_ids means always active card
         if (cardptr->level_ids.empty()) {
+                minilog::fdebug(logfile, "[setup] card is avabile for all levels. adding card with name: \"",
+                                cardptr->name, '"');
                 game::card_set.push_back(cardptr);
 
         } else if (std::find(cardptr->level_ids.begin(), cardptr->level_ids.end(), game::levelid) !=
                    cardptr->level_ids.end()) {
+                minilog::fdebug(logfile, "[setup] level id is matching. adding card with name: \"", cardptr->name, '"');
                 game::card_set.push_back(cardptr);
         }
 }
@@ -133,7 +152,7 @@ void draw_cards() {
         }
 
         // shuffle the deck
-        std::mt19937_64 rng(game::seed * game::player::level);  //  TODO: replace with a better way for random levels
+        std::mt19937_64 rng(game::seed ^ (game::player::level + 1));  // some randomizing
         std::shuffle(game::card_set.begin(), game::card_set.end(), rng);
 
         minilog::fdebug(logfile, "card_set generated. Count: ", game::card_set.size());

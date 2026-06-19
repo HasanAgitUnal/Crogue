@@ -3,7 +3,6 @@
 #include <functional>
 #include <memory>
 #include <string>
-#include <unordered_map>
 
 const std::string logfile = "./build/debug.log";
 
@@ -23,14 +22,19 @@ struct card_slot_t {
 
 struct level_t {
         std::string name;
-        int difficulty;
         int id;
+};
+
+struct biome_t {
+        std::string name;
+        int difficulty;
+        std::vector<std::shared_ptr<level_t>> levels;
 };
 
 namespace game {
 
-inline std::vector<std::shared_ptr<level_t>> level_registry;  // unordered levels
-inline std::vector<std::shared_ptr<level_t>> levels;          // ordered levels
+inline std::vector<std::shared_ptr<biome_t>> biomes;  // unordered levels
+inline std::vector<std::shared_ptr<level_t>> levels;  // ordered levels
 inline int levelid;
 
 inline std::vector<std::pair<int, std::shared_ptr<card_t>>> deck;  // count and card pairs
