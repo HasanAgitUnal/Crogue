@@ -59,3 +59,9 @@ inline std::vector<std::shared_ptr<card_t>> inventory;
 
 }  // namespace player
 }  // namespace game
+
+namespace settings {
+
+inline bool custom_seed = false;
+
+}

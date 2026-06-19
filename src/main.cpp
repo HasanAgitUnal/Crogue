@@ -1,8 +1,8 @@
 #include <ncurses.h>
+#include <CLI/CLI.hpp>
 #include <clocale>
 #include <random>
 #include <string>
-
 
 #include "cards.hpp"
 #include "minilog.hpp"
@@ -63,11 +63,39 @@ void setup_test() {
         });
 }
 
+void handle_cli(int argc, char **argv) {
+        CLI::App app{"crogue - Card Based Roguelike Game"};
+
+        uint64_t custom_seed = 0;
+        app.add_option("-s,--seed", custom_seed, "Set game seed");
+
+        try {
+                app.parse(argc, argv);
+        } catch (const CLI::ParseError &e) {
+                exit(app.exit(e));
+        }
+
+        // seed
+        if (custom_seed) {
+                game::seed = custom_seed;
+                minilog::fdebug(logfile, "[seed] using custom seed: ", game::seed);
+
+        } else {
+                std::random_device rd;
+                std::mt19937_64 seed_gen(rd());
+                game::seed = seed_gen();
+                minilog::fdebug(logfile, "[seed] using random seed: ", game::seed);
+        }
+}
+
 /*
  * Main
  */
 
 int main(int argc, char **argv) {
+        handle_cli(argc, argv);
+
+        // ncurses things
         setlocale(LC_ALL, "");
         initscr();
         cbreak();
@@ -81,11 +109,8 @@ int main(int argc, char **argv) {
         init_pair(4, COLOR_BLUE, -1);
         init_pair(5, COLOR_MAGENTA, -1);
         refresh();
-        minilog::fdebug(logfile, "started");
 
-        //  TODO: add a cli option to override seed
-        std::random_device rd;
-        game::seed = rd();
+        minilog::fdebug(logfile, "started");
 
         //  TODO: remove this after adding plugin system
         setup_test();
