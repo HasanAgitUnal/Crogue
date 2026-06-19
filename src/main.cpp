@@ -1,24 +1,34 @@
 #include <ncurses.h>
 #include <clocale>
 #include <cstdlib>
+#include <random>
 #include <string>
+
 
 #include "cards.hpp"
 #include "minilog.hpp"
 #include "types.hpp"
 
 void setup_test() {
-        create_card(5, "Zombie", ENEMY, 0, []() { return -1; });
-        create_card(3, "spider", ENEMY, 2, []() { return -2; });
-        create_card(4, "healing", BASIC, 0, []() { return 5; });
+        // levels
+        int first = create_level(0, "Enterance I");
+        int second = create_level(10, "Enterance II");
+        int third = create_level(20, "Enterance III");
+        int fourth = create_level(30, "Enterance III");
+        create_level(40, "Enterance IV");
+
+        // cards
+        create_card(5, "Zombie", ENEMY, {}, []() { return -1; });
+        create_card(3, "spider", ENEMY, {second, third}, []() { return -2; });
+        create_card(4, "healing", BASIC, {}, []() { return 5; });
         /*
         create_card(1, "god", ENEMY, []() {
                 game::player::hp = 0;
                 return 0;
         });
         */
-        create_card(5, "apple", ITEM, 0, []() { return 1; });
-        create_card(1, "teleporter", ITEM, 3, []() {
+        create_card(5, "apple", ITEM, {}, []() { return 1; });
+        create_card(1, "teleporter", ITEM, {third, fourth}, []() {
                 // Skip 1 card from all slots
                 for (card_slot_t *slot : {&game::slot1, &game::slot2, &game::slot3}) {
                         if (!slot->front) {
@@ -141,11 +151,23 @@ int main(int argc, char **argv) {
         refresh();
         minilog::fdebug(logfile, "started");
 
+        //  TODO: add a cli option to override seed
+        std::random_device rd;
+        game::seed = rd();
+
+        //  TODO: remove this after adding plugin system
         setup_test();
 
-        create_card(1, "~ Exit Gate ~", EXIT, 0, exit_gate);
+        minilog::fdebug(logfile, "Generating levels");
+        generate_levels();
+        game::levelid = game::levels[0]->id;
+        game::message = "You are now at level: " + game::levels[game::player::level]->name;
+
+        create_card(1, "~ Exit Gate ~", EXIT, {}, exit_gate);
+
         minilog::fdebug(logfile, "deck size: ", game::deck.size());
         draw_cards();
+
         minilog::fdebug(logfile, "card_set size: ", game::card_set.size());
         draw_slots();
 
@@ -155,6 +177,7 @@ int main(int argc, char **argv) {
 
                 // ui
                 mvprintw(0, 0, "%s", game::message.c_str());
+                game::message = "";
                 print_slot(1, 'a', game::slot1);
                 print_slot(2, 'b', game::slot2);
                 print_slot(3, 'c', game::slot3);

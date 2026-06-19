@@ -10,37 +10,112 @@
 int exit_gate() {
         minilog::fdebug(logfile, "player find an exit");
         game::player::level++;
-        if (game::player::level == 5) {
+        minilog::fdebug(logfile, "new level index: ", game::player::level);
+        if (game::player::level == game::levels.size()) {
                 clear();
                 printw("You are exiting from dungeon with your loot!");
                 refresh();
                 getch();
 
-                minilog::fdebug(logfile, "player reached level 5, exiting with status: 0");
+                minilog::fdebug(logfile, "player reached last level, exiting with status: 0");
                 endwin();
                 exit(0);
         }
 
         minilog::fdebug(logfile, "resetting the cards");
         game::card_set = {};
+
         minilog::fdebug(logfile, "deck size: ", game::deck.size());
         draw_cards();
+
         minilog::fdebug(logfile, "card_set size: ", game::card_set.size());
         draw_slots();
 
-        game::message = "You are now at level: " + std::to_string(game::player::level);
+        game::levelid = game::levels[game::player::level]->id;
+        game::message = "You are now at level: " + game::levels[game::player::level]->name;
         return 0;
 }
 
-void create_card(const int count, const std::string &name, const card_type &type, const int min_level,
+/*
+ * Levels
+ */
+
+// only generates an id
+int generate_unique_level_id() {
+        static std::mt19937 id_rng(game::seed);
+        std::uniform_int_distribution<int> dist(100000, 999999);
+
+        while (true) {
+                int new_id = dist(id_rng);
+
+                bool exists = false;
+                for (const auto &lvl : game::level_registry) {
+                        if (lvl->id == new_id) {
+                                exists = true;
+                                break;
+                        }
+                }
+
+                if (!exists)
+                        return new_id;
+        }
+}
+
+uint64_t create_level(const int difficulty, const std::string name) {
+        if (difficulty > 100 || difficulty < 0) {
+                endwin();
+                minilog::fatal(1, "while creating level: \"", name, "\" : difficulty value should be in range 0-100");
+        }
+
+        std::shared_ptr<level_t> new_level = std::make_shared<level_t>();
+        new_level->name = name;
+        new_level->difficulty = difficulty;
+        new_level->id = generate_unique_level_id();
+
+        game::level_registry.push_back(new_level);
+
+        minilog::fdebug(logfile, "[setup] created level. difficulty: \"", difficulty, "\" name: \"", name, "\"");
+        return new_level->id;
+}
+
+void generate_levels() {
+        // copy the level_registry
+        std::vector<std::shared_ptr<level_t>> sorted_levels = game::level_registry;
+
+        // sort by difficulty
+        std::sort(sorted_levels.begin(), sorted_levels.end(),
+                  [](const std::shared_ptr<level_t> &a, const std::shared_ptr<level_t> &b) {
+                          if (a->difficulty != b->difficulty) {
+                                  return a->difficulty < b->difficulty;
+                          }
+                          return a->id < b->id;
+                  });
+
+        game::levels = sorted_levels;
+
+        minilog::fdebug(logfile, "Levels generated and sorted. Count: ", game::levels.size());
+}
+
+/*
+ * Cards
+ */
+
+void create_card(const int count, const std::string &name, const card_type &type, const std::vector<int> levelids,
                  std::function<int()> event) {
 
         game::deck.push_back(
-            std::pair{count, std::make_shared<card_t>(card_t{name, type, min_level, std::move(event)})});
+            std::pair{count, std::make_shared<card_t>(card_t{name, type, levelids, std::move(event)})});
+
+        minilog::fdebug(logfile, "[setup] added card. name: \"", name, "\" count: \"", count, "\"");
 }
 
 void add_card(std::shared_ptr<card_t> cardptr) {
-        if (cardptr->min_level <= game::player::level) {
+        // empty level_ids means always active card
+        if (cardptr->level_ids.empty()) {
+                game::card_set.push_back(cardptr);
+
+        } else if (std::find(cardptr->level_ids.begin(), cardptr->level_ids.end(), game::levelid) !=
+                   cardptr->level_ids.end()) {
                 game::card_set.push_back(cardptr);
         }
 }
@@ -58,9 +133,10 @@ void draw_cards() {
         }
 
         // shuffle the deck
-        std::random_device rd;
-        std::mt19937 g(rd());
-        std::shuffle(game::card_set.begin(), game::card_set.end(), g);
+        std::mt19937_64 rng(game::seed * game::player::level);  //  TODO: replace with a better way for random levels
+        std::shuffle(game::card_set.begin(), game::card_set.end(), rng);
+
+        minilog::fdebug(logfile, "card_set generated. Count: ", game::card_set.size());
 }
 
 void basic_card_event(const std::shared_ptr<card_t> card) {
@@ -129,6 +205,10 @@ void card_event(const std::shared_ptr<card_t> card) {
         }
 }
 
+/*
+ * Other
+ */
+
 // does the job when a slot is picked by user
 void handle_slot(card_slot_t &slot) {
         if (!slot.front) {
@@ -164,4 +244,6 @@ void draw_slots() {
                 s->back = pop_card();
                 s->front = pop_card();
         }
+
+        minilog::fdebug(logfile, "filled slots");
 }

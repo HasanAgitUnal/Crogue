@@ -8,8 +8,12 @@
 // for now it just exits
 int exit_gate();
 
-void create_card(const int count, const std::string &name, const card_type &type, const int min_level,
+void create_card(const int count, const std::string &name, const card_type &type, const std::vector<int> levelids,
                  std::function<int()> event);
+
+uint64_t create_level(const int difficulty, const std::string name);
+
+void generate_levels();
 
 void draw_cards();
 

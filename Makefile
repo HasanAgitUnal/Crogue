@@ -48,7 +48,7 @@ run: build
 
 drun: dbuild run
 
-log: build
+log: dbuild
 	@printf "[  \033[36mLOG\033[0m  ] Viewing:\n"
 	@-tail -F build/debug.log
 
