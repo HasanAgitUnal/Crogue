@@ -3,6 +3,14 @@
 #include "tui.hpp"
 #include "types.hpp"
 
+int ask(std::string what) {
+        curs_set(2);
+        mvprintw(0, 0, "%s", what.c_str());
+        int key = getch();
+        curs_set(0);
+        return key;
+}
+
 void print_line(int line) {
         move(line, 0);
         for (int i = 0; i < COLS; ++i) {

@@ -4,6 +4,7 @@
 
 #include "cards.hpp"
 #include "minilog.hpp"
+#include "tui.hpp"
 #include "types.hpp"
 
 // for now it just exits
@@ -207,10 +208,8 @@ void card_event(const std::shared_ptr<card_t> card) {
 
                         // Inventory full
                         if (!added) {
-                                curs_set(2);
-                                mvprintw(0, 0, "Inventory full. Pick 0-9 to replace: ");
+                                int key = ask("Inventory full. Pick 0-9 to replace: ");
 
-                                int key = getch();
                                 if (key >= '0' && key <= '9') {
                                         int index = key - '0';
                                         game::player::inventory[index] = card;
