@@ -52,11 +52,21 @@ log: dbuild
 	@printf "[  \033[36mLOG\033[0m  ] Viewing:\n"
 	@-tail -F build/debug.log
 
-clean:
+cbin:
+	@printf "[ \033[93mCLEAN\033[0m ] [ \033[92mBIN\033[0m ] started\n"
+	@rm -f build/*.o build/*.d build/$(PROGRAM)	
+	@printf "[ \033[93mCLEAN\033[0m ] [ \033[92mBIN\033[0m ] finished\n"
+
+clog:
+	@printf "[ \033[93mCLEAN\033[0m ] [ \033[94mLOG\033[0m ] started\n"
+	@rm -f build/debug.log
+	@printf "[ \033[93mCLEAN\033[0m ] [ \033[94mLOG\033[0m ] finished\n"
+
+clean: cbin clog
 	@printf "[ \033[93mCLEAN\033[0m ] started\n"
 	@rm -rf build
 	@printf "[ \033[93mCLEAN\033[0m ] finished\n"
 
 -include $(DEPS)
 
-.PHONY: default all build dbuild run log clean buildstart
+.PHONY: default all build dbuild run drun log clean buildstart

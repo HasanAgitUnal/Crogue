@@ -131,16 +131,7 @@ int main(int argc, char **argv) {
         int key = 0;
         while (key != 'q') {
                 clear();
-
-                // ui
-                mvprintw(0, 0, "%s", game::message.c_str());
-                game::message = "";
-                print_slot(1, 'a', game::slot1);
-                print_slot(2, 'b', game::slot2);
-                print_slot(3, 'c', game::slot3);
-                mvprintw(4, 0, "HP: %d", game::player::hp);
-                print_inventory(5);
-
+                print_ui();
                 refresh();
 
                 // keyboard handling
