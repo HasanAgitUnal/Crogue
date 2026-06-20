@@ -307,7 +307,12 @@ void handle_slot(card_slot_t &slot) {
                 return;
         }
 
+        int old_level = game::player::level;
         card_event(slot.front);
+
+        if (old_level != game::player::level) {
+                return;
+        }
 
         // Update card slot
         slot.front = slot.back;
