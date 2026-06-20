@@ -23,6 +23,9 @@ void setup_colors() {
         init_pair(14, COLOR_CYAN + 8, -1);
         init_pair(15, COLOR_WHITE + 8, -1);
         init_pair(16, COLOR_BLACK + 8, -1);
+
+        // 256
+        init_pair(247, 247, -1);
 }
 
 int ask(std::string what) {
@@ -212,15 +215,11 @@ int print_logs(int line) {
 
         for (int i = 0; i < game::logs.size(); i++) {
                 log_type &type = game::logs[i].first;
-                attr_t color A_NORMAL;
-
-                if (i == game::logs.size() - 1) {
-                        color |= A_BOLD;
-                }
+                attr_t color = A_NORMAL;
 
                 switch (type) {
                         case NORMAL:
-                                color |= COLOR_PAIR(16);
+                                color |= COLOR_PAIR(247);
                                 break;
                         case WARN:
                                 color |= COLOR_PAIR(3);
@@ -235,16 +234,85 @@ int print_logs(int line) {
                 attroff(color);
         }
 
-        line += 5;
+        line += 9;
 
         return line + 1;  // 1 line space for ask()
+}
+
+std::string to_roman(int n) {
+        if (n < 0) {
+                return "-" + to_roman(-n);
+        }
+
+        struct romandata_t {
+                int val;
+                const char *res;
+        };
+
+        const romandata_t data[] = {{1000, "M"}, {900, "CM"}, {500, "D"}, {400, "CD"}, {100, "C"},
+                                    {90, "XC"},  {50, "L"},   {40, "XL"}, {10, "X"},   {9, "IX"},
+                                    {5, "V"},    {4, "IV"},   {1, "I"}};
+        std::string res = "";
+        for (const auto &entry : data) {
+                while (n >= entry.val) {
+                        res += entry.res;
+                        n -= entry.val;
+                }
+        }
+        return res;
+}
+
+void print_buffs(int line) {
+        print_line(line);
+        attron(COLOR_PAIR(16));
+        mvprintw(line, 1, "[");
+        attroff(COLOR_PAIR(16));
+        attron(COLOR_PAIR(6));
+        printw(" Buffs ");
+        attroff(COLOR_PAIR(6));
+        attron(COLOR_PAIR(16));
+        printw("]");
+        attroff(COLOR_PAIR(16));
+        line += 2;
+
+        int active_idx = 0;
+        int col_width = COLS / 3;
+
+        for (auto buff : game::buffs) {
+                if (buff->level == 0)
+                        continue;
+
+                int row = active_idx / 3;
+                int col = active_idx % 3;
+                int x = col * col_width;
+
+                std::string roman = to_roman(buff->level);
+                std::string name = buff->name;
+
+                int reserved = 4 + (int)roman.length();
+                int available = col_width - reserved;
+
+                if (available > 0 && (int)name.length() > available) {
+                        name = name.substr(0, (available > 3 ? available - 3 : available)) + "...";
+                }
+
+                attron(COLOR_PAIR(6));
+                mvprintw(line + row, x, "◆ ");
+                attroff(COLOR_PAIR(6));
+                printw("%s ", name.c_str());
+                attron(COLOR_PAIR(6));
+                printw("%s", roman.c_str());
+                attroff(COLOR_PAIR(6));
+                active_idx++;
+        }
 }
 
 void print_ui() {
         int max_y, max_x;
         getmaxyx(stdscr, max_y, max_x);
         int slot_end = print_slots(0);
-        print_logs(max_y - 12);
+        print_buffs(slot_end + 1);
+        print_logs(max_y - 16);
         print_inventory(max_y - 3);
 
         // after everything because of the drawing the box drawing characters

@@ -11,9 +11,34 @@ void log(const std::string msg, const log_type type) {
         game::logs.push_back({type, msg});
         minilog::fdebug(logfile, "[log]: ", msg);
 
-        if (game::logs.size() > 5) {
+        if (game::logs.size() > 9) {
                 game::logs.pop_front();
         }
+}
+
+bool check_die() {
+        if (game::player::hp <= 0) {
+                minilog::fdebug(logfile, "player health is 0");
+
+                log("You died!", IMPORTANT);
+
+                clear();
+                print_ui();
+                refresh();
+
+                int key;
+                while (true) {
+                        key = ask("Press enter or q to quit.");
+                        minilog::fdebug(logfile, "[key] pressed key: ", key);
+                        if (key == 10 || key == 13 || key == 'q') {
+                                break;
+                        }
+                }
+
+                return 1;
+        }
+
+        return 0;
 }
 
 int exit_gate() {
@@ -122,6 +147,29 @@ void generate_levels() {
 }
 
 /*
+ * Buffs
+ */
+
+std::shared_ptr<buff_t> create_buff(const std::string name, std::function<void(std::shared_ptr<buff_t>)> event) {
+        auto new_buff = std::make_shared<buff_t>(buff_t{name, event, 0});
+
+        new_buff->name = name;
+        new_buff->event = event;
+        new_buff->level = 0;
+
+        game::buffs.push_back(new_buff);
+        return new_buff;
+}
+
+void handle_buffs() {
+        for (auto buff : game::buffs) {
+                if (buff->level != 0) {
+                        buff->event(buff);
+                }
+        }
+}
+
+/*
  * Cards
  */
 
@@ -167,12 +215,12 @@ void draw_cards() {
 }
 
 void basic_card_event(const std::shared_ptr<card_t> card) {
-        int result = card->event();
-        game::player::hp += result;
-
         if (!card->logmsg.empty()) {
                 log(card->logmsg, NORMAL);
         }
+
+        int result = card->event();
+        game::player::hp += result;
 
         minilog::fdebug(logfile, "card event result=", result);
         minilog::fdebug(logfile, "game::player::hp=", game::player::hp);

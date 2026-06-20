@@ -35,6 +35,12 @@ struct biome_t {
         std::vector<std::shared_ptr<level_t>> levels;
 };
 
+struct buff_t {
+        std::string name;
+        std::function<void(std::shared_ptr<buff_t>)> event;
+        int level;
+};
+
 namespace game {
 
 inline std::vector<std::shared_ptr<biome_t>> biomes;  // unordered levels
@@ -43,6 +49,8 @@ inline int levelid;
 
 inline std::vector<std::pair<int, std::shared_ptr<card_t>>> deck;  // count and card pairs
 inline std::vector<std::shared_ptr<card_t>> card_set;
+
+inline std::vector<std::shared_ptr<buff_t>> buffs;
 
 inline card_slot_t slot1;
 inline card_slot_t slot2;

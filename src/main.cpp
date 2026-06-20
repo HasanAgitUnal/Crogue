@@ -29,16 +29,37 @@ void setup_test() {
                          ms,
                      });
 
+        auto zombie_buff = create_buff("Zombification", [](auto self) {
+                if (self->level == 10) {
+                        game::player::hp = 0;
+                        log("you are now a zombie!", IMPORTANT);
+                }
+        });
+
         // cards
-        create_card(5, "Zombie", ENEMY, {}, "You killed a zombie", []() { return -1; });
-        create_card(3, "spider", ENEMY, {mf->id, ms->id}, "You killed a spider", []() { return -2; });
+        create_card(5, "Zombie", ENEMY, {}, "You killed a zombie", [=]() {
+                zombie_buff->level++;
+                return -1;
+        });
+
+        auto poison_buff = create_buff("Poison", [](std::shared_ptr<buff_t> self) {
+                game::player::hp--;
+                self->level--;
+        });
+
+        create_card(3, "spider", ENEMY, {mf->id, ms->id}, "You killed a spider", [=]() {
+                poison_buff->level += 3;
+                return -2;
+        });
+
         create_card(4, "healing", BASIC, {}, "You feel better", []() { return 5; });
-        /*
-        create_card(1, "god", ENEMY, []() {
+
+        create_card(1, "god", ENEMY, {}, "", []() {
+                log("You cant fight with a god!", IMPORTANT);
                 game::player::hp = 0;
                 return 0;
         });
-        */
+
         create_card(5, "apple", ITEM, {}, "This apple was yummy", []() { return 1; });
         create_card(1, "teleporter", ITEM, {ef->id, mf->id}, "You are teleported", []() {
                 // Skip 1 card from all slots
@@ -127,13 +148,19 @@ int main(int argc, char **argv) {
 
         int key = 0;
         while (key != 'q') {
+                handle_buffs();
+
+                if (check_die()) {
+                        break;
+                }
+
                 clear();
                 print_ui();
                 refresh();
 
                 // keyboard handling
                 key = getch();
-                minilog::fdebug(logfile, "Pressed key: ", key);
+                minilog::fdebug(logfile, "[key] pressed key: ", key);
                 switch (key) {
                         case 'a':
                                 minilog::fdebug(logfile, "picked card slot1");
@@ -160,14 +187,6 @@ int main(int argc, char **argv) {
                                         }
                                 }
                                 break;
-                }
-
-                if (game::player::hp == 0) {
-                        minilog::fdebug(logfile, "player health is 0");
-                        clear();
-                        printw("You died stupid!");
-                        getch();
-                        break;
                 }
         }
 
