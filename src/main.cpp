@@ -30,17 +30,17 @@ void setup_test() {
                      });
 
         // cards
-        create_card(5, "Zombie", ENEMY, {}, []() { return -1; });
-        create_card(3, "spider", ENEMY, {mf->id, ms->id}, []() { return -2; });
-        create_card(4, "healing", BASIC, {}, []() { return 5; });
+        create_card(5, "Zombie", ENEMY, {}, "You killed a zombie", []() { return -1; });
+        create_card(3, "spider", ENEMY, {mf->id, ms->id}, "You killed a spider", []() { return -2; });
+        create_card(4, "healing", BASIC, {}, "You feel better", []() { return 5; });
         /*
         create_card(1, "god", ENEMY, []() {
                 game::player::hp = 0;
                 return 0;
         });
         */
-        create_card(5, "apple", ITEM, {}, []() { return 1; });
-        create_card(1, "teleporter", ITEM, {ef->id, mf->id}, []() {
+        create_card(5, "apple", ITEM, {}, "This apple was yummy", []() { return 1; });
+        create_card(1, "teleporter", ITEM, {ef->id, mf->id}, "You are teleported", []() {
                 // Skip 1 card from all slots
                 for (card_slot_t *slot : {&game::slot1, &game::slot2, &game::slot3}) {
                         if (!slot->front || slot->front->name == "~ Exit Gate ~") {
@@ -104,11 +104,8 @@ int main(int argc, char **argv) {
         curs_set(0);
         start_color();
         use_default_colors();
-        init_pair(1, COLOR_RED, -1);
-        init_pair(2, COLOR_GREEN, -1);
-        init_pair(4, COLOR_BLUE, -1);
-        init_pair(5, COLOR_MAGENTA, -1);
-        refresh();
+
+        setup_colors();
 
         minilog::fdebug(logfile, "started");
 
@@ -118,9 +115,9 @@ int main(int argc, char **argv) {
         minilog::fdebug(logfile, "Generating levels");
         generate_levels();
         game::levelid = game::levels[0]->id;
-        game::message = "You are now at level: " + game::levels[game::player::level]->name;
+        log("You are now at level: " + game::levels[game::player::level]->name, WARN);
 
-        create_card(1, "~ Exit Gate ~", EXIT, {}, exit_gate);
+        create_card(1, "~ Exit Gate ~", EXIT, {}, "", exit_gate);
 
         minilog::fdebug(logfile, "deck size: ", game::deck.size());
         draw_cards();

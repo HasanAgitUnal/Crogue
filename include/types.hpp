@@ -1,5 +1,6 @@
 #pragma once
 #include <cstdint>
+#include <deque>
 #include <functional>
 #include <memory>
 #include <string>
@@ -8,11 +9,14 @@ const std::string logfile = "./build/debug.log";
 
 enum card_type { BASIC, ITEM, ENEMY, EXIT };
 
+enum log_type { NORMAL, WARN, IMPORTANT };
+
 struct card_t {
         std::string name;
         card_type type;
         std::vector<int> level_ids;
         std::function<int()> event;
+        std::string logmsg;
 };
 
 struct card_slot_t {
@@ -44,8 +48,7 @@ inline card_slot_t slot1;
 inline card_slot_t slot2;
 inline card_slot_t slot3;
 
-// the message will be displayed for one time
-inline std::string message;
+inline std::deque<std::pair<log_type, std::string>> logs;
 
 // seed used for random things
 inline uint64_t seed;

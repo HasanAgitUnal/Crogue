@@ -7,7 +7,15 @@
 #include "tui.hpp"
 #include "types.hpp"
 
-// for now it just exits
+void log(const std::string msg, const log_type type) {
+        game::logs.push_back({type, msg});
+        minilog::fdebug(logfile, "[log]: ", msg);
+
+        if (game::logs.size() > 5) {
+                game::logs.pop_front();
+        }
+}
+
 int exit_gate() {
         minilog::fdebug(logfile, "player find an exit");
         game::player::level++;
@@ -35,7 +43,7 @@ int exit_gate() {
         minilog::fdebug(logfile, "card_set size: ", game::card_set.size());
         draw_slots();
 
-        game::message = "You are now at level: " + game::levels[game::player::level]->name;
+        log("You are now at level: " + game::levels[game::player::level]->name, WARN);
         return 0;
 }
 
@@ -118,10 +126,10 @@ void generate_levels() {
  */
 
 void create_card(const int count, const std::string &name, const card_type &type, const std::vector<int> levelids,
-                 std::function<int()> event) {
+                 const std::string &logmsg, std::function<int()> event) {
 
         game::deck.push_back(
-            std::pair{count, std::make_shared<card_t>(card_t{name, type, levelids, std::move(event)})});
+            std::pair{count, std::make_shared<card_t>(card_t{name, type, levelids, std::move(event), logmsg})});
 
         minilog::fdebug(logfile, "[setup] added card. name: \"", name, "\" count: \"", count, "\"");
 }
@@ -162,8 +170,25 @@ void basic_card_event(const std::shared_ptr<card_t> card) {
         int result = card->event();
         game::player::hp += result;
 
+        if (!card->logmsg.empty()) {
+                log(card->logmsg, NORMAL);
+        }
+
         minilog::fdebug(logfile, "card event result=", result);
         minilog::fdebug(logfile, "game::player::hp=", game::player::hp);
+}
+
+template <typename... Args>
+std::string format(const std::string &fmt, Args... args) {
+        size_t size = snprintf(nullptr, 0, fmt.c_str(), args...) + 1;
+        if (size <= 0)
+                return "";
+
+        std::unique_ptr<char[]> buf(new char[size]);
+
+        snprintf(buf.get(), size, fmt.c_str(), args...);
+
+        return std::string(buf.get(), buf.get() + size - 1);
 }
 
 // calls card event
@@ -188,6 +213,8 @@ void card_event(const std::shared_ptr<card_t> card) {
                         break;
                 case ITEM: {
                         minilog::fdebug(logfile, "card type: item");
+                        log(format("You found item: %s", card->name.c_str()), NORMAL);
+
                         bool added = false;
 
                         for (int i = 0; i < 10; i++) {

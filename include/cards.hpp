@@ -5,11 +5,12 @@
 
 #include "types.hpp"
 
-// for now it just exits
+void log(const std::string msg, const log_type type);
+
 int exit_gate();
 
 void create_card(const int count, const std::string &name, const card_type &type, const std::vector<int> levelids,
-                 std::function<int()> event);
+                 const std::string &logmsg, std::function<int()> event);
 
 std::shared_ptr<level_t> create_level(const std::string name);
 
