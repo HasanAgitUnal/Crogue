@@ -39,6 +39,8 @@ void handle_cli(int argc, char **argv) {
  */
 
 int main(int argc, char **argv) {
+        minilog::fdebug(logfile, "---- START ----");
+
         handle_cli(argc, argv);
 
         // ncurses things
@@ -53,14 +55,11 @@ int main(int argc, char **argv) {
 
         setup_colors();
 
-        minilog::fdebug(logfile, "---- START ----");
-
         // start game
         scene::game();
 
         endwin();
-
-        minilog::fdebug(logfile, "Exiting with status: 0");
+        minilog::fdebug(logfile, "[setup] Exiting with status: 0");
         minilog::fdebug(logfile, "---- END ----");
         return 0;
 }

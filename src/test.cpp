@@ -4,6 +4,8 @@
 #include "types.hpp"
 
 void setup_test() {
+        minilog::fdebug(logfile, "[test] setting up the test");
+
         // levels
         auto ef = create_level("Enterance I");
         auto es = create_level("Enterance II");
@@ -90,4 +92,6 @@ void setup_test() {
                 }
                 return 0;
         });
+
+        minilog::fdebug(logfile, "[test] test is ready");
 }

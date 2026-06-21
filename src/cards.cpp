@@ -9,7 +9,7 @@
 
 void log(const std::string msg, const log_type type) {
         game::logs.push_back({type, msg});
-        minilog::fdebug(logfile, "[log]: ", msg);
+        minilog::fdebug(logfile, "[uilog]: ", msg);
 
         if (game::logs.size() > 9) {
                 game::logs.pop_front();
@@ -18,7 +18,7 @@ void log(const std::string msg, const log_type type) {
 
 bool check_die() {
         if (game::player::hp <= 0) {
-                minilog::fdebug(logfile, "player health is 0");
+                minilog::fdebug(logfile, "[player] Player died");
 
                 log("You died!", IMPORTANT);
 
@@ -42,30 +42,30 @@ bool check_die() {
 }
 
 int exit_gate() {
-        minilog::fdebug(logfile, "player find an exit");
+        minilog::fdebug(logfile, "[player] player find an exit");
         game::player::level++;
-        minilog::fdebug(logfile, "new level index: ", game::player::level);
+        minilog::fdebug(logfile, "[setup] new level index: ", game::player::level);
         if (game::player::level == game::levels.size()) {
                 clear();
                 printw("You are exiting from dungeon with your loot!");
                 refresh();
                 getch();
 
-                minilog::fdebug(logfile, "player reached last level, exiting with status: 0");
+                minilog::fdebug(logfile, "[setup] player reached last level, exiting with status: 0");
                 endwin();
                 exit(0);
         }
 
         game::levelid = game::levels[game::player::level]->id;
-        minilog::fdebug(logfile, "new level id: ", game::levelid);
+        minilog::fdebug(logfile, "[setup] new level id: ", game::levelid);
 
-        minilog::fdebug(logfile, "resetting the cards");
+        minilog::fdebug(logfile, "[setup] resetting the cards");
         game::card_set = {};
 
-        minilog::fdebug(logfile, "deck size: ", game::deck.size());
+        minilog::fdebug(logfile, "[setup] deck size: ", game::deck.size());
         draw_cards();
 
-        minilog::fdebug(logfile, "card_set size: ", game::card_set.size());
+        minilog::fdebug(logfile, "[setup] card_set size: ", game::card_set.size());
         draw_slots();
 
         log("You are now at level: " + game::levels[game::player::level]->name, WARN);
@@ -111,7 +111,9 @@ std::shared_ptr<level_t> create_level(const std::string name) {
 void create_biome(const std::string name, const int difficulty, const std::vector<std::shared_ptr<level_t>> &levels) {
         if (difficulty > 100 || difficulty < 0) {
                 endwin();
-                minilog::fatal(1, "while creating biome: \"", name, "\" : difficulty value should be in range 0-100");
+                minilog::fout(minilog::msg::fatal, "[setup] While creating biome: \"", name,
+                              "\" : difficulty value should be in range 0-100");
+                minilog::fatal(1, "While creating biome: \"", name, "\" : difficulty value should be in range 0-100");
         }
 
         std::shared_ptr<biome_t> new_biome = std::make_shared<biome_t>();
@@ -121,7 +123,7 @@ void create_biome(const std::string name, const int difficulty, const std::vecto
 
         game::biomes.push_back(new_biome);
 
-        minilog::fdebug(logfile, "created biome with name: \"", name, "\"");
+        minilog::fdebug(logfile, "[setup] Created biome with name: \"", name, "\"");
 }
 
 void generate_levels() {
@@ -143,7 +145,7 @@ void generate_levels() {
                 }
         }
 
-        minilog::fdebug(logfile, "Levels generated and sorted. Count: ", game::levels.size());
+        minilog::fdebug(logfile, "[setup] Levels generated and sorted. Count: ", game::levels.size());
 }
 
 /*
@@ -164,6 +166,7 @@ std::shared_ptr<buff_t> create_buff(const std::string name, std::function<void(s
 void handle_buffs() {
         for (auto buff : game::buffs) {
                 if (buff->level != 0) {
+                        minilog::fdebug(logfile, "[event] Calling event for buff: ", buff->name);
                         buff->event(buff);
                 }
         }
@@ -179,18 +182,18 @@ void create_card(const int count, const std::string &name, const card_type &type
         game::deck.push_back(
             std::pair{count, std::make_shared<card_t>(card_t{name, type, levelids, std::move(event), logmsg})});
 
-        minilog::fdebug(logfile, "[setup] added card. name: \"", name, "\" count: \"", count, "\"");
+        minilog::fdebug(logfile, "[setup] Created card. name: \"", name, "\" count: \"", count, "\"");
 }
 
 void add_card(std::shared_ptr<card_t> cardptr) {
         // empty level_ids means always active card
         if (cardptr->level_ids.empty()) {
-                minilog::fdebug(logfile, "[setup] reason: global. adding card with name: \"", cardptr->name, '"');
+                minilog::fdebug(logfile, "[setup] reason: global. Adding card with name: \"", cardptr->name, '"');
                 game::card_set.push_back(cardptr);
 
         } else if (std::find(cardptr->level_ids.begin(), cardptr->level_ids.end(), game::levelid) !=
                    cardptr->level_ids.end()) {
-                minilog::fdebug(logfile, "[setup] reason: level id. adding card with name: \"", cardptr->name, '"');
+                minilog::fdebug(logfile, "[setup] reason: level id. Adding card with name: \"", cardptr->name, '"');
                 game::card_set.push_back(cardptr);
         }
 }
@@ -211,7 +214,7 @@ void draw_cards() {
         std::mt19937_64 rng(game::seed ^ (game::player::level + 1));  // some randomizing
         std::shuffle(game::card_set.begin(), game::card_set.end(), rng);
 
-        minilog::fdebug(logfile, "card_set generated. Count: ", game::card_set.size());
+        minilog::fdebug(logfile, "[setup] card_set generated. Count: ", game::card_set.size());
 }
 
 void basic_card_event(const std::shared_ptr<card_t> card) {
@@ -219,11 +222,12 @@ void basic_card_event(const std::shared_ptr<card_t> card) {
                 log(card->logmsg, NORMAL);
         }
 
+        minilog::fdebug(logfile, "[event] Calling event for card: ", card->name);
         int result = card->event();
         game::player::hp += result;
 
-        minilog::fdebug(logfile, "card event result=", result);
-        minilog::fdebug(logfile, "game::player::hp=", game::player::hp);
+        minilog::fdebug(logfile, "[event] card event result=", result);
+        minilog::fdebug(logfile, "[event] game::player::hp=", game::player::hp);
 }
 
 template <typename... Args>
@@ -241,26 +245,26 @@ std::string format(const std::string &fmt, Args... args) {
 
 // calls card event
 void card_event(const std::shared_ptr<card_t> card) {
-        minilog::fdebug(logfile, "card used: ", card->name);
+        minilog::fdebug(logfile, "[event] Card used: ", card->name);
 
         switch (card->type) {
                 case BASIC:
-                        minilog::fdebug(logfile, "card type: basic");
+                        minilog::fdebug(logfile, "[event] card type: BASIC");
                         basic_card_event(card);
                         break;
 
                 // same with basic because differance between basic, enemy and exit is just color on the ui
                 case EXIT:
-                        minilog::fdebug(logfile, "card type: exit gate");
+                        minilog::fdebug(logfile, "[event] card type: EXIT");
                         basic_card_event(card);
                         break;
 
                 case ENEMY:
-                        minilog::fdebug(logfile, "card type: enemy");
+                        minilog::fdebug(logfile, "[event] card type: ENEMY");
                         basic_card_event(card);
                         break;
                 case ITEM: {
-                        minilog::fdebug(logfile, "card type: item");
+                        minilog::fdebug(logfile, "[event] card type: ITEM");
                         log(format("You found item: %s", card->name.c_str()), NORMAL);
 
                         bool added = false;
@@ -268,14 +272,14 @@ void card_event(const std::shared_ptr<card_t> card) {
                         for (int i = 0; i < 10; i++) {
                                 if (i >= game::player::inventory.size()) {
                                         game::player::inventory.push_back(card);
-                                        minilog::fdebug(logfile, "added item via push_back to index: ", i);
+                                        minilog::fdebug(logfile, "[inventory] added item via push_back to index: ", i);
                                         added = true;
                                         break;
                                 }
 
                                 if (game::player::inventory[i] == nullptr) {
                                         game::player::inventory[i] = card;
-                                        minilog::fdebug(logfile, "added item to empty slot: ", i);
+                                        minilog::fdebug(logfile, "[inventory] added item to empty slot: ", i);
                                         added = true;
                                         break;
                                 }
@@ -288,7 +292,7 @@ void card_event(const std::shared_ptr<card_t> card) {
                                 if (key >= '0' && key <= '9') {
                                         int index = key - '0';
                                         game::player::inventory[index] = card;
-                                        minilog::fdebug(logfile, "replaced item at index: ", index);
+                                        minilog::fdebug(logfile, "[inventory] replaced item at index: ", index);
                                 }
                                 curs_set(0);
                         }
@@ -322,7 +326,7 @@ void handle_slot(card_slot_t &slot) {
         } else {
                 slot.back = game::card_set.back();
                 game::card_set.pop_back();
-                minilog::fdebug(logfile, "new card_set size: ", game::card_set.size());
+                minilog::fdebug(logfile, "[setup] New card_set size: ", game::card_set.size());
         }
 }
 
@@ -342,5 +346,5 @@ void draw_slots() {
                 s->front = pop_card();
         }
 
-        minilog::fdebug(logfile, "filled slots");
+        minilog::fdebug(logfile, "[setup] filled slots");
 }

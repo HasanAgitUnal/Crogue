@@ -50,6 +50,7 @@ inline void fout(const std::string &log_file, const MSG &...msg) {
         static std::ofstream lfile(log_file, std::ios::app);
         (lfile << ... << msg);
         lfile << std::endl;
+        lfile.flush();
 }
 
 template <typename... MSG>

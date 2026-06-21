@@ -1,5 +1,6 @@
 #include <ncurses.h>
 
+#include "minilog.hpp"
 #include "tui.hpp"
 #include "types.hpp"
 
@@ -38,6 +39,8 @@ int ask(std::string what) {
         attroff(COLOR_PAIR(12));
         int key = getch();
         curs_set(0);
+
+        minilog::fdebug("[ask] char: ", key);
         return key;
 }
 
@@ -68,6 +71,8 @@ std::string ask_string(std::string what) {
         }
 
         curs_set(0);
+
+        minilog::fdebug("[ask] string: ", input);
         return input;
 }
 
@@ -110,6 +115,7 @@ void print_type(const std::shared_ptr<card_t> card, bool bold) {
 }
 
 void print_slot(int line, const char c, const card_slot_t slot) {
+        minilog::fdebug(logfile, "[ui] Printing slot: ", c);
         move(line, 0);
         attron(COLOR_PAIR(16));
         printw("[");
@@ -129,6 +135,7 @@ void print_slot(int line, const char c, const card_slot_t slot) {
 }
 
 int print_slots(int line) {
+        minilog::fdebug(logfile, "[ui] Printing slots");
         print_line(line);
         attron(COLOR_PAIR(16));
         mvprintw(line, 1, "[");
@@ -147,6 +154,7 @@ int print_slots(int line) {
 }
 
 void print_stats(int line) {
+        minilog::fdebug(logfile, "[ui] Printing stats");
         int max_y, max_x;
         getmaxyx(stdscr, max_y, max_x);
 
@@ -178,6 +186,8 @@ void print_stats(int line) {
 }
 
 int print_inventory(int line) {
+        minilog::fdebug(logfile, "[ui] Printing inventory");
+
         int max_y, max_x;
         getmaxyx(stdscr, max_y, max_x);
         int col_width = max_x / 5;
@@ -231,6 +241,7 @@ int print_inventory(int line) {
 }
 
 int print_logs(int line) {
+        minilog::fdebug("[ui] Printing logs");
         print_line(line);
         attron(COLOR_PAIR(16));
         mvprintw(line, 1, "[");
@@ -293,6 +304,8 @@ std::string to_roman(int n) {
 }
 
 void print_buffs(int line) {
+        minilog::fdebug(logfile, "[ui] Printing buffs");
+
         print_line(line);
         attron(COLOR_PAIR(16));
         mvprintw(line, 1, "[");
@@ -338,6 +351,8 @@ void print_buffs(int line) {
 }
 
 void print_ui() {
+        minilog::fdebug(logfile, "[ui] Printing UI");
+
         int max_y, max_x;
         getmaxyx(stdscr, max_y, max_x);
         int slot_end = print_slots(0);
