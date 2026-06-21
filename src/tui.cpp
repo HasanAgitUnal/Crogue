@@ -41,6 +41,36 @@ int ask(std::string what) {
         return key;
 }
 
+std::string ask_string(std::string what) {
+        int max_y, max_x;
+        getmaxyx(stdscr, max_y, max_x);
+        std::string input;
+        int ch;
+
+        curs_set(1);
+        attron(COLOR_PAIR(12));
+        mvprintw(max_y - 5, 0, "%s: ", what.c_str());
+        attroff(COLOR_PAIR(12));
+
+        while ((ch = getch()) != '\n' && ch != KEY_ENTER) {
+                if (ch == KEY_BACKSPACE || ch == 127 || ch == 8) {
+                        if (!input.empty()) {
+                                input.pop_back();
+                                int cur_y, cur_x;
+                                getyx(stdscr, cur_y, cur_x);
+                                mvaddch(cur_y, cur_x - 1, ' ');
+                                move(cur_y, cur_x - 1);
+                        }
+                } else if (isprint(ch)) {
+                        input += ch;
+                        addch(ch);
+                }
+        }
+
+        curs_set(0);
+        return input;
+}
+
 void print_line(int line) {
         move(line, 0);
         attron(COLOR_PAIR(16));

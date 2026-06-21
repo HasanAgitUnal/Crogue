@@ -82,6 +82,20 @@ void setup_test() {
 
                 return 0;
         });
+
+        create_card(2, "whising well", BASIC, {}, "You found a whising well", [=]() {
+                std::string whish = ask_string("What you are whising? [hp / zr (zombification reset)]");
+                if (whish == "hp") {
+                        log("You feel better", NORMAL);
+                        return 10;
+                } else if (whish == "zr") {
+                        log("You're starting to look more like a human.", NORMAL);
+                        zombie_buff->level = 0;
+                } else {
+                        log("Your whish is ignored", NORMAL);
+                }
+                return 0;
+        });
 }
 
 void handle_cli(int argc, char **argv) {
@@ -114,6 +128,8 @@ void handle_cli(int argc, char **argv) {
  */
 
 int main(int argc, char **argv) {
+        minilog::fdebug(logfile, "---- START ----");
+
         handle_cli(argc, argv);
 
         // ncurses things
@@ -127,8 +143,6 @@ int main(int argc, char **argv) {
         use_default_colors();
 
         setup_colors();
-
-        minilog::fdebug(logfile, "started");
 
         //  TODO: remove this after adding plugin system
         setup_test();
@@ -193,5 +207,6 @@ int main(int argc, char **argv) {
         endwin();
 
         minilog::fdebug(logfile, "Exiting with status: 0");
+        minilog::fdebug(logfile, "---- END ----");
         return 0;
 }
