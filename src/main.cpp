@@ -24,13 +24,13 @@ void handle_cli(int argc, char **argv) {
         // seed
         if (custom_seed) {
                 game::seed = custom_seed;
-                minilog::fdebug(logfile, "[seed] using custom seed: ", game::seed);
+                minilog::fdebugc("seed", logfile, "using custom seed: ", game::seed);
 
         } else {
                 std::random_device rd;
                 std::mt19937_64 seed_gen(rd());
                 game::seed = seed_gen();
-                minilog::fdebug(logfile, "[seed] using random seed: ", game::seed);
+                minilog::fdebugc("seed", logfile, "using random seed: ", game::seed);
         }
 }
 
@@ -39,7 +39,20 @@ void handle_cli(int argc, char **argv) {
  */
 
 int main(int argc, char **argv) {
-        minilog::fdebug(logfile, "---- START ----");
+        // setup minilog categories
+        minilog::categories["seed"] = "3;98m";
+        minilog::categories["setup"] = "32m";
+        minilog::categories["event"] = "36m";
+        minilog::categories["player"] = "1;96m";
+        minilog::categories["inventory"] = "34m";
+        minilog::categories["game"] = "35m";
+        minilog::categories["key"] = "95m";
+        minilog::categories["ui"] = "33m";
+        minilog::categories["ask"] = "93m";
+        minilog::categories["uilog"] = "1;3;93m";
+        minilog::categories["test"] = "31m";
+
+        minilog::fout(logfile, minilog::msg::info, "---- START ----");
 
         handle_cli(argc, argv);
 
@@ -59,7 +72,7 @@ int main(int argc, char **argv) {
         scene::game();
 
         endwin();
-        minilog::fdebug(logfile, "[setup] Exiting with status: 0");
-        minilog::fdebug(logfile, "---- END ----");
+        minilog::fdebugc("setup", logfile, "Exiting with status: 0");
+        minilog::fout(logfile, minilog::msg::info, "----  END  ----");
         return 0;
 }

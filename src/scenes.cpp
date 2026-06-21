@@ -11,17 +11,17 @@ void game() {
         //  TODO: remove this after adding plugin system
         setup_test();
 
-        minilog::fdebug(logfile, "[setup] Generating levels");
+        minilog::fdebugc("setup", logfile, "Generating levels");
         generate_levels();
         game::levelid = game::levels[0]->id;
         log("You are now at level: " + game::levels[game::player::level]->name, WARN);
 
         create_card(1, "~ Exit Gate ~", EXIT, {}, "", exit_gate);
 
-        minilog::fdebug(logfile, "[setup] deck size: ", game::deck.size());
+        minilog::fdebugc("setup", logfile, "deck size: ", game::deck.size());
         draw_cards();
 
-        minilog::fdebug(logfile, "[setup] card_set size: ", game::card_set.size());
+        minilog::fdebugc("setup", logfile, "card_set size: ", game::card_set.size());
         draw_slots();
 
         int key = 0;
@@ -38,27 +38,27 @@ void game() {
 
                 // keyboard handling
                 key = getch();
-                minilog::fdebug(logfile, "[key] pressed key: ", key);
+                minilog::fdebugc("key", logfile, "pressed key: ", key);
                 switch (key) {
                         case 'a':
-                                minilog::fdebug(logfile, "[game] Picked card slot1");
+                                minilog::fdebugc("game", logfile, "Picked card slot1");
                                 handle_slot(game::slot1);
                                 break;
                         case 'b':
-                                minilog::fdebug(logfile, "[game] Picked card slot2");
+                                minilog::fdebugc("game", logfile, "Picked card slot2");
                                 handle_slot(game::slot2);
                                 break;
                         case 'c':
-                                minilog::fdebug(logfile, "[game] Picked card slot3");
+                                minilog::fdebugc("game", logfile, "Picked card slot3");
                                 handle_slot(game::slot3);
                                 break;
                         case '0' ... '9':
                                 int index = key - '0';
-                                minilog::fdebug(logfile, "[inventory] User tried to use item index: ", index);
+                                minilog::fdebugc("inventory", logfile, "User tried to use item index: ", index);
                                 if (index < game::player::inventory.size()) {
                                         if (game::player::inventory[index]) {
-                                                minilog::fdebug(logfile, "[event] Calling card event for item: ",
-                                                                game::player::inventory[index]->name);
+                                                minilog::fdebugc("event", logfile, "Calling card event for item: ",
+                                                                 game::player::inventory[index]->name);
 
                                                 basic_card_event(game::player::inventory[index]);
                                                 game::player::inventory[index] = nullptr;

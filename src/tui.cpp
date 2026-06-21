@@ -40,7 +40,7 @@ int ask(std::string what) {
         int key = getch();
         curs_set(0);
 
-        minilog::fdebug("[ask] char: ", key);
+        minilog::fdebugc("ask", logfile, "char: ", key);
         return key;
 }
 
@@ -56,7 +56,11 @@ std::string ask_string(std::string what) {
         attroff(COLOR_PAIR(12));
 
         while ((ch = getch()) != '\n' && ch != KEY_ENTER) {
-                if (ch == KEY_BACKSPACE || ch == 127 || ch == 8) {
+                if (ch == 27) {
+                        curs_set(0);
+                        return std::string((char *)27);  // return esc
+
+                } else if (ch == KEY_BACKSPACE || ch == 127 || ch == 8) {
                         if (!input.empty()) {
                                 input.pop_back();
                                 int cur_y, cur_x;
@@ -72,7 +76,7 @@ std::string ask_string(std::string what) {
 
         curs_set(0);
 
-        minilog::fdebug("[ask] string: ", input);
+        minilog::fdebugc("ask", logfile, "string: ", input);
         return input;
 }
 
@@ -115,7 +119,7 @@ void print_type(const std::shared_ptr<card_t> card, bool bold) {
 }
 
 void print_slot(int line, const char c, const card_slot_t slot) {
-        minilog::fdebug(logfile, "[ui] Printing slot: ", c);
+        minilog::fdebugc("ui", logfile, "Printing slot: ", c);
         move(line, 0);
         attron(COLOR_PAIR(16));
         printw("[");
@@ -135,7 +139,7 @@ void print_slot(int line, const char c, const card_slot_t slot) {
 }
 
 int print_slots(int line) {
-        minilog::fdebug(logfile, "[ui] Printing slots");
+        minilog::fdebugc("ui", logfile, "Printing slots");
         print_line(line);
         attron(COLOR_PAIR(16));
         mvprintw(line, 1, "[");
@@ -154,7 +158,7 @@ int print_slots(int line) {
 }
 
 void print_stats(int line) {
-        minilog::fdebug(logfile, "[ui] Printing stats");
+        minilog::fdebugc("ui", logfile, "Printing stats");
         int max_y, max_x;
         getmaxyx(stdscr, max_y, max_x);
 
@@ -186,7 +190,7 @@ void print_stats(int line) {
 }
 
 int print_inventory(int line) {
-        minilog::fdebug(logfile, "[ui] Printing inventory");
+        minilog::fdebugc("ui", logfile, "Printing inventory");
 
         int max_y, max_x;
         getmaxyx(stdscr, max_y, max_x);
@@ -241,7 +245,7 @@ int print_inventory(int line) {
 }
 
 int print_logs(int line) {
-        minilog::fdebug("[ui] Printing logs");
+        minilog::fdebugc("ui", logfile, "Printing logs");
         print_line(line);
         attron(COLOR_PAIR(16));
         mvprintw(line, 1, "[");
@@ -304,7 +308,7 @@ std::string to_roman(int n) {
 }
 
 void print_buffs(int line) {
-        minilog::fdebug(logfile, "[ui] Printing buffs");
+        minilog::fdebugc("ui", logfile, "Printing buffs");
 
         print_line(line);
         attron(COLOR_PAIR(16));
@@ -351,7 +355,7 @@ void print_buffs(int line) {
 }
 
 void print_ui() {
-        minilog::fdebug(logfile, "[ui] Printing UI");
+        minilog::fdebugc("ui", logfile, "Printing UI");
 
         int max_y, max_x;
         getmaxyx(stdscr, max_y, max_x);
