@@ -15,6 +15,8 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <ncurses.h>
+#include <string>
+#include <vector>
 
 #include "cards.hpp"
 #include "minilog.hpp"
@@ -24,117 +26,128 @@
 
 namespace scene {
 
-void main_menu() {
-        std::vector<std::string> menu = {"Play", "Seed:"};
-        int menu_choice = 0;
+namespace {
 
-        int key = 0;
-        while (key != 'q') {
-                int max_y, max_x;
-                getmaxyx(stdscr, max_y, max_x);
+void draw_seed_item(int y, int max_x, bool selected) {
+        int box_size = 20;
+        int label_len = 5;  // "Seed:"
+        int total_len = label_len + 1 + box_size;
+        int start_x = (max_x - total_len) / 2;
 
-                clear();
+        if (selected) {
+                attron(COLOR_PAIR(18));
+                mvprintw(y, start_x, "Seed:");
+                attroff(COLOR_PAIR(18));
+        } else {
+                mvprintw(y, start_x, "Seed:");
+        }
 
-                int total_menu_height = menu.size() + (menu.size() - 1);
-                int start_y = (max_y - total_menu_height) / 2;
+        mvaddch(y, start_x + label_len, ' ');
 
-                for (int i = 0; i < (int)menu.size(); ++i) {
-                        int current_y = start_y + (i * 2);
+        attron(COLOR_PAIR(17));
+        mvprintw(y, start_x + label_len + 1, "%-*s", box_size, std::to_string(game::seed).c_str());
+        attroff(COLOR_PAIR(17));
+}
 
-                        if (menu[i] == "Seed:") {
-                                int box_size = 20;
-                                int label_len = std::string("Seed:").length();
-                                int total_len = label_len + 1 + box_size;  // +1 for space
-                                int start_x = (max_x - total_len) / 2;
+void draw_menu(const std::vector<std::string> &menu, int choice) {
+        int max_y, max_x;
+        getmaxyx(stdscr, max_y, max_x);
+        clear();
 
-                                if (i == menu_choice) {
-                                        attron(COLOR_PAIR(18));
-                                        mvprintw(current_y, start_x, "Seed:");
-                                        attroff(COLOR_PAIR(18));
-                                } else {
-                                        mvprintw(current_y, start_x, "Seed:");
-                                }
+        int total_menu_height = menu.size() + (menu.size() - 1);
+        int start_y = (max_y - total_menu_height) / 2;
 
-                                // Normal space (no highlight)
-                                mvaddch(current_y, start_x + label_len, ' ');
+        for (int i = 0; i < (int)menu.size(); ++i) {
+                int current_y = start_y + (i * 2);
 
-                                attron(COLOR_PAIR(17));
-                                mvprintw(current_y, start_x + label_len + 1, "%-*s", box_size,
-                                         std::to_string(game::seed).c_str());
-                                attroff(COLOR_PAIR(17));
+                if (menu[i] == "Seed:") {
+                        draw_seed_item(current_y, max_x, i == choice);
+                } else {
+                        int x = (max_x - menu[i].length()) / 2;
+                        if (i == choice) {
+                                attron(COLOR_PAIR(18));
+                                mvprintw(current_y, x, "%s", menu[i].c_str());
+                                attroff(COLOR_PAIR(18));
                         } else {
-                                int x = (max_x - menu[i].length()) / 2;
-                                if (i == menu_choice) {
-                                        attron(COLOR_PAIR(18));
-                                        mvprintw(current_y, x, "%s", menu[i].c_str());
-                                        attroff(COLOR_PAIR(18));
-                                } else {
-                                        mvprintw(current_y, x, "%s", menu[i].c_str());
-                                }
+                                mvprintw(current_y, x, "%s", menu[i].c_str());
                         }
                 }
+        }
+        refresh();
+}
 
+void handle_seed_input(int y, int max_x) {
+        curs_set(1);
+        std::string seed_str = std::to_string(game::seed);
+        int box_size = 20;
+        int label_len = 5;
+        int start_x = (max_x - (label_len + 1 + box_size)) / 2 + label_len + 1;
+
+        auto redraw_input = [&]() {
+                attron(COLOR_PAIR(19));
+                mvprintw(y, start_x, "%-*s", box_size, seed_str.c_str());
+                attroff(COLOR_PAIR(19));
+                move(y, start_x + seed_str.length());
                 refresh();
+        };
 
+        curs_set(2);
+        redraw_input();
+
+        int ch;
+        while ((ch = getch()) != '\n' && ch != KEY_ENTER && ch != 10) {
+                if (ch == 27)
+                        break;
+                if (ch == KEY_BACKSPACE || ch == 127 || ch == 8) {
+                        if (!seed_str.empty())
+                                seed_str.pop_back();
+                } else if (isdigit(ch) && seed_str.length() < (size_t)box_size) {
+                        seed_str += ch;
+                }
+                redraw_input();
+        }
+
+        if (!seed_str.empty()) {
+                try {
+                        game::seed = std::stoull(seed_str);
+                } catch (...) {
+                }
+        }
+        curs_set(0);
+}
+
+}  // anonymous namespace
+
+void main_menu() {
+        std::vector<std::string> menu = {"Play", "Seed:"};
+        int choice = 0;
+        int key = 0;
+
+        while (key != 'q') {
+                draw_menu(menu, choice);
                 key = getch();
+
                 switch (key) {
                         case KEY_UP:
-                                if (menu_choice != 0)
-                                        menu_choice--;
+                                if (choice > 0)
+                                        choice--;
                                 break;
-
                         case KEY_DOWN:
-                                if (menu_choice != (int)menu.size() - 1)
-                                        menu_choice++;
+                                if (choice < (int)menu.size() - 1)
+                                        choice++;
                                 break;
-                        case 10:  // ENTER
-                        case KEY_ENTER: {
-                                if (menu[menu_choice] == "Play") {
+                        case 10:
+                        case KEY_ENTER:
+                                if (menu[choice] == "Play") {
                                         game();
-                                } else if (menu[menu_choice] == "Seed:") {
-                                        curs_set(1);
-                                        std::string seed_str = std::to_string(game::seed);
-                                        int box_size = 20;
-                                        int label_len = std::string("Seed:").length();
-                                        int start_x = (max_x - (label_len + 1 + box_size)) / 2 + label_len + 1;
-                                        int current_y = start_y + (menu_choice * 2);
-
-                                        int ch;
-                                        // Initial draw and cursor position
-                                        attron(COLOR_PAIR(19));
-                                        mvprintw(current_y, start_x, "%-*s", box_size, seed_str.c_str());
-                                        attroff(COLOR_PAIR(19));
-                                        move(current_y, start_x + seed_str.length());
-                                        curs_set(2);  // High visibility / Block cursor
-                                        refresh();
-
-                                        while ((ch = getch()) != '\n' && ch != KEY_ENTER && ch != 10) {
-                                                if (ch == 27)
-                                                        break;
-                                                if (ch == KEY_BACKSPACE || ch == 127 || ch == 8) {
-                                                        if (!seed_str.empty())
-                                                                seed_str.pop_back();
-                                                } else if (isdigit(ch) && seed_str.length() < (size_t)box_size) {
-                                                        seed_str += ch;
-                                                }
-
-                                                attron(COLOR_PAIR(19));  // Active Input Box color
-                                                mvprintw(current_y, start_x, "%-*s", box_size, seed_str.c_str());
-                                                attroff(COLOR_PAIR(19));
-                                                move(current_y, start_x + seed_str.length());
-                                                refresh();
-                                        }
-
-                                        if (!seed_str.empty()) {
-                                                try {
-                                                        game::seed = std::stoull(seed_str);
-                                                } catch (...) {
-                                                }
-                                        }
-                                        curs_set(0);
+                                } else if (menu[choice] == "Seed:") {
+                                        int max_y, max_x;
+                                        getmaxyx(stdscr, max_y, max_x);
+                                        int total_height = menu.size() + (menu.size() - 1);
+                                        int start_y = (max_y - total_height) / 2;
+                                        handle_seed_input(start_y + (choice * 2), max_x);
                                 }
                                 break;
-                        }
                 }
         }
 }
