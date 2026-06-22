@@ -153,6 +153,7 @@ void main_menu() {
 }
 
 void game() {
+        reset_game(true);
         //  TODO: remove this after adding plugin system
         setup_test();
 

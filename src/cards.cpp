@@ -21,6 +21,36 @@
 #include "cards.hpp"
 #include "minilog.hpp"
 #include "tui.hpp"
+
+void reset_game(bool full) {
+        minilog::fdebugc("setup", logfile, "Resetting game state");
+
+        game::player::hp = 100;
+        game::player::level = 0;
+        game::player::inventory.clear();
+
+        // reset completely (this will fuck game)
+        if (full) {
+                game::biomes.clear();
+                game::levels.clear();
+                game::deck.clear();
+                game::buffs.clear();
+        }
+
+        game::card_set.clear();
+        game::logs.clear();
+
+        for (auto buff : game::buffs) {
+                buff->level = 0;
+        }
+
+        game::slot1 = {nullptr, nullptr};
+        game::slot2 = {nullptr, nullptr};
+        game::slot3 = {nullptr, nullptr};
+
+        game::levelid = 0;
+}
+
 #include "types.hpp"
 
 void log(const std::string msg, const log_type type) {
