@@ -119,7 +119,7 @@ void handle_seed_input(int y, int max_x) {
 }  // anonymous namespace
 
 void main_menu() {
-        std::vector<std::string> menu = {"Play", "Seed:"};
+        std::vector<std::string> menu = {"Play", "Seed:", "Random Seed"};
         int choice = 0;
         int key = 0;
 
@@ -146,6 +146,11 @@ void main_menu() {
                                         int total_height = menu.size() + (menu.size() - 1);
                                         int start_y = (max_y - total_height) / 2;
                                         handle_seed_input(start_y + (choice * 2), max_x);
+                                } else if (menu[choice] == "Random Seed") {
+                                        std::random_device rd;
+                                        std::mt19937_64 gen(rd());
+                                        std::uniform_int_distribution<uint64_t> dis;
+                                        game::seed = dis(gen);
                                 }
                                 break;
                 }
