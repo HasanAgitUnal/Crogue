@@ -21,33 +21,10 @@
 #include "types.hpp"
 
 void setup_colors() {
-        // normal 1-8
-        init_pair(1, COLOR_RED, -1);
-        init_pair(2, COLOR_GREEN, -1);
-        init_pair(3, COLOR_YELLOW, -1);
-        init_pair(4, COLOR_BLUE, -1);
-        init_pair(5, COLOR_MAGENTA, -1);
-        init_pair(6, COLOR_CYAN, -1);
-        init_pair(7, COLOR_WHITE, -1);
-        init_pair(8, COLOR_BLACK, -1);
-
-        // bright 9-16
-        init_pair(9, COLOR_RED + 8, -1);
-        init_pair(10, COLOR_GREEN + 8, -1);
-        init_pair(11, COLOR_YELLOW + 8, -1);
-        init_pair(12, COLOR_BLUE + 8, -1);
-        init_pair(13, COLOR_MAGENTA + 8, -1);
-        init_pair(14, COLOR_CYAN + 8, -1);
-        init_pair(15, COLOR_WHITE + 8, -1);
-        init_pair(16, COLOR_BLACK + 8, -1);
-
         // 256
-        init_pair(247, 247, -1);
-
-        // UI
-        init_pair(17, -1, 234);  // input box color
-        init_pair(18, -1, 236);  // menu item highlight color
-        init_pair(19, -1, 238);  // active input box color
+        for (int i = 0; i < COLORS && i < COLOR_PAIRS - 1; i++) {
+                init_pair(i + 1, i, -1);
+        }
 }
 
 int ask(std::string what) {
@@ -55,9 +32,9 @@ int ask(std::string what) {
         getmaxyx(stdscr, max_y, max_x);
 
         curs_set(2);
-        attron(COLOR_PAIR(12));
+        attron(COLOR_PAIR(13));
         mvprintw(max_y - 5, 0, "%s", what.c_str());
-        attroff(COLOR_PAIR(12));
+        attroff(COLOR_PAIR(13));
         int key = getch();
         curs_set(0);
 
@@ -72,9 +49,9 @@ std::string ask_string(std::string what) {
         int ch;
 
         curs_set(1);
-        attron(COLOR_PAIR(12));
+        attron(COLOR_PAIR(13));
         mvprintw(max_y - 5, 0, "%s: ", what.c_str());
-        attroff(COLOR_PAIR(12));
+        attroff(COLOR_PAIR(13));
 
         while ((ch = getch()) != '\n' && ch != KEY_ENTER) {
                 if (ch == 27) {
@@ -103,11 +80,11 @@ std::string ask_string(std::string what) {
 
 void print_line(int line) {
         move(line, 0);
-        attron(COLOR_PAIR(16));
+        attron(COLOR_PAIR(9));
         for (int i = 0; i < COLS; ++i) {
                 addstr("─");
         }
-        attroff(COLOR_PAIR(16));
+        attroff(COLOR_PAIR(9));
 }
 
 void print_type(const std::shared_ptr<card_t> card, bool bold) {
@@ -122,15 +99,15 @@ void print_type(const std::shared_ptr<card_t> card, bool bold) {
                 case BASIC:
                 case ITEM:
                         c = '+';
-                        attr |= COLOR_PAIR(2);
+                        attr |= COLOR_PAIR(3);
                         break;
                 case ENEMY:
                         c = '-';
-                        attr |= COLOR_PAIR(1);
+                        attr |= COLOR_PAIR(2);
                         break;
                 case EXIT:
                         c = '#';
-                        attr |= COLOR_PAIR(4);
+                        attr |= COLOR_PAIR(5);
                         break;
         }
 
@@ -142,15 +119,15 @@ void print_type(const std::shared_ptr<card_t> card, bool bold) {
 void print_slot(int line, const char c, const card_slot_t slot) {
         minilog::fdebugc("ui", logfile, "Printing slot: ", c);
         move(line, 0);
-        attron(COLOR_PAIR(16));
+        attron(COLOR_PAIR(9));
         printw("[");
-        attroff(COLOR_PAIR(16));
-        attron(COLOR_PAIR(6));
+        attroff(COLOR_PAIR(9));
+        attron(COLOR_PAIR(7));
         printw("%c", c);
-        attroff(COLOR_PAIR(6));
-        attron(COLOR_PAIR(16));
+        attroff(COLOR_PAIR(7));
+        attron(COLOR_PAIR(9));
         printw("] ");
-        attroff(COLOR_PAIR(16));
+        attroff(COLOR_PAIR(9));
 
         print_type(slot.back, false);
         print_type(slot.front, true);
@@ -162,15 +139,15 @@ void print_slot(int line, const char c, const card_slot_t slot) {
 int print_slots(int line) {
         minilog::fdebugc("ui", logfile, "Printing slots");
         print_line(line);
-        attron(COLOR_PAIR(16));
+        attron(COLOR_PAIR(9));
         mvprintw(line, 1, "[");
-        attroff(COLOR_PAIR(16));
-        attron(COLOR_PAIR(6));
+        attroff(COLOR_PAIR(9));
+        attron(COLOR_PAIR(7));
         printw(" Cards ");
-        attroff(COLOR_PAIR(6));
-        attron(COLOR_PAIR(16));
+        attroff(COLOR_PAIR(7));
+        attron(COLOR_PAIR(9));
         printw("]");
-        attroff(COLOR_PAIR(16));
+        attroff(COLOR_PAIR(9));
 
         print_slot(line + 1, 'a', game::slot1);
         print_slot(line + 2, 'b', game::slot2);
@@ -185,14 +162,14 @@ void print_stats(int line) {
 
         int start_x = max_x / 2;
 
-        attron(COLOR_PAIR(16));
+        attron(COLOR_PAIR(9));
         mvprintw(line, start_x, "┬");
         mvprintw(line, start_x + 2, "[");
-        attroff(COLOR_PAIR(16));
-        attron(COLOR_PAIR(6));
+        attroff(COLOR_PAIR(9));
+        attron(COLOR_PAIR(7));
         printw(" Stats ");
-        attroff(COLOR_PAIR(6));
-        attron(COLOR_PAIR(16));
+        attroff(COLOR_PAIR(7));
+        attron(COLOR_PAIR(9));
         printw("]");
 
         mvprintw(line, start_x, "");
@@ -204,7 +181,7 @@ void print_stats(int line) {
                 mvprintw(line + i, start_x, "│");
         }
 
-        attroff(COLOR_PAIR(16));
+        attroff(COLOR_PAIR(9));
 
         mvprintw(line + 1, start_x + 2, "HP: %d", game::player::hp);
         mvprintw(line + 2, start_x + 2, "LVL: %d", game::player::level);
@@ -218,15 +195,15 @@ int print_inventory(int line) {
         int col_width = max_x / 5;
 
         print_line(line);
-        attron(COLOR_PAIR(16));
+        attron(COLOR_PAIR(9));
         mvprintw(line, 1, "[");
-        attroff(COLOR_PAIR(16));
-        attron(COLOR_PAIR(6));
+        attroff(COLOR_PAIR(9));
+        attron(COLOR_PAIR(7));
         printw(" Inventory ");
-        attroff(COLOR_PAIR(6));
-        attron(COLOR_PAIR(16));
+        attroff(COLOR_PAIR(7));
+        attron(COLOR_PAIR(9));
         printw("]");
-        attroff(COLOR_PAIR(16));
+        attroff(COLOR_PAIR(9));
         line++;
 
         for (int r = 0; r < 2; ++r) {               // 2 lines
@@ -236,15 +213,15 @@ int print_inventory(int line) {
 
                         move(line + r, x_pos);
 
-                        attron(COLOR_PAIR(16));
+                        attron(COLOR_PAIR(9));
                         printw("[");
-                        attroff(COLOR_PAIR(16));
-                        attron(COLOR_PAIR(6));
+                        attroff(COLOR_PAIR(9));
+                        attron(COLOR_PAIR(7));
                         printw("%d", index);
-                        attroff(COLOR_PAIR(6));
-                        attron(COLOR_PAIR(16));
+                        attroff(COLOR_PAIR(7));
+                        attron(COLOR_PAIR(9));
                         printw("] ");
-                        attroff(COLOR_PAIR(16));
+                        attroff(COLOR_PAIR(9));
 
                         std::string name = "-";
                         if (index < game::player::inventory.size() && game::player::inventory[index] != nullptr) {
@@ -268,15 +245,15 @@ int print_inventory(int line) {
 int print_logs(int line) {
         minilog::fdebugc("ui", logfile, "Printing logs");
         print_line(line);
-        attron(COLOR_PAIR(16));
+        attron(COLOR_PAIR(9));
         mvprintw(line, 1, "[");
-        attroff(COLOR_PAIR(16));
-        attron(COLOR_PAIR(6));
+        attroff(COLOR_PAIR(9));
+        attron(COLOR_PAIR(7));
         printw(" Logs ");
-        attroff(COLOR_PAIR(6));
-        attron(COLOR_PAIR(16));
+        attroff(COLOR_PAIR(7));
+        attron(COLOR_PAIR(9));
         printw("]");
-        attroff(COLOR_PAIR(16));
+        attroff(COLOR_PAIR(9));
         line++;
 
         for (int i = 0; i < game::logs.size(); i++) {
@@ -285,13 +262,13 @@ int print_logs(int line) {
 
                 switch (type) {
                         case NORMAL:
-                                color |= COLOR_PAIR(247);
+                                color |= COLOR_PAIR(248);
                                 break;
                         case WARN:
-                                color |= COLOR_PAIR(3);
+                                color |= COLOR_PAIR(4);
                                 break;
                         case IMPORTANT:
-                                color |= COLOR_PAIR(1);
+                                color |= COLOR_PAIR(2);
                                 break;
                 }
 
@@ -332,15 +309,15 @@ void print_buffs(int line) {
         minilog::fdebugc("ui", logfile, "Printing buffs");
 
         print_line(line);
-        attron(COLOR_PAIR(16));
+        attron(COLOR_PAIR(9));
         mvprintw(line, 1, "[");
-        attroff(COLOR_PAIR(16));
-        attron(COLOR_PAIR(6));
+        attroff(COLOR_PAIR(9));
+        attron(COLOR_PAIR(7));
         printw(" Buffs ");
-        attroff(COLOR_PAIR(6));
-        attron(COLOR_PAIR(16));
+        attroff(COLOR_PAIR(7));
+        attron(COLOR_PAIR(9));
         printw("]");
-        attroff(COLOR_PAIR(16));
+        attroff(COLOR_PAIR(9));
         line += 2;
 
         int active_idx = 0;
@@ -364,13 +341,13 @@ void print_buffs(int line) {
                         name = name.substr(0, (available > 3 ? available - 3 : available)) + "...";
                 }
 
-                attron(COLOR_PAIR(6));
+                attron(COLOR_PAIR(7));
                 mvprintw(line + row, x, "◆ ");
-                attroff(COLOR_PAIR(6));
+                attroff(COLOR_PAIR(7));
                 printw("%s ", name.c_str());
-                attron(COLOR_PAIR(6));
+                attron(COLOR_PAIR(7));
                 printw("%s", roman.c_str());
-                attroff(COLOR_PAIR(6));
+                attroff(COLOR_PAIR(7));
                 active_idx++;
         }
 }
