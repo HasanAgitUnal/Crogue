@@ -59,6 +59,8 @@ struct buff_t {
 
 namespace game {
 
+inline bool _skip_main_menu = false;
+
 inline std::vector<std::shared_ptr<biome_t>> biomes;  // unordered levels
 inline std::vector<std::shared_ptr<level_t>> levels;  // ordered levels
 inline int levelid;
@@ -74,7 +76,6 @@ inline card_slot_t slot3;
 
 inline std::deque<std::pair<log_type, std::string>> logs;
 
-// seed used for random things
 inline uint64_t seed;
 
 namespace player {

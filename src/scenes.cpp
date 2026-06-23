@@ -133,18 +133,17 @@ void draw_seed_item(int y, int max_x, bool selected) {
         int start_x = (max_x - total_len) / 2;
 
         if (selected) {
-                attron(COLOR_PAIR(19));
                 mvprintw(y, start_x, "Seed:");
-                attroff(COLOR_PAIR(19));
         } else {
+                attron(COLOR_PAIR(241));
                 mvprintw(y, start_x, "Seed:");
+                attroff(COLOR_PAIR(241));
         }
 
         mvaddch(y, start_x + label_len, ' ');
 
-        attron(COLOR_PAIR(18));
         mvprintw(y, start_x + label_len + 1, "%-*s", box_size, std::to_string(game::seed).c_str());
-        attroff(COLOR_PAIR(18));
+        mvchgat(y, start_x + label_len + 1, box_size, A_NORMAL, 500, NULL);
 }
 
 void draw_menu(const std::vector<std::string> &menu, int choice) {
@@ -184,11 +183,11 @@ void draw_menu(const std::vector<std::string> &menu, int choice) {
                 } else {
                         int x = (max_x - (int)menu[i].length()) / 2;
                         if (i == choice) {
-                                attron(COLOR_PAIR(19));
                                 mvprintw(current_y, x, "%s", menu[i].c_str());
-                                attroff(COLOR_PAIR(19));
                         } else {
+                                attron(COLOR_PAIR(241));
                                 mvprintw(current_y, x, "%s", menu[i].c_str());
+                                attroff(COLOR_PAIR(241));
                         }
                 }
         }
@@ -203,9 +202,8 @@ void handle_seed_input(int y, int max_x) {
         int start_x = (max_x - (label_len + 1 + box_size)) / 2 + label_len + 1;
 
         auto redraw_input = [&]() {
-                attron(COLOR_PAIR(20));
                 mvprintw(y, start_x, "%-*s", box_size, seed_str.c_str());
-                attroff(COLOR_PAIR(20));
+                mvchgat(y, start_x, box_size, A_NORMAL, 501, NULL);
                 move(y, start_x + seed_str.length());
                 refresh();
         };
@@ -238,24 +236,35 @@ void handle_seed_input(int y, int max_x) {
 }  // anonymous namespace
 
 void main_menu() {
-        std::vector<std::string> menu = {"Play", "Seed:", "Random Seed"};
+        if (game::_skip_main_menu) {
+                // play game for once and exit sliently
+                game();
+                return;
+        }
+
+        std::vector<std::string> menu = {"Play", "Random Seed", "Seed:"};
         int choice = 0;
         int key = 0;
 
         while (key != 'q') {
+                init_pair(500, -1, 236);
+                init_pair(501, -1, 234);
                 draw_menu(menu, choice);
                 key = getch();
 
                 switch (key) {
+                        case 'k':
                         case KEY_UP:
                                 if (choice > 0)
                                         choice--;
                                 break;
+                        case 'j':
                         case KEY_DOWN:
                                 if (choice < (int)menu.size() - 1)
                                         choice++;
                                 break;
                         case 10:
+                        case 'l':
                         case KEY_ENTER:
                                 if (menu[choice] == "Play") {
                                         game();
@@ -279,14 +288,6 @@ void main_menu() {
                                         int menu_start_y = start_y + banner_h + spacing;
 
                                         handle_seed_input(menu_start_y + (choice * 2), max_x);
-
-                                        /*
-                                        int max_y, max_x;
-                                        getmaxyx(stdscr, max_y, max_x);
-                                        int total_height = menu.size() + (menu.size() - 1);
-                                        int start_y = (max_y - total_height) / 2;
-                                        handle_seed_input(start_y + (choice * 2), max_x);
-                                        */
 
                                 } else if (menu[choice] == "Random Seed") {
                                         std::random_device rd;

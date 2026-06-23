@@ -1,4 +1,5 @@
 PROGRAM := crogue
+RUNFLAGS := --skip-menu
 CC := gcc
 CXX := g++
 CPPFLAGS := -Iinclude -MMD -MP -Llibs
@@ -44,7 +45,7 @@ build/%.o: src/%.c
 
 run: build
 	@printf "[  \033[32mRUN\033[0m  ] started\n"
-	@./build/$(PROGRAM); printf "[  \033[32mRUN\033[0m  ] finished with status: $$?\n"
+	@./build/$(PROGRAM) $(RUNFLAGS); printf "[  \033[32mRUN\033[0m  ] finished with status: $$?\n"
 
 drun: dbuild run
 

@@ -31,6 +31,8 @@ void handle_cli(int argc, char **argv) {
         uint64_t custom_seed = 0;
         app.add_option("-s,--seed", custom_seed, "Set game seed");
 
+        app.add_flag("-m,--skip-menu", game::_skip_main_menu, "Skip Main Menu");
+
         try {
                 app.parse(argc, argv);
         } catch (const CLI::ParseError &e) {
