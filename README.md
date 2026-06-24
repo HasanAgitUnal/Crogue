@@ -13,7 +13,7 @@ Under development.
 - [x] logs
 - [x] buffs
 - [x] ask() & ask_string() function
-- [/] scene based tui (main menu)
+- [x] scene based tui (main menu)
 - [ ] time to live for cards
 
 ### plugin system

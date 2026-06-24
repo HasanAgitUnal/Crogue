@@ -16,7 +16,6 @@
 
 #include <ncurses.h>
 #include <random>
-#include <regex>
 #include <sstream>
 #include <string>
 #include <vector>
@@ -27,172 +26,9 @@
 #include "test.hpp"
 #include "tui.hpp"
 
-/*
- * Welcome to AI made shits file
- * This file is %70 AI generated && spagetti
- */
-
-// Colored CROGUE word
-std::string banner = R"(
-[38;5;7m   [38;5;236m▒[38;5;242m██[38;5;239m█[38;5;22m█[38;5;236m▒[38;5;7m  [38;5;240m██[38;5;22m██[38;5;244m██[38;5;236m▒[38;5;7m    [38;5;2m░[38;5;22m█[38;5;28m█[38;5;242m██[38;5;240m░[38;5;7m     [38;5;236m▒[38;5;244m██[38;5;22m██[38;5;54m▒[38;5;7m  [38;5;22m██[38;5;7m    [38;5;55m█[38;5;54m█[38;5;7m  [38;5;55m█[38;5;56m█[38;5;93m███[38;5;56m█[38;5;55m██
-[38;5;7m  [38;5;234m▓[38;5;240m██[38;5;28m██[38;5;239m█[38;5;28m█[38;5;2m  [38;5;236m█[38;5;238m██[38;5;236m████[38;5;22m▓[38;5;7m   [38;5;242m██[38;5;22m█[38;5;242m███[38;5;7m    [38;5;238m▓[38;5;240m██[38;5;235m█[38;5;238m█[38;5;242m█[38;5;55m█[38;5;7m  [38;5;238m█[38;5;240m█[38;5;7m    [38;5;93m█[38;5;55m█[38;5;7m  [38;5;56m█[38;5;93m██[38;5;55m█[38;5;93m██[38;5;56m█[38;5;93m█
-[38;5;7m [38;5;236m▒[38;5;244m██[38;5;236m▒[38;5;7m  [38;5;236m░█[38;5;7m  [38;5;240m█[38;5;238m█[38;5;7m   [38;5;240m▒[38;5;28m██[38;5;7m  [38;5;242m▒█[38;5;238m█[38;5;242m  ██▒[38;5;7m  [38;5;238m▒[38;5;240m██▒[38;5;7m  [38;5;54m░[38;5;244m█[38;5;7m  [38;5;235m█[38;5;240m█[38;5;7m    [38;5;238m█[38;5;93m█[38;5;7m  [38;5;56m█[38;5;55m█[38;5;7m      
- [38;5;234m██[38;5;22m▓[38;5;7m       [38;5;242m█[38;5;236m█[38;5;7m    [38;5;242m██[38;5;7m  [38;5;236m██▒[38;5;7m  [38;5;236m▒█[38;5;28m█[38;5;7m  [38;5;240m██▒[38;5;7m       [38;5;238m█[38;5;93m█[38;5;7m    [38;5;235m█[38;5;55m█[38;5;7m  [38;5;55m█[38;5;238m█[38;5;7m      
- [38;5;238m██[38;5;2m░       [38;5;244m██[38;5;7m   [38;5;244m▒██[38;5;7m  [38;5;240m██[38;5;7m    [38;5;240m█[38;5;22m█[38;5;7m  [38;5;238m██[38;5;54m░[38;5;7m       [38;5;240m█[38;5;55m█[38;5;7m    [38;5;93m█[38;5;235m█[38;5;7m  [38;5;240m█[38;5;93m█[38;5;7m      
- [38;5;236m██ [38;5;7m       [38;5;242m██[38;5;238m█[38;5;236m█[38;5;242m█[38;5;238m█[38;5;242m█[38;5;22m▒[38;5;7m  [38;5;236m██[38;5;7m    [38;5;236m██[38;5;7m  [38;5;240m█[38;5;54m█[38;5;7m        [38;5;240m█[38;5;235m█[38;5;7m    [38;5;93m█[38;5;55m█[38;5;7m  [38;5;93m█[38;5;56m██[38;5;93m██[38;5;56m█[38;5;55m█[38;5;7m 
- [38;5;234m██ [38;5;7m       [38;5;240m█[38;5;242m█[38;5;244m█[38;5;242m██[38;5;240m█[38;5;28m▓[38;5;7m   [38;5;238m██[38;5;7m    [38;5;238m██[38;5;7m  [38;5;236m██[38;5;7m  [38;5;235m█[38;5;236m█[38;5;235m█[38;5;22m█[38;5;7m  [38;5;93m█[38;5;54m█[38;5;7m    [38;5;235m█[38;5;55m█[38;5;7m  [38;5;55m██[38;5;93m█[38;5;55m█[38;5;56m█[38;5;93m█[38;5;55m█[38;5;7m 
- [38;5;238m██[38;5;244m░[38;5;7m       [38;5;236m█[38;5;244m█[38;5;7m  [38;5;236m▓[38;5;234m█[38;5;242m█[38;5;236m░[38;5;7m  [38;5;238m█[38;5;242m█[38;5;7m    [38;5;242m██[38;5;7m  [38;5;238m██[38;5;54m░[38;5;7m [38;5;240m█[38;5;239m█[38;5;93m█[38;5;55m█[38;5;7m  [38;5;238m█[38;5;55m█[38;5;7m    [38;5;235m█[38;5;54m█[38;5;7m  [38;5;93m█[38;5;55m█[38;5;7m      
- [38;5;236m██[38;5;240m▓[38;5;7m       [38;5;238m█[38;5;244m█[38;5;7m   [38;5;242m█[38;5;240m█[38;5;236m▓[38;5;7m  [38;5;244m██▒[38;5;7m  [38;5;244m▒█[38;5;238m█[38;5;7m  [38;5;240m██▒[38;5;7m   [38;5;240m█[38;5;236m█[38;5;7m  [38;5;240m█[38;5;235m█[38;5;7m    [38;5;238m█[38;5;240m█[38;5;7m  [38;5;236m█[38;5;93m█[38;5;7m      
-[38;5;234m ▒[38;5;28m██[38;5;240m▒[38;5;7m  [38;5;240m░█[38;5;7m  [38;5;242m██[38;5;7m   [38;5;242m▒[38;5;240m██[38;5;7m  [38;5;236m▒██  ██▒[38;5;7m  [38;5;240m▒█[38;5;238m█[38;5;240m▒[38;5;7m  [38;5;236m█[38;5;235m█[38;5;7m  [38;5;240m██[38;5;22m▓[38;5;7m  [38;5;54m▓[38;5;240m█[38;5;238m█[38;5;7m  [38;5;238m█[38;5;93m█[38;5;7m      
-  [38;5;236m▓[38;5;244m██████[38;5;7m  [38;5;240m█[38;5;238m█[38;5;7m    [38;5;234m█[38;5;240m█▒[38;5;7m  [38;5;238m███[38;5;22m█[38;5;238m██[38;5;7m    [38;5;22m█[38;5;240m█[38;5;55m██[38;5;240m██[38;5;235m█[38;5;7m  [38;5;240m▒██[38;5;93m█[38;5;55m██[38;5;240m█[38;5;55m█[38;5;7m  [38;5;240m█[38;5;236m█[38;5;93m█[38;5;56m██[38;5;55m█[38;5;56m█[38;5;93m█
-[38;5;7m   [38;5;234m▒[38;5;28m█[38;5;22m███[38;5;242m▒[38;5;7m  [38;5;236m█[38;5;238m█[38;5;7m    [38;5;234m█[38;5;236m██[38;5;7m  [38;5;2m░[38;5;22m█[38;5;28m█[38;5;22m█[38;5;240m█[38;5;22m░[38;5;7m     [38;5;22m▒█[38;5;235m█[38;5;236m██[38;5;54m░[38;5;7m   [38;5;22m▒[38;5;240m█[38;5;235m█[38;5;240m█[38;5;238m█[38;5;54m█[38;5;7m   [38;5;22m██[38;5;238m█[38;5;93m█[38;5;56m█[38;5;55m█[38;5;93m█[38;5;55m█
-[0m
-)";
-
 namespace scene {
 
 namespace {
-
-
-attr_t parse_ansi_color(const std::string &params) {
-        if (params == "0" || params == "" || params == "00")
-                return A_NORMAL;
-
-        std::regex color_pattern("38;5;([0-9]+)");
-        std::smatch matches;
-
-        if (std::regex_search(params, matches, color_pattern)) {
-                int color_idx = std::stoi(matches[1].str());
-                return COLOR_PAIR(color_idx + 1);
-        }
-        return A_NORMAL;
-}
-
-void print_ansi(const std::string &str) {
-        bool in_escape = false;
-        std::string params = "";
-        std::string buffer = "";
-
-        for (size_t i = 0; i < str.size(); ++i) {
-                unsigned char ch = (unsigned char)str[i];
-
-                if (ch == '\033') {
-                        if (!buffer.empty()) {
-                                printw("%s", buffer.c_str());
-                                buffer = "";
-                        }
-                        in_escape = true;
-                        if (i + 1 < str.size() && str[i + 1] == '[')
-                                i++;
-                        continue;
-                }
-
-                if (in_escape) {
-                        if (ch == 'm') {
-                                attrset(parse_ansi_color(params));
-                                params = "";
-                                in_escape = false;
-                        } else {
-                                params += (char)ch;
-                        }
-                } else {
-                        buffer += (char)ch;
-                }
-        }
-        if (!buffer.empty())
-                printw("%s", buffer.c_str());
-        attrset(A_NORMAL);
-}
-
-int get_real_size(const std::string &line) {
-        bool in_escape = false;
-        int size = 0;
-
-        for (size_t i = 0; i < line.size(); ++i) {
-                if (line[i] == '\033') {
-                        in_escape = true;
-                        if (i + 1 < line.size() && line[i + 1] == '[')
-                                i++;
-                        continue;
-                }
-                if (in_escape) {
-                        if (line[i] == 'm')
-                                in_escape = false;
-                } else {
-                        if ((line[i] & 0xc0) != 0x80)
-                                size++;
-                }
-        }
-        return size;
-}
-
-void draw_seed_item(int y, int max_x, bool selected) {
-        int box_size = 20;
-        int label_len = 5;  // "Seed:"
-        int total_len = label_len + 1 + box_size;
-        int start_x = (max_x - total_len) / 2;
-
-        if (selected) {
-                mvprintw(y, start_x, "Seed:");
-        } else {
-                attron(COLOR_PAIR(241));
-                mvprintw(y, start_x, "Seed:");
-                attroff(COLOR_PAIR(241));
-        }
-
-        mvaddch(y, start_x + label_len, ' ');
-
-        mvprintw(y, start_x + label_len + 1, "%-*s", box_size, std::to_string(game::seed).c_str());
-        mvchgat(y, start_x + label_len + 1, box_size, A_NORMAL, 500, NULL);
-}
-
-void draw_menu(const std::vector<std::string> &menu, int choice) {
-        int max_y, max_x;
-        getmaxyx(stdscr, max_y, max_x);
-        clear();
-
-        // Banner'ı satırlara böl
-        std::vector<std::string> banner_lines;
-        std::string line;
-        std::stringstream ss(banner);
-        while (std::getline(ss, line)) {
-                if (!line.empty())
-                        banner_lines.push_back(line);
-        }
-
-        int banner_h = banner_lines.size();
-        int menu_h = menu.size() + (menu.size() - 1);
-        int spacing = 2;  // space between banner and menu
-        int total_h = banner_h + spacing + menu_h;
-
-        int start_y = (max_y - total_h) / 2;
-
-        // print banner
-        for (int i = 0; i < banner_h; ++i) {
-                int x = (max_x - get_real_size(banner_lines[i])) / 2;
-                move(start_y + i, x);
-                print_ansi(banner_lines[i]);
-        }
-
-        // print menu
-        int menu_start_y = start_y + banner_h + spacing;
-        for (int i = 0; i < (int)menu.size(); ++i) {
-                int current_y = menu_start_y + (i * 2);
-                if (menu[i] == "Seed:") {
-                        draw_seed_item(current_y, max_x, i == choice);
-                } else {
-                        int x = (max_x - (int)menu[i].length()) / 2;
-                        if (i == choice) {
-                                mvprintw(current_y, x, "%s", menu[i].c_str());
-                        } else {
-                                attron(COLOR_PAIR(241));
-                                mvprintw(current_y, x, "%s", menu[i].c_str());
-                                attroff(COLOR_PAIR(241));
-                        }
-                }
-        }
-        refresh();
-}
 
 void handle_seed_input(int y, int max_x) {
         curs_set(1);
@@ -249,7 +85,7 @@ void main_menu() {
         while (key != 'q') {
                 init_pair(500, -1, 236);
                 init_pair(501, -1, 234);
-                draw_menu(menu, choice);
+                print_menu(menu, choice);
                 key = getch();
 
                 switch (key) {

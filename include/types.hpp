@@ -31,8 +31,11 @@ struct card_t {
         std::string name;
         card_type type;
         std::vector<int> level_ids;
-        std::function<int()> event;
         std::string logmsg;
+        int ttl;  // time-to-live
+        std::function<int()> event;
+
+        int _lived = 0;
 };
 
 struct card_slot_t {

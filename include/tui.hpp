@@ -16,13 +16,29 @@
 
 #pragma once
 
+#include <ncurses.h>
 #include <string>
+#include <vector>
 
 void setup_colors();
 
+attr_t parse_ansi_color(const std::string &params);
+void print_ansi(const std::string &str);
+int get_real_size(const std::string &line);
+
+/*
+ * Main Menu
+ */
+
+void print_seed_item(int y, int max_x, bool selected);
+void print_menu(const std::vector<std::string> &menu, int choice);
+
+/*
+ * Game
+ */
+
 int ask(std::string what);
 std::string ask_string(std::string what);
-
 int print_slots(int line);
 void print_stats(int line);
 void print_buffs(int line);
