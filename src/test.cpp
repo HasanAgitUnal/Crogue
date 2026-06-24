@@ -49,7 +49,7 @@ void setup_test() {
         });
 
         // cards
-        create_card(5, "Zombie", ENEMY, {}, "You killed a zombie", [=]() {
+        create_card(5, "Zombie", ENEMY, {}, "You killed a zombie", 3, [=]() {
                 zombie_buff->level++;
                 return -1;
         });
@@ -59,21 +59,21 @@ void setup_test() {
                 self->level--;
         });
 
-        create_card(3, "spider", ENEMY, {mf->id, ms->id}, "You killed a spider", [=]() {
+        create_card(3, "spider", ENEMY, {mf->id, ms->id}, "You killed a spider", 5, [=]() {
                 poison_buff->level += 3;
                 return -2;
         });
 
-        create_card(4, "healing", BASIC, {}, "You feel better", []() { return 5; });
+        create_card(4, "healing", BASIC, {}, "You feel better", 0, []() { return 5; });
 
-        create_card(1, "god", ENEMY, {}, "", []() {
+        create_card(1, "god", ENEMY, {}, "", 10, []() {
                 log("You cant fight with a god!", IMPORTANT);
                 game::player::hp = 0;
                 return 0;
         });
 
-        create_card(5, "apple", ITEM, {}, "This apple was yummy", []() { return 1; });
-        create_card(1, "teleporter", ITEM, {ef->id, mf->id}, "You are teleported", []() {
+        create_card(5, "apple", ITEM, {}, "This apple was yummy", 0, []() { return 1; });
+        create_card(1, "teleporter", ITEM, {ef->id, mf->id}, "You are teleported", 0, []() {
                 // Skip 1 card from all slots
                 for (card_slot_t *slot : {&game::slot1, &game::slot2, &game::slot3}) {
                         if (!slot->front || slot->front->name == "~ Exit Gate ~") {
@@ -82,6 +82,7 @@ void setup_test() {
 
                         // Update card slot
                         slot->front = slot->back;
+                        slot->_lived = 0;
 
                         if (game::card_set.empty()) {
                                 slot->back = nullptr;
@@ -95,7 +96,7 @@ void setup_test() {
                 return 0;
         });
 
-        create_card(2, "whising well", BASIC, {}, "You found a whising well", [=]() {
+        create_card(2, "whising well", BASIC, {}, "You found a whising well", 0, [=]() {
                 std::string whish = ask_string("What you are whising? [hp / zr (zombification reset)]");
                 if (whish == "hp") {
                         log("You feel better", NORMAL);

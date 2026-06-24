@@ -34,13 +34,12 @@ struct card_t {
         std::string logmsg;
         int ttl;  // time-to-live
         std::function<int()> event;
-
-        int _lived = 0;
 };
 
 struct card_slot_t {
         std::shared_ptr<card_t> back;
         std::shared_ptr<card_t> front;
+        int _lived = 0;
 };
 
 struct level_t {

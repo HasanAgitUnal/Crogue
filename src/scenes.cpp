@@ -28,8 +28,6 @@
 
 namespace scene {
 
-namespace {
-
 void handle_seed_input(int y, int max_x) {
         curs_set(1);
         std::string seed_str = std::to_string(game::seed);
@@ -68,8 +66,6 @@ void handle_seed_input(int y, int max_x) {
         }
         curs_set(0);
 }
-
-}  // anonymous namespace
 
 void main_menu() {
         if (game::_skip_main_menu) {
@@ -146,7 +142,7 @@ void game() {
         game::levelid = game::levels[0]->id;
         log("You are now at level: " + game::levels[game::player::level]->name, WARN);
 
-        create_card(1, "~ Exit Gate ~", EXIT, {}, "", exit_gate);
+        create_card(1, "~ Exit Gate ~", EXIT, {}, "", 0, exit_gate);
 
         minilog::fdebugc("setup", logfile, "deck size: ", game::deck.size());
         draw_cards();
@@ -169,18 +165,27 @@ void game() {
                 // keyboard handling
                 key = getch();
                 minilog::fdebugc("key", logfile, "pressed key: ", key);
+                bool turn_taken = false;
+                card_slot_t *acted_slot = nullptr;
+
                 switch (key) {
                         case 'a':
                                 minilog::fdebugc("game", logfile, "Picked card slot1");
                                 handle_slot(game::slot1);
+                                acted_slot = &game::slot1;
+                                turn_taken = true;
                                 break;
                         case 'b':
                                 minilog::fdebugc("game", logfile, "Picked card slot2");
                                 handle_slot(game::slot2);
+                                acted_slot = &game::slot2;
+                                turn_taken = true;
                                 break;
                         case 'c':
                                 minilog::fdebugc("game", logfile, "Picked card slot3");
                                 handle_slot(game::slot3);
+                                acted_slot = &game::slot3;
+                                turn_taken = true;
                                 break;
                         case '0' ... '9': {
                                 int index = key - '0';
@@ -190,8 +195,9 @@ void game() {
                                                 minilog::fdebugc("event", logfile, "Calling card event for item: ",
                                                                  game::player::inventory[index]->name);
 
-                                                basic_card_event(game::player::inventory[index]);
+                                                basic_card_event(game::player::inventory[index], 0);
                                                 game::player::inventory[index] = nullptr;
+                                                turn_taken = true;
                                         }
                                 }
                                 break;
@@ -206,6 +212,26 @@ void game() {
                                                 break;
                                         }
                                 }
+                }
+
+                // time-to-live
+                if (turn_taken) {
+                        for (card_slot_t *slot : {&game::slot1, &game::slot2, &game::slot3}) {
+                                if (!slot->front || slot == acted_slot) {
+                                        continue;
+                                }
+
+                                if (slot->front->ttl == 0)
+                                        continue;
+
+                                slot->_lived++;
+
+                                if (slot->front->ttl == slot->_lived) {
+                                        minilog::fdebugc("game", logfile, "time-to-live expired for a card");
+                                        handle_slot(*slot);
+                                        slot->_lived = 0;
+                                }
+                        }
                 }
         }
 }

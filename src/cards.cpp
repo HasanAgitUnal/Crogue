@@ -223,10 +223,10 @@ void handle_buffs() {
  */
 
 void create_card(const int count, const std::string &name, const card_type &type, const std::vector<int> levelids,
-                 const std::string &logmsg, std::function<int()> event) {
+                 const std::string &logmsg, int ttl, std::function<int()> event) {
 
         game::deck.push_back(
-            std::pair{count, std::make_shared<card_t>(card_t{name, type, levelids, std::move(event), logmsg})});
+            std::pair{count, std::make_shared<card_t>(card_t{name, type, levelids, logmsg, ttl, std::move(event)})});
 
         minilog::fdebugc("setup", logfile, "Created card. name: \"", name, "\" count: \"", count, "\"");
 }
@@ -263,14 +263,14 @@ void draw_cards() {
         minilog::fdebugc("setup", logfile, "card_set generated. Count: ", (int)game::card_set.size());
 }
 
-void basic_card_event(const std::shared_ptr<card_t> card) {
+void basic_card_event(const std::shared_ptr<card_t> card, const int extra) {
         if (!card->logmsg.empty()) {
                 log(card->logmsg, NORMAL);
         }
 
         minilog::fdebugc("event", logfile, "Calling event for card: ", card->name);
         int result = card->event();
-        game::player::hp += result;
+        game::player::hp += result - extra;
 
         minilog::fdebugc("event", logfile, "card event result=", result);
         minilog::fdebugc("event", logfile, "game::player::hp=", game::player::hp);
@@ -290,24 +290,24 @@ std::string format(const std::string &fmt, Args... args) {
 }
 
 // calls card event
-void card_event(const std::shared_ptr<card_t> card) {
+void card_event(const std::shared_ptr<card_t> card, const int extra) {
         minilog::fdebugc("event", logfile, "Card used: ", card->name);
 
         switch (card->type) {
                 case BASIC:
                         minilog::fdebugc("event", logfile, "card type: BASIC");
-                        basic_card_event(card);
+                        basic_card_event(card, extra);
                         break;
 
                 // same with basic because differance between basic, enemy and exit is just color on the ui
                 case EXIT:
                         minilog::fdebugc("event", logfile, "card type: EXIT");
-                        basic_card_event(card);
+                        basic_card_event(card, extra);
                         break;
 
                 case ENEMY:
                         minilog::fdebugc("event", logfile, "card type: ENEMY");
-                        basic_card_event(card);
+                        basic_card_event(card, extra);
                         break;
                 case ITEM: {
                         minilog::fdebugc("event", logfile, "card type: ITEM");
@@ -359,7 +359,14 @@ void handle_slot(card_slot_t &slot) {
         }
 
         int old_level = game::player::level;
-        card_event(slot.front);
+
+        int extra = 0;
+        if (slot.front->ttl > 0) {
+                extra = (slot._lived * slot._lived) / slot.front->ttl;
+        }
+        minilog::fdebugc("event", logfile, "Extra damage: ", extra);
+        card_event(slot.front, extra);
+        slot._lived = 0;
 
         if (old_level != game::player::level) {
                 return;
@@ -391,6 +398,7 @@ void draw_slots() {
         for (auto *s : {&game::slot1, &game::slot2, &game::slot3}) {
                 s->back = pop_card();
                 s->front = pop_card();
+                s->_lived = 0;
         }
 
         minilog::fdebugc("setup", logfile, "filled slots");

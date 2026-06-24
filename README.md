@@ -14,7 +14,7 @@ Under development.
 - [x] buffs
 - [x] ask() & ask_string() function
 - [x] scene based tui (main menu)
-- [ ] time to live for cards
+- [x] time to live for cards
 
 ### plugin system
 - [ ] basics
@@ -25,6 +25,8 @@ Under development.
 - [ ] updating ui from plugins
   - [ ] print_*, clear(), refresh(), getch() functions
   - [ ] create_custom_scene() to create a custom scene with its own move, printw functions and keyboard handler
+
+- [ ] on_* events (level complete, keyboard handling in plugin etc.)
 
 - [ ] plugin settings in main menu
 - [ ] create vanilla plugins to make a playable game
