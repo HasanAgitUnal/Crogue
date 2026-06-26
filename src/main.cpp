@@ -20,6 +20,7 @@
 #include <random>
 #include <string>
 
+#include "lua.hpp"
 #include "minilog.hpp"
 #include "scenes.hpp"
 #include "tui.hpp"
@@ -69,10 +70,13 @@ int main(int argc, char **argv) {
         minilog::categories["ask"] = "93m";
         minilog::categories["uilog"] = "1;3;93m";
         minilog::categories["test"] = "31m";
+        minilog::categories["lua"] = "38;5;21m";
 
         minilog::fout(logfile, minilog::msg::info, "---- START ----");
 
         handle_cli(argc, argv);
+
+        setup_lua();
 
         // ncurses things
         setlocale(LC_ALL, "");

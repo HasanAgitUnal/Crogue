@@ -19,6 +19,7 @@
 #include <deque>
 #include <functional>
 #include <memory>
+#include <sol/sol.hpp>
 #include <string>
 
 const std::string logfile = "./build/debug.log";
@@ -80,6 +81,8 @@ inline std::deque<std::pair<log_type, std::string>> logs;
 
 inline uint64_t seed;
 
+inline sol::state lua;
+
 namespace player {
 
 inline int hp = 100;
@@ -89,9 +92,3 @@ inline std::vector<std::shared_ptr<card_t>> inventory;
 
 }  // namespace player
 }  // namespace game
-
-namespace settings {
-
-inline bool custom_seed = false;
-
-}

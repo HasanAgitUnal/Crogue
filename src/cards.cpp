@@ -17,10 +17,12 @@
 #include <ncurses.h>
 #include <algorithm>
 #include <random>
+#include <sol/sol.hpp>
 
 #include "cards.hpp"
 #include "minilog.hpp"
 #include "tui.hpp"
+#include "types.hpp"
 
 void reset_game(bool full) {
         minilog::fdebugc("setup", logfile, "Resetting game state");
@@ -50,8 +52,6 @@ void reset_game(bool full) {
 
         game::levelid = 0;
 }
-
-#include "types.hpp"
 
 void log(const std::string msg, const log_type type) {
         game::logs.push_back({type, msg});
@@ -172,6 +172,23 @@ void create_biome(const std::string name, const int difficulty, const std::vecto
         minilog::fdebugc("setup", logfile, "Created biome with name: \"", name, "\"");
 }
 
+// clang-format off
+void create_biome(sol::table table) {
+        try {
+                create_biome(
+                                table.get<std::string>("name"),
+                                table.get<int>("difficulty"),
+                                table.get<std::vector<std::shared_ptr<level_t>>>("levels")
+                                );
+
+        } catch (const sol::error &e) {
+                // store error msg to show on main_menu
+                minilog::fdebug(logfile, minilog::msg::error, "Error in plugin", e.what());
+        }
+}
+
+// clang-format on
+
 void generate_levels() {
         // copy the biomes
         std::vector<std::shared_ptr<biome_t>> sorted_biomes = game::biomes;
@@ -209,6 +226,22 @@ std::shared_ptr<buff_t> create_buff(const std::string name, std::function<void(s
         return new_buff;
 }
 
+// clang-format off
+std::shared_ptr<buff_t> create_buff(sol::table table) {
+        try {
+                return create_buff(
+                                table.get<std::string>("name"),
+                                table.get<std::function<void(std::shared_ptr<buff_t>)>>("event"));
+
+        } catch (const sol::error &e) {
+                minilog::fdebug(logfile, "something is wrong!! ", e.what());
+        }
+
+        return nullptr;
+}
+
+// clang-format on
+
 void handle_buffs() {
         for (auto buff : game::buffs) {
                 if (buff->level != 0) {
@@ -230,6 +263,26 @@ void create_card(const int count, const std::string &name, const card_type &type
 
         minilog::fdebugc("setup", logfile, "Created card. name: \"", name, "\" count: \"", count, "\"");
 }
+
+// clang-format off
+void create_card(sol::table table) {
+        try {
+                create_card(
+                                table.get<int>("count"),
+                                table.get<std::string>("name"),
+                                table.get<card_type>("type"),
+                                table.get<std::vector<int>>("level_ids"),
+                                table.get<std::string>("logmsg"),
+                                table.get<int>("ttl"), table.get<std::function<int()>>("event")
+                                );
+
+        } catch (const sol::error &e) {
+                // store error msg to show on main_menu
+                minilog::fdebug(logfile, minilog::msg::error, "Error in plugin", e.what());
+        }
+}
+
+// clang-format on
 
 void add_card(std::shared_ptr<card_t> cardptr) {
         // empty level_ids means always active card

@@ -21,9 +21,9 @@
 #include <vector>
 
 #include "cards.hpp"
+#include "lua.hpp"
 #include "minilog.hpp"
 #include "scenes.hpp"
-#include "test.hpp"
 #include "tui.hpp"
 
 namespace scene {
@@ -74,7 +74,7 @@ void main_menu() {
                 return;
         }
 
-        std::vector<std::string> menu = {"Play", "Random Seed", "Seed:"};
+        std::vector<std::string> menu = {"Play", "Random Seed", "Seed:", "Quit"};
         int choice = 0;
         int key = 0;
 
@@ -89,11 +89,15 @@ void main_menu() {
                         case KEY_UP:
                                 if (choice > 0)
                                         choice--;
+                                else
+                                        choice = menu.size() - 1;
                                 break;
                         case 'j':
                         case KEY_DOWN:
                                 if (choice < (int)menu.size() - 1)
                                         choice++;
+                                else
+                                        choice = 0;
                                 break;
                         case 10:
                         case 'l':
@@ -126,7 +130,10 @@ void main_menu() {
                                         std::mt19937_64 gen(rd());
                                         std::uniform_int_distribution<uint64_t> dis;
                                         game::seed = dis(gen);
+                                } else if (menu[choice] == "Quit") {
+                                        return;
                                 }
+
                                 break;
                 }
         }
@@ -134,8 +141,8 @@ void main_menu() {
 
 void game() {
         reset_game(true);
-        //  TODO: remove this after adding plugin system
-        setup_test();
+
+        load_plugins();
 
         minilog::fdebugc("setup", logfile, "Generating levels");
         generate_levels();
@@ -228,6 +235,7 @@ void game() {
 
                                 if (slot->front->ttl == slot->_lived) {
                                         minilog::fdebugc("game", logfile, "time-to-live expired for a card");
+                                        log(slot->front->name + " saw you!", log_type::WARN);
                                         handle_slot(*slot);
                                         slot->_lived = 0;
                                 }

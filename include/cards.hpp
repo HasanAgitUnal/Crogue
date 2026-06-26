@@ -17,6 +17,7 @@
 #pragma once
 
 #include <functional>
+#include <sol/sol.hpp>
 #include <string>
 
 #include "types.hpp"
@@ -31,10 +32,17 @@ int exit_gate();
 
 void create_card(const int count, const std::string &name, const card_type &type, const std::vector<int> levelids,
                  const std::string &logmsg, int ttl, std::function<int()> event);
+
+void create_card(sol::table table);
+
 std::shared_ptr<level_t> create_level(const std::string name);
+
 std::shared_ptr<buff_t> create_buff(const std::string name, std::function<void(std::shared_ptr<buff_t>)> event);
+std::shared_ptr<buff_t> create_buff(sol::table table);
 
 void create_biome(const std::string name, const int difficulty, const std::vector<std::shared_ptr<level_t>> &levels);
+void create_biome(sol::table table);
+
 void generate_levels();
 
 void draw_cards();

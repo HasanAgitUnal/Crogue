@@ -1,11 +1,11 @@
 PROGRAM := crogue
-RUNFLAGS := --skip-menu
+RUNFLAGS :=
 CC := gcc
 CXX := g++
-CPPFLAGS := -Iinclude -MMD -MP -Llibs
+CPPFLAGS := -Iinclude -I/usr/include/lua5.4 -MMD -MP -Llibs -DSOL_LUA_VERSION=504
 CFLAGS := -lstdc++
 CXXFLAGS :=
-LDFLAGS := -lncursesw
+LDFLAGS := -lncursesw -llua5.4
 CXXFILES := $(wildcard src/*.cpp)
 CFILES := $(wildcard src/*.c)
 OBJFILES := $(patsubst src/%.cpp,build/%.o,$(CXXFILES)) $(patsubst src/%.c,build/%.o,$(CFILES))
@@ -32,14 +32,17 @@ dbuild: CPPFLAGS += -DDEBUG -g
 dbuild: build
 
 build/$(PROGRAM): $(OBJFILES)
+	@sleep 0.01
 	@printf "[ \033[34mBUILD\033[0m ] [ \033[35mAPP\033[0m ] *.o -> $@\n"
 	@$(CXX) $(OBJFILES) -o $@ $(LDFLAGS)
 
 build/%.o: src/%.cpp
+	@sleep 0.01
 	@printf "[ \033[34mBUILD\033[0m ] [ \033[31mCXX\033[0m ] $< -> $@\n"
 	@$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $< -o $@
 
 build/%.o: src/%.c
+	@sleep 0.01
 	@printf "[ \033[34mBUILD\033[0m ] [ \033[33mC\033[0m   ] $< -> $@\n"
 	@$(CC) $(CPPFLAGS) $(CFLAGS) -c $< -o $@
 
@@ -64,9 +67,6 @@ clog:
 	@printf "[ \033[93mCLEAN\033[0m ] [ \033[94mLOG\033[0m ] finished\n"
 
 clean: cbin clog
-	@printf "[ \033[93mCLEAN\033[0m ] started\n"
-	@rm -rf build
-	@printf "[ \033[93mCLEAN\033[0m ] finished\n"
 
 -include $(DEPS)
 
