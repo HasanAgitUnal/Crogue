@@ -17,10 +17,9 @@ Under development.
 - [x] time to live for cards
 
 ### plugin system
-- [ ] basics
-  - [ ] basic card creating & logs + ask_*()
-  - [ ] buff creating
-  - [ ] level & biome creating
+- [x] basics
+  - [x] basic card/buff/level/biome creating & logs + ask_*()
+  - [ ] access to all variables
 
 - [ ] updating ui from plugins
   - [ ] print_*, clear(), refresh(), getch() functions

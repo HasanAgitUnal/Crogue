@@ -32,19 +32,21 @@ dbuild: CPPFLAGS += -DDEBUG -g
 dbuild: build
 
 build/$(PROGRAM): $(OBJFILES)
-	@sleep 0.01
+	@sleep 0.1
 	@printf "[ \033[34mBUILD\033[0m ] [ \033[35mAPP\033[0m ] *.o -> $@\n"
 	@$(CXX) $(OBJFILES) -o $@ $(LDFLAGS)
 
 build/%.o: src/%.cpp
-	@sleep 0.01
+	@sleep 0.1
 	@printf "[ \033[34mBUILD\033[0m ] [ \033[31mCXX\033[0m ] $< -> $@\n"
 	@$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $< -o $@
+	@printf "[ \033[34mBUILD\033[0m ] [ \033[36mCXX\033[0m ] $< compiled\n"
 
 build/%.o: src/%.c
-	@sleep 0.01
+	@sleep 0.1
 	@printf "[ \033[34mBUILD\033[0m ] [ \033[33mC\033[0m   ] $< -> $@\n"
 	@$(CC) $(CPPFLAGS) $(CFLAGS) -c $< -o $@
+	@printf "[ \033[34mBUILD\033[0m ] [ \033[32mC\033[0m   ] $< compiled\n"
 
 run: build
 	@printf "[  \033[32mRUN\033[0m  ] started\n"
