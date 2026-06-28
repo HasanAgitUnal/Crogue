@@ -19,7 +19,8 @@ Under development.
 ### plugin system
 - [x] basics
   - [x] basic card/buff/level/biome creating & logs + ask_*()
-  - [ ] access to all variables
+  - [x] access to all variables
+  - [ ] game functions in game
 
 - [ ] updating ui from plugins
   - [ ] print_*, clear(), refresh(), getch() functions

@@ -1,9 +1,29 @@
+// CROGUE - Card-based rogulike TUI game
+// Copyright (C) 2026  Hasan Agit Ünal
+//
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 #include <sol/sol.hpp>
 
 #include "cards.hpp"
 #include "minilog.hpp"
 #include "tui.hpp"
 #include "types.hpp"
+
+/*
+ * Getters and Setters
+ */
 
 int get_player_hp() {
         return game::player::hp;
@@ -21,22 +41,48 @@ void set_player_level(int value) {
         game::player::level = value;
 }
 
-void setup_lua() {
-        game::lua.open_libraries(sol::lib::base, sol::lib::table);
+std::string get_seed() {
+        return std::to_string(game::seed);
+}
 
+int get_levelid() {
+        return game::levelid;
+}
+
+void set_levelid(int value) {
+        game::levelid = value;
+}
+
+void set_seed(const std::string &value) {
+        try {
+                game::seed = std::stoull(value);
+        } catch (const std::invalid_argument &e) {
+                throw sol::error::runtime_error(
+                    "Invalid seed value, must be a string with numbers (characters will be ignored)");
+        } catch (const std::out_of_range &e) {
+                throw sol::error::runtime_error("Seed value is too big (max: 18446744073709551615).");
+        }
+}
+
+void setup_lua() {
+        game::lua.open_libraries(sol::lib::base, sol::lib::table, sol::lib::package, sol::lib::string, sol::lib::math);
+        game::lua.script("package.path = package.path .. ';./?.lua'");
         // clang-format off
+
+        // main table
+        sol::table crogue = game::lua.create_table();
 
         /*
          * Enums
          */
 
-        game::lua.new_enum("CardType",
+        crogue.new_enum("card_type",
                         "BASIC", card_type::BASIC,
                         "ITEM", card_type::ITEM,
                         "ENEMY", card_type::ENEMY,
                         "EXIT", card_type::EXIT);
 
-        game::lua.new_enum("LogType",
+        crogue.new_enum("log_type",
                         "NORMAL", log_type::NORMAL,
                         "WARN", log_type::WARN,
                         "IMPORTANT", log_type::IMPORTANT);
@@ -45,7 +91,10 @@ void setup_lua() {
          * Types
          */
 
-        game::lua.new_usertype<card_t>("Card", sol::constructors<card_t>(),
+        sol::table objects = game::lua.create_table();
+
+        objects.new_usertype<card_t>("card", sol::constructors<card_t>(),
+                        "count", &card_t::count,
                         "name", &card_t::name,
                         "type", &card_t::type,
                         "level_ids", &card_t::level_ids,
@@ -58,21 +107,22 @@ void setup_lua() {
                                 [](card_t& c, std::function<int()> f) { c.event = f; }
                                 ));
 
-        game::lua.new_usertype<card_slot_t>("CardSlot", sol::constructors<card_slot_t>(),
+        objects.new_usertype<card_slot_t>("card_slot", sol::constructors<card_slot_t>(),
                         "back", &card_slot_t::back,
                         "front", &card_slot_t::front,
                         "_lived", &card_slot_t::_lived);
 
-        game::lua.new_usertype<level_t>("Level", sol::constructors<level_t>(),
+        objects.new_usertype<level_t>("level", sol::constructors<level_t>(),
                         "name", &level_t::name,
                         "id", &level_t::id);
 
-        game::lua.new_usertype<biome_t>("Biome", sol::constructors<biome_t>(),
-                        "name", &biome_t::name,
+        objects.new_usertype<biome_t>("biome", 
+                        sol::constructors<biome_t>(), 
                         "difficulty", &biome_t::difficulty,
-                        "levels", &biome_t::levels);
+                        "levels", &biome_t::levels
+                        );
 
-        game::lua.new_usertype<buff_t>("Buff", sol::constructors<buff_t>(),
+        objects.new_usertype<buff_t>("buff", sol::constructors<buff_t>(),
                         "name", &buff_t::name,
                         "event", sol::property(
                                 [](buff_t& b) -> std::function<void(std::shared_ptr<buff_t>)>& { return b.event; },
@@ -80,41 +130,57 @@ void setup_lua() {
                                 ),
                         "level", &buff_t::level);
 
+        crogue["obj"] = objects;
+
         // clang-format on
 
         /*
          * Functions
          */
 
-        game::lua.set_function<char(std::string)>("ask", ask);
-        game::lua.set_function<std::string(std::string)>("ask_string", ask_string);
+        crogue["ask"] = &ask;
+        crogue["ask_string"] = &ask_string;
 
-        game::lua.set_function<void(std::string, log_type)>("log", log);
+        crogue["log"] = [](const std::string &msg, log_type type) { log(msg, type); };
 
-        game::lua.set_function<void(sol::table)>("create_card", create_card);
-        game::lua.set_function<std::shared_ptr<level_t>(std::string)>("create_level", create_level);
-        game::lua.set_function<std::shared_ptr<buff_t>(sol::table)>("create_buff", create_buff);
-        game::lua.set_function<void(sol::table)>("create_biome", create_biome);
+        crogue["create_card"] = [](sol::table table) { return create_card(table); };
+        crogue["create_buff"] = [](sol::table table) { return create_buff(table); };
+        crogue["create_level"] = &create_level;
+        crogue["create_biome"] = [](sol::table table) { return create_biome(table); };
+
+        sol::table shared = game::lua.create_table();
+
+        shared["card"] = [](const card_t &card) { return std::make_shared<card_t>(card); };
+        shared["buff"] = [](const buff_t &buff) { return std::make_shared<buff_t>(buff); };
+        shared["level"] = [](const level_t &level) { return std::make_shared<level_t>(level); };
+        shared["biome"] = [](const biome_t &biome) { return std::make_shared<biome_t>(biome); };
+
+        crogue["shared"] = shared;
+
 
         /*
          * Variables
          */
 
-        sol::table crogue = game::lua.create_table();
-
         sol::table stat = game::lua.create_table();
 
-        stat["biomes"] = std::ref(game::biomes);
-        stat["levels"] = std::ref(game::levels);
-        stat["levelid"] = std::ref(game::levelid);
         stat["deck"] = std::ref(game::deck);
         stat["card_set"] = std::ref(game::card_set);
-        stat["buffs"] = std::ref(game::buffs);
         stat["slot1"] = std::ref(game::slot1);
         stat["slot2"] = std::ref(game::slot2);
         stat["slot3"] = std::ref(game::slot3);
+        stat["biomes"] = std::ref(game::biomes);
+        stat["levels"] = std::ref(game::levels);
+        stat["buffs"] = std::ref(game::buffs);
         stat["logs"] = std::ref(game::logs);
-        stat["seed"] = std::ref(game::seed);
+
+        stat["get_levelid"] = &get_levelid;
+        stat["set_levelid"] = &set_levelid;
+        stat["get_seed"] = &get_seed;
+        stat["set_seed"] = &set_seed;
+
+        crogue["stat"] = stat;
+
 
         sol::table player = game::lua.create_table();
 
@@ -124,10 +190,9 @@ void setup_lua() {
         player["get_level"] = &get_player_level;
         player["set_level"] = &set_player_level;
 
-        crogue["stat"] = stat;
         crogue["player"] = player;
 
-        game::lua["crogue"] = crogue;
+        game::lua["cr"] = crogue;
 }
 
 void load_plugins() {

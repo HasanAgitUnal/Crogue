@@ -31,14 +31,6 @@ void reset_game(bool full) {
         game::player::level = 0;
         game::player::inventory.clear();
 
-        // reset completely (this will fuck game)
-        if (full) {
-                game::biomes.clear();
-                game::levels.clear();
-                game::deck.clear();
-                game::buffs.clear();
-        }
-
         game::card_set.clear();
         game::logs.clear();
 
@@ -51,6 +43,14 @@ void reset_game(bool full) {
         game::slot3 = {nullptr, nullptr};
 
         game::levelid = 0;
+
+        // reset completely (this will fuck game)
+        if (full) {
+                game::biomes.clear();
+                game::levels.clear();
+                game::deck.clear();
+                game::buffs.clear();
+        }
 }
 
 void log(const std::string msg, const log_type type) {
@@ -154,29 +154,28 @@ std::shared_ptr<level_t> create_level(const std::string name) {
         return new_level;
 }
 
-void create_biome(const std::string name, const int difficulty, const std::vector<std::shared_ptr<level_t>> &levels) {
+std::shared_ptr<biome_t> create_biome(const int difficulty, const std::vector<std::shared_ptr<level_t>> &levels) {
         if (difficulty > 100 || difficulty < 0) {
                 endwin();
-                minilog::fout(minilog::msg::fatal, "[setup] While creating biome: \"", name,
-                              "\" : difficulty value should be in range 0-100");
-                minilog::fatal(1, "While creating biome: \"", name, "\" : difficulty value should be in range 0-100");
+                minilog::fout(minilog::msg::fatal,
+                              "[setup] While creating a biome: difficulty value should be in range 0-100");
+                minilog::fatal(1, "While creating a biome: difficulty value should be in range 0-100");
         }
 
         std::shared_ptr<biome_t> new_biome = std::make_shared<biome_t>();
-        new_biome->name = name;
         new_biome->difficulty = difficulty;
         new_biome->levels = levels;
 
         game::biomes.push_back(new_biome);
 
-        minilog::fdebugc("setup", logfile, "Created biome with name: \"", name, "\"");
+        minilog::fdebugc("setup", logfile, "Created a biome");
+        return new_biome;
 }
 
 // clang-format off
-void create_biome(sol::table table) {
+std::shared_ptr<biome_t> create_biome(sol::table table) {
         try {
-                create_biome(
-                                table.get<std::string>("name"),
+                return create_biome(
                                 table.get<int>("difficulty"),
                                 table.get<std::vector<std::shared_ptr<level_t>>>("levels")
                                 );
@@ -184,7 +183,10 @@ void create_biome(sol::table table) {
         } catch (const sol::error &e) {
                 // store error msg to show on main_menu
                 minilog::fdebug(logfile, minilog::msg::error, "Error in plugin", e.what());
+                throw sol::error::runtime_error("Invalid table");
         }
+
+        return nullptr;
 }
 
 // clang-format on
@@ -194,13 +196,13 @@ void generate_levels() {
         std::vector<std::shared_ptr<biome_t>> sorted_biomes = game::biomes;
 
         // sort by difficulty
+        // clang-format off
         std::sort(sorted_biomes.begin(), sorted_biomes.end(),
-                  [](std::shared_ptr<biome_t> &a, std::shared_ptr<biome_t> &b) {
-                          if (a->difficulty != b->difficulty) {
-                                  return a->difficulty < b->difficulty;
-                          }
-                          return a->name < b->name;
-                  });
+            [](std::shared_ptr<biome_t> &a, std::shared_ptr<biome_t> &b) {
+                                return a->difficulty < b->difficulty; 
+                        }
+            );
+        // clang-format on
 
         for (auto &biome : sorted_biomes) {
                 for (auto &level : biome->levels) {
@@ -255,19 +257,35 @@ void handle_buffs() {
  * Cards
  */
 
-void create_card(const int count, const std::string &name, const card_type &type, const std::vector<int> levelids,
-                 const std::string &logmsg, int ttl, std::function<int()> event) {
+// clang-format off
+std::shared_ptr<card_t> create_card(const int count,
+                const std::string &name,
+                const card_type &type,
+                const std::vector<int> levelids,
+                const std::string &logmsg,
+                int ttl,
+                std::function<int()> event) {
 
-        game::deck.push_back(
-            std::pair{count, std::make_shared<card_t>(card_t{name, type, levelids, logmsg, ttl, std::move(event)})});
+
+        auto card = std::make_shared<card_t>(card_t{
+                    count,
+                    name,
+                    type,
+                    levelids,
+                    logmsg,
+                    ttl,
+                    std::move(event)}
+        );
+
+        game::deck.push_back(card);
 
         minilog::fdebugc("setup", logfile, "Created card. name: \"", name, "\" count: \"", count, "\"");
+        return card;
 }
 
-// clang-format off
-void create_card(sol::table table) {
+std::shared_ptr<card_t> create_card(sol::table table) {
         try {
-                create_card(
+                return create_card(
                                 table.get<int>("count"),
                                 table.get<std::string>("name"),
                                 table.get<card_type>("type"),
@@ -279,7 +297,10 @@ void create_card(sol::table table) {
         } catch (const sol::error &e) {
                 // store error msg to show on main_menu
                 minilog::fdebug(logfile, minilog::msg::error, "Error in plugin", e.what());
+                throw sol::error::runtime_error("Invalid table");
         }
+
+        return nullptr;
 }
 
 // clang-format on
@@ -299,10 +320,8 @@ void add_card(std::shared_ptr<card_t> cardptr) {
 
 // shuffles the deck and fills game::card_set
 void draw_cards() {
-        for (auto pair : game::deck) {
-                int count = pair.first;
-                auto card = pair.second;
-
+        for (auto card : game::deck) {
+                int count = card->count;
                 while (count > 0) {
                         count--;
                         add_card(card);
@@ -449,8 +468,8 @@ void draw_slots() {
 
         // Fill all slots
         for (auto *s : {&game::slot1, &game::slot2, &game::slot3}) {
-                s->back = pop_card();
                 s->front = pop_card();
+                s->back = pop_card();
                 s->_lived = 0;
         }
 

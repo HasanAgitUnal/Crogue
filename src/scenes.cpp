@@ -146,6 +146,15 @@ void game() {
 
         minilog::fdebugc("setup", logfile, "Generating levels");
         generate_levels();
+
+        if (game::levels.empty()) {
+                clear();
+                printw("No level created!!");
+                refresh();
+                getch();
+                return;
+        }
+
         game::levelid = game::levels[0]->id;
         log("You are now at level: " + game::levels[game::player::level]->name, WARN);
 

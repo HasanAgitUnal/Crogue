@@ -230,7 +230,7 @@ std::string ask_string(std::string what) {
 
         curs_set(1);
         attron(COLOR_PAIR(13));
-        mvprintw(max_y - 5, 0, "%s: ", what.c_str());
+        mvprintw(max_y - 5, 0, "%s", what.c_str());
         attroff(COLOR_PAIR(13));
 
         while ((ch = getch()) != '\n' && ch != KEY_ENTER) {
@@ -260,7 +260,7 @@ std::string ask_string(std::string what) {
 
 void print_type(const std::shared_ptr<card_t> card, bool bold) {
         if (card == nullptr) {
-                printw(" ");
+                printw("  ");
                 return;
         }
 

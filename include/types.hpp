@@ -29,35 +29,35 @@ enum card_type { BASIC, ITEM, ENEMY, EXIT };
 enum log_type { NORMAL, WARN, IMPORTANT };
 
 struct card_t {
-        std::string name;
-        card_type type;
+        int count = 0;
+        std::string name = "";
+        card_type type = BASIC;
         std::vector<int> level_ids;
-        std::string logmsg;
-        int ttl;  // time-to-live
-        std::function<int()> event;
+        std::string logmsg = "";
+        int ttl = 0;  // time-to-live
+        std::function<int()> event = nullptr;
 };
 
 struct card_slot_t {
-        std::shared_ptr<card_t> back;
-        std::shared_ptr<card_t> front;
+        std::shared_ptr<card_t> back = nullptr;
+        std::shared_ptr<card_t> front = nullptr;
         int _lived = 0;
 };
 
 struct level_t {
-        std::string name;
-        int id;
+        std::string name = "";
+        int id = 0;
 };
 
 struct biome_t {
-        std::string name;
-        int difficulty;
+        int difficulty = 0;
         std::vector<std::shared_ptr<level_t>> levels;
 };
 
 struct buff_t {
-        std::string name;
-        std::function<void(std::shared_ptr<buff_t>)> event;
-        int level;
+        std::string name = 0;
+        std::function<void(std::shared_ptr<buff_t>)> event = nullptr;
+        int level = 0;
 };
 
 namespace game {
@@ -68,7 +68,7 @@ inline std::vector<std::shared_ptr<biome_t>> biomes;  // unordered levels
 inline std::vector<std::shared_ptr<level_t>> levels;  // ordered levels
 inline int levelid;
 
-inline std::vector<std::pair<int, std::shared_ptr<card_t>>> deck;  // count and card pairs
+inline std::vector<std::shared_ptr<card_t>> deck;
 inline std::vector<std::shared_ptr<card_t>> card_set;
 
 inline std::vector<std::shared_ptr<buff_t>> buffs;

@@ -2,7 +2,7 @@ PROGRAM := crogue
 RUNFLAGS :=
 CC := gcc
 CXX := g++
-CPPFLAGS := -Iinclude -I/usr/include/lua5.4 -MMD -MP -Llibs -DSOL_LUA_VERSION=504
+CPPFLAGS := -Iinclude -I/usr/include/lua5.4 -MMD -MP -Llibs -DSOL_LUA_VERSION=504 -rdynamic -g
 CFLAGS := -lstdc++
 CXXFLAGS :=
 LDFLAGS := -lncursesw -llua5.4
@@ -28,7 +28,7 @@ buildstart:
 build: buildstart build/$(PROGRAM)
 	@printf "[ \033[34mBUILD\033[0m ] finished\n"
 
-dbuild: CPPFLAGS += -DDEBUG -g
+dbuild: CPPFLAGS += -DDEBUG
 dbuild: build
 
 build/$(PROGRAM): $(OBJFILES)
