@@ -112,6 +112,7 @@ int main(int argc, char **argv) {
         // start game
         scene::main_menu();
 
+        cleanup_lua();
         endwin();
         minilog::fdebugc("setup", logfile, "Exiting with status: 0");
         minilog::fout(logfile, minilog::msg::info, "----  END  ----");

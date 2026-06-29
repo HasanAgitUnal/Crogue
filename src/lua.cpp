@@ -21,6 +21,27 @@
 #include "tui.hpp"
 #include "types.hpp"
 
+void cleanup_lua() {
+        // Clear all vectors that contain objects with Lua references
+        game::buffs.clear();
+        game::deck.clear();
+        game::card_set.clear();
+        game::biomes.clear();
+        game::levels.clear();
+        game::player::inventory.clear();
+
+        // Clear card slots which also contain card_t with Lua references
+        game::slot1.back = nullptr;
+        game::slot1.front = nullptr;
+        game::slot2.back = nullptr;
+        game::slot2.front = nullptr;
+        game::slot3.back = nullptr;
+        game::slot3.front = nullptr;
+
+        // Force Lua garbage collection to clean up any remaining references
+        game::lua.collect_garbage();
+}
+
 /*
  * Getters and Setters
  */
@@ -63,6 +84,10 @@ void set_seed(const std::string &value) {
                 throw sol::error::runtime_error("Seed value is too big (max: 18446744073709551615).");
         }
 }
+
+/*
+ * Setup
+ */
 
 void setup_lua() {
         game::lua.open_libraries(sol::lib::base, sol::lib::table, sol::lib::package, sol::lib::string, sol::lib::math);

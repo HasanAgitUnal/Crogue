@@ -1,8 +1,9 @@
 PROGRAM := crogue
 RUNFLAGS :=
+SOLCONFIG := -DSOL_LUA_VERSION=504
 CC := gcc
 CXX := g++
-CPPFLAGS := -Iinclude -I/usr/include/lua5.4 -MMD -MP -Llibs -DSOL_LUA_VERSION=504 -rdynamic -g
+CPPFLAGS := -Iinclude -I/usr/include/lua5.4 -MMD -MP -Llibs -rdynamic -g $(SOLCONFIG)
 CFLAGS := -lstdc++
 CXXFLAGS :=
 LDFLAGS := -lncursesw -llua5.4
