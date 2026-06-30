@@ -136,6 +136,28 @@ std::string to_roman(int n) {
  * Main Menu
  */
 
+void show_error(std::pair<std::string, std::string> plugin) {
+        auto &plugin_name = plugin.first;
+        auto &error_msg = plugin.second;
+
+        clear();
+        mvprintw(0, 0, "An error occurred while loading plugin \"%s\": ", plugin_name.c_str());
+        attron(COLOR_PAIR(2));  // red
+        mvprintw(1, 0, "%s", error_msg.c_str());
+        attroff(COLOR_PAIR(2));  // red
+        press_enter_to_continue();
+}
+
+void plugin_errors() {
+        if (game::plugin_errors.empty()) {
+                return;
+        }
+
+        for (auto &plugin : game::plugin_errors) {
+                show_error(plugin);
+        }
+}
+
 void print_seed_item(int y, int max_x, bool selected) {
         int box_size = 20;
         int label_len = 5;  // "Seed:"
@@ -220,6 +242,23 @@ int ask(std::string what) {
 
         minilog::fdebugc("ask", logfile, "char: ", key);
         return key;
+}
+
+void press_enter_to_continue() {
+        curs_set(2);
+        int max_y, max_x;
+        getmaxyx(stdscr, max_y, max_x);
+        mvprintw(max_y - 1, 0, "Press Enter to continue... ");
+        refresh();
+        while (true) {
+                int key = getch();
+
+                if (key == KEY_ENTER || key == 10) {
+                        break;
+                }
+        }
+
+        curs_set(0);
 }
 
 std::string ask_string(std::string what) {

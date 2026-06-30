@@ -257,7 +257,7 @@ void load_plugin(const fs::path &plugindir) {
         if (!result.valid()) {
                 sol::error err = result;
                 std::string pluginname = plugindir.filename().string();
-                game::plugin_errors[pluginname] = "Lua script error: " + std::string(err.what());
+                game::plugin_errors[pluginname] = "E: " + std::string(err.what());
                 minilog::fdebugc("lua", logfile, minilog::msg::error, "In plugin: ", pluginname,
                                  " Error: ", err.what());
         }

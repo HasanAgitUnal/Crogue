@@ -48,6 +48,7 @@ std::string to_roman(int n);
  * Main Menu
  */
 
+void plugin_errors();
 void print_seed_item(int y, int max_x, bool selected);
 void print_menu(const std::vector<std::string> &menu, int choice);
 
@@ -55,6 +56,7 @@ void print_menu(const std::vector<std::string> &menu, int choice);
  * Game
  */
 
+void press_enter_to_continue();
 int ask(std::string what);
 std::string ask_string(std::string what);
 int print_slots(int line);

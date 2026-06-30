@@ -68,6 +68,10 @@ void handle_seed_input(int y, int max_x) {
 }
 
 void main_menu() {
+        // first load plugins
+        load_plugins();
+        plugin_errors();
+
         if (game::_skip_main_menu) {
                 // play game for once and exit sliently
                 game();
@@ -140,9 +144,7 @@ void main_menu() {
 }
 
 void game() {
-        reset_game(true);
-
-        load_plugins();
+        reset_game(false);
 
         minilog::fdebugc("setup", logfile, "Generating levels");
         generate_levels();

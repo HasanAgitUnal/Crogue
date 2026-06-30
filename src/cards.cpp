@@ -50,6 +50,7 @@ void reset_game(bool full) {
                 game::levels.clear();
                 game::deck.clear();
                 game::buffs.clear();
+                game::plugin_errors.clear();
         }
 }
 
