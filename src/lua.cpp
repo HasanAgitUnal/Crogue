@@ -246,6 +246,8 @@ void setup_lua() {
 
 void load_plugin(const fs::path &plugindir) {
         fs::path initfile = plugindir / "init.lua";
+        std::string pluginname = plugindir.filename().string();
+        minilog::fdebugc("lua", logfile, "Loading plugin: ", pluginname);
 
         // update path
         std::string original_path = game::lua["package"]["path"];
@@ -256,7 +258,6 @@ void load_plugin(const fs::path &plugindir) {
         sol::protected_function_result result = game::lua.safe_script_file(initfile, &sol::script_pass_on_error);
         if (!result.valid()) {
                 sol::error err = result;
-                std::string pluginname = plugindir.filename().string();
                 game::plugin_errors[pluginname] = "E: " + std::string(err.what());
                 minilog::fdebugc("lua", logfile, minilog::msg::error, "In plugin: ", pluginname,
                                  " Error: ", err.what());
@@ -267,6 +268,8 @@ void load_plugin(const fs::path &plugindir) {
 }
 
 void load_plugins() {
+        minilog::fdebugc("lua", logfile, "Loading plugins");
+
         fs::path plugins_directory;
         try {
                 plugins_directory = get_data_dir() / "plugins";

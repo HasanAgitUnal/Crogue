@@ -94,8 +94,6 @@ int main(int argc, char **argv) {
 
         handle_cli(argc, argv);
 
-        setup_lua();
-
         // ncurses things
         setlocale(LC_ALL, "");
         initscr();

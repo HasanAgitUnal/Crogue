@@ -1,8 +1,8 @@
 PROGRAM := crogue
 RUNFLAGS :=
-SOLCONFIG := -DSOL_LUA_VERSION=504
 CC := gcc
 CXX := g++
+SOLCONFIG := -DSOL_LUA_VERSION=504
 CPPFLAGS := -Iinclude -I/usr/include/lua5.4 -MMD -MP -Llibs -rdynamic -g $(SOLCONFIG)
 CFLAGS := -lstdc++
 CXXFLAGS :=
@@ -11,6 +11,7 @@ CXXFILES := $(wildcard src/*.cpp)
 CFILES := $(wildcard src/*.c)
 OBJFILES := $(patsubst src/%.cpp,build/%.o,$(CXXFILES)) $(patsubst src/%.c,build/%.o,$(CFILES))
 DEPS := $(OBJFILES:.o=.d)
+LOGFILE := build/debug.log
 
 default: build
 
@@ -56,8 +57,7 @@ run: build
 drun: dbuild run
 
 log:
-	@printf "[  \033[36mLOG\033[0m  ] Viewing:\n"
-	@-tail -n 1 -F build/debug.log
+	@-tail -n 1 -F $(LOGFILE)
 
 cbin:
 	@printf "[ \033[93mCLEAN\033[0m ] [ \033[92mBIN\033[0m ] started\n"

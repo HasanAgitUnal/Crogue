@@ -68,7 +68,7 @@ void handle_seed_input(int y, int max_x) {
 }
 
 void main_menu() {
-        // first load plugins
+        setup_lua();
         load_plugins();
         plugin_errors();
 
@@ -78,7 +78,7 @@ void main_menu() {
                 return;
         }
 
-        std::vector<std::string> menu = {"Play", "Random Seed", "Seed:", "Quit"};
+        std::vector<std::string> menu = {"Play", "Random Seed", "Seed:", "Reload Plugins", "Quit"};
         int choice = 0;
         int key = 0;
 
@@ -134,6 +134,19 @@ void main_menu() {
                                         std::mt19937_64 gen(rd());
                                         std::uniform_int_distribution<uint64_t> dis;
                                         game::seed = dis(gen);
+
+                                } else if (menu[choice] == "Reload Plugins") {
+                                        cleanup_lua();
+                                        reset_game(true);
+                                        setup_lua();
+                                        load_plugins();
+                                        plugin_errors();
+                                        int max_y, max_x;
+                                        getmaxyx(stdscr, max_y, max_x);
+
+                                        mvprintw(max_y - 2, 0, "Successfuly reloaded plugins!");
+                                        press_enter_to_continue();
+
                                 } else if (menu[choice] == "Quit") {
                                         return;
                                 }
