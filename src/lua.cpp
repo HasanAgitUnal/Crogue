@@ -14,12 +14,37 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+#include <filesystem>
 #include <sol/sol.hpp>
 
 #include "cards.hpp"
 #include "minilog.hpp"
 #include "tui.hpp"
 #include "types.hpp"
+
+namespace fs = std::filesystem;
+
+fs::path get_data_dir() {
+        fs::path base_path;
+
+#if defined(_WIN32)
+        const char *appdata = std::getenv("APPDATA");
+        if (appdata) {
+                base_path = fs::path(appdata);
+        } else {
+                base_path = fs::path(std::getenv("USERPROFILE")) / "AppData" / "Roaming";
+        }
+#else
+        const char *xdg_data = std::getenv("XDG_DATA_HOME");
+        if (xdg_data && *xdg_data) {
+                base_path = fs::path(xdg_data);
+        } else {
+                base_path = fs::path(std::getenv("HOME")) / ".local" / "share";
+        }
+#endif
+
+        return base_path / "crogue";
+}
 
 void cleanup_lua() {
         // Clear all vectors that contain objects with Lua references
@@ -40,7 +65,7 @@ void cleanup_lua() {
 
         // Force Lua garbage collection to clean up any remaining references
         game::lua.collect_garbage();
-}
+}  // namespace std::filesystem
 
 /*
  * Getters and Setters
@@ -91,7 +116,6 @@ void set_seed(const std::string &value) {
 
 void setup_lua() {
         game::lua.open_libraries(sol::lib::base, sol::lib::table, sol::lib::package, sol::lib::string, sol::lib::math);
-        game::lua.script("package.path = package.path .. ';./?.lua'");
         // clang-format off
 
         // main table
@@ -220,14 +244,60 @@ void setup_lua() {
         game::lua["cr"] = crogue;
 }
 
-void load_plugins() {
-        // TODO: add a plugins directory and load plugins from here
-        // TODO: remove this after finishing plugins
+void load_plugin(const fs::path &plugindir) {
+        fs::path initfile = plugindir / "init.lua";
 
-        sol::protected_function_result result = game::lua.safe_script_file("test.lua", &sol::script_pass_on_error);
+        // update path
+        std::string original_path = game::lua["package"]["path"];
+        std::string plugin_path = plugindir.string() + "/?.lua;" + original_path;
+        game::lua["package"]["path"] = plugin_path;
+
+        // call the init.lua and handle errors
+        sol::protected_function_result result = game::lua.safe_script_file(initfile, &sol::script_pass_on_error);
         if (!result.valid()) {
                 sol::error err = result;
-                log("Lua script error: " + std::string(err.what()), log_type::WARN);
-                minilog::fdebugc("lua", logfile, minilog::msg::error, "Error in lua: ", err.what());
+                std::string pluginname = plugindir.filename().string();
+                game::plugin_errors[pluginname] = "Lua script error: " + std::string(err.what());
+                minilog::fdebugc("lua", logfile, minilog::msg::error, "In plugin: ", pluginname,
+                                 " Error: ", err.what());
+        }
+
+        // reload original_path
+        game::lua["package"]["path"] = original_path;
+}
+
+void load_plugins() {
+        fs::path plugins_directory;
+        try {
+                plugins_directory = get_data_dir() / "plugins";
+
+                if (!fs::exists(plugins_directory)) {
+                        minilog::fdebugc("lua", logfile, "Creating plugins directory: ", plugins_directory);
+                        fs::create_directories(plugins_directory);
+                }
+
+        } catch (const std::exception &e) {
+                minilog::fdebugc("lua", logfile, minilog::msg::fatal,
+                                 "Error while accessing plugins directory: ", e.what());
+                cleanup_lua();
+                endwin();
+                minilog::fatal(1, "Error while accessing plugins directory: ", e.what());
+        }
+
+        if (!fs::is_directory(plugins_directory)) {
+                minilog::fdebugc("lua", logfile, minilog::msg::fatal, '"', plugins_directory, "\" is not a directory.");
+                cleanup_lua();
+                endwin();
+                minilog::fatal(1, '"', plugins_directory, "\" is not a directory.");
+        }
+
+        // load plugins
+        for (const fs::path &subpath : fs::directory_iterator(plugins_directory)) {
+                if (!fs::is_directory(subpath) || !fs::exists(subpath / "init.lua") ||
+                    !fs::is_regular_file(subpath / "init.lua")) {
+                        continue;
+                }
+
+                load_plugin(subpath);
         }
 }

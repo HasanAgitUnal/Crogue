@@ -15,9 +15,11 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #pragma once
+#define SOL_ALL_SAFETIES_ON 1
 #include <cstdint>
 #include <deque>
 #include <functional>
+#include <map>
 #include <memory>
 #include <sol/sol.hpp>
 #include <string>
@@ -82,6 +84,7 @@ inline std::deque<std::pair<log_type, std::string>> logs;
 inline uint64_t seed;
 
 inline sol::state lua;
+inline std::map<std::string, std::string> plugin_errors;
 
 namespace player {
 

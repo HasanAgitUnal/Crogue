@@ -55,9 +55,9 @@ run: build
 
 drun: dbuild run
 
-log: dbuild
+log:
 	@printf "[  \033[36mLOG\033[0m  ] Viewing:\n"
-	@-tail -n 0 -F build/debug.log
+	@-tail -n 1 -F build/debug.log
 
 cbin:
 	@printf "[ \033[93mCLEAN\033[0m ] [ \033[92mBIN\033[0m ] started\n"
