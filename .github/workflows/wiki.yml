@@ -27,7 +27,7 @@ jobs:
         working-directory: wiki-repo
         run: |
           find . -maxdepth 1 ! -name '.git' ! -name '.' -exec rm -rf {} +
-          cp -rf docs/* wiki-repo/
+          cp -rf ../docs/* .
 
       - name: Push to wiki
         working-directory: wiki-repo
