@@ -109,10 +109,9 @@ int exit_gate() {
         minilog::fdebugc("setup", logfile, "resetting the cards");
         game::card_set = {};
 
-        minilog::fdebugc("setup", logfile, "deck size: ", game::deck.size());
         draw_cards();
-
         minilog::fdebugc("setup", logfile, "card_set size: ", (int)game::card_set.size());
+
         draw_slots();
 
         log("You are now at level: " + game::levels[game::player::level]->name, WARN);
