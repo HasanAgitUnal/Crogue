@@ -1,4 +1,4 @@
-# CROGUE Variable Types (`cr.obj`)
+# Variable Types (`cr.obj`)
 
 Variable types you will work with listed here.
 
