@@ -10,7 +10,7 @@ Start by reading [Getting Started](./getting_started.md).
 * Variable Types and Variables
   * [Variable Types (`cr.obj`)](./types)
   * [Shared Types](./shared_types)
-  * [|Safe Creting With `cr.create_` Functions](./create_functions)
+  * [Safe Creting With `cr.create_` Functions](./create_functions)
 
 * Containers
   * [Game Status & Containers](./stat_containers)

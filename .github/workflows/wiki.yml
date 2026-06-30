@@ -24,7 +24,9 @@ jobs:
         run: git clone https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.wiki.git wiki-repo
 
       - name: Copy docs to wiki
+        working-directory: wiki-repo
         run: |
+          find . -maxdepth 1 ! -name '.git' ! -name '.' -exec rm -rf {} +
           cp -rf docs/* wiki-repo/
 
       - name: Push to wiki
