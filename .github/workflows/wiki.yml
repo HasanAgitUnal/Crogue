@@ -1,0 +1,35 @@
+name: Update Github Wiki
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'docs/**'
+
+permissions:
+  contents: write
+
+jobs:
+  wiki-sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout main repo
+        uses: actions/checkout@v4
+
+      - name: Setup git credentials
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Clone wiki repo
+        run: git clone https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.wiki.git wiki-repo
+
+      - name: Copy docs to wiki
+        run: |
+          cp -rf docs/* wiki-repo/
+
+      - name: Push to wiki
+        working-directory: wiki-repo
+        run: |
+          git add .
+          git commit -m "Sync docs from main repo" || echo "No changes to commit"
+          git push || echo "Nothing to push"
