@@ -11,10 +11,10 @@
 
   * [Shared Types](./shared_types)
 
-  * [Safe Creting With `cr.create_` Functions](./create_functions)
+  * [Safe Creating With `cr.create_` Functions](./create_functions)
 
 
-* **Containers**
+* **Game Status**
 
   * [Game Status & Containers](./stat_containers)
 

@@ -1,4 +1,4 @@
-# Safe Creting With `cr.create_` Functions
+# Safe Creating With `cr.create_` Functions
 
 Read [Shared Types](./shared_types.md) to learn shared types.
 

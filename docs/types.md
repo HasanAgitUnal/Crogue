@@ -7,25 +7,25 @@ Variable types you will work with listed here.
 > Creating this types manually is not recommended and needs `cr.shared` functions to use.
 > Use `cr.create_` functions instead of them.
 
-### Enums
+## Enums
 
 Under `cr` we have 2 enums:
 
-`cr.card_type`
--
+### `cr.card_type`
+
 
 Used to identify card behavior and symbol in ui slots.
 
 | Type    | Symbol in UI | Description                                                                      |
 | :-:     | :-:          | ---                                                                              |
-| `BASIC` | `+`          | Its event will be called normally. Card should have a positive effect.           |
+| `BASIC` | `+`          | Its event will be called normally. Card should have a **positive** effect.           |
 | `ITEM`  | `+`          | It will go to inventory first. Its event will be called when used from inventory |
-| `ENEMY` | `-`          | Its event will be called normally. Card should have a negative effect.           |
+| `ENEMY` | `-`          | Its event will be called normally. Card should have a **negative** effect.           |
 | `EXIT`  | `#`          | Exit card's type. Mostly you dont need it.                                       |
 
 
-`cr.log_type`
--
+### `cr.log_type`
+
 
 Used to set urgency of the log with `cr.log` function and `cr.stat.logs` table.
 Urgency is color on the UI.
@@ -43,12 +43,12 @@ cr.log("Hello World", cr.log_type.NORMAL)
 cr.log("Thats Important!!", cr.log_type.IMPORTANT)
 ```
 
-### Types
+## Types
 
 All types can be created with `cr.obj.<type name>.new()` function or [`cr.create_` functions](./create_functions.md)
 Always use `cr.create_` functions.
 
-##### Card Value `cr.obj.card`
+### Card Value `cr.obj.card`
 
 `cr.obj.card` is the main variable type. It has this fields:
 
@@ -58,18 +58,18 @@ Always use `cr.create_` functions.
 | `name`      | string              | Card name                                                                                 |
 | `type`      | `cr.card_type`      | Card type                                                                                 |
 | `level_ids` | table with integers | A table contains level ids will card show up. If empty, card will show up in every level. |
-| `logmsg`    | string              | The log will appear after card used.                                                      |
+| `logmsg`    | string              | The log will appear after card used. Leave empty to disable.                              |
 | `ttl`       | integer             | Time-to-live for card. See below to understand. 0 to disable.                             | 
 | `event`     | function            | Card event to call. See below for details                                                 | 
 
 
-Time-to-live
-=
-`cr.obj.card_slot_t` has `_lived` field. If `_lived` value equals `ttl` value of the card at front of the slot, card event will be called.
-Best practice is using `ttl` ALWAYS on negative effecting cards.
+###### Time-to-live
 
-Card Events
-=
+`cr.obj.card_slot_t` has `_lived` field. If `_lived` value equals `ttl` value of the card at front of the slot, card event will be called.
+Best practice is using `ttl` **ALWAYS on negative** effecting cards.
+
+###### Card Events
+
 You can do anything you want in card event. But you must return an number.
 The number you return will be added to player health (`cr.player.hp`). Use negative values to hit damage.
 
@@ -113,7 +113,7 @@ local zombie = cr.create_card({
 Also read [Safe Creting With `cr.create_` Functions](./create_functions.md).
 
 
-##### Buffs (`cr.obj.buff`)
+### Buffs (`cr.obj.buff`)
 
 Buffs are things like poison, zombification etc.
 
@@ -124,8 +124,8 @@ Buffs are things like poison, zombification etc.
 | `event`   | function  | Buff event (see below)                                        |
 | `level`   | integer   | Buff level. Bigger is stronger effect. If 0 buff is cleared   | 
 
-Buff events
-=
+###### Buff events
+
 A buff event gets value `self` (A `cr.shared.buff` object points the buff called).
 You can do everything with a buff event.
 
@@ -167,7 +167,7 @@ local zombie = cr.create_card({
 })
 ```
 
-##### Card Slots (`cr.obj.card_slot`)
+### Card Slots (`cr.obj.card_slot`)
 
 Type of `cr.stat.slot1`, `cr.stat.slot2` and `cr.stat.slot3`.
 You should not create this type of variable. But you can work with existing variables.
@@ -187,7 +187,7 @@ Example of changing name of the card at front of slot1:
 cr.stat.slot1.front.name = "Fake name!"
 ```
 
-##### Levels (`cr.obj.level`)
+### Levels (`cr.obj.level`)
 
 Always use roman numbers in name instead of the normal numbers.
 
@@ -217,7 +217,7 @@ local zombie = cr.create_card({
 })
 ```
 
-##### Biomes (`cr.obj.biome`)
+### Biomes (`cr.obj.biome`)
 
 Biomes groups levels with difficulty.
 

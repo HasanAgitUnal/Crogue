@@ -9,11 +9,11 @@ Used to show log on UI.
 
 Usage:
 ```lua
-cr.log(logmsg, log_type)
+cr.log(msg, type)
 ```
 
-- logmsg: any string
-- log_type: `cr.log_type` (see [Types](./types.md))
+- msg: any string
+- type: `cr.log_type` (see [Types](./types.md))
 
 Examples:
 ```lua

@@ -2,7 +2,7 @@
 
 Read [Types](./types.md) first.
 
-Normal types are just normal variables. You cant put them inside [`cr.stat`](./game-status) containers like `cr.stat.deck`.
+Normal types are just normal variables. You can't put them inside [`cr.stat`](./game-status) containers like `cr.stat.deck`.
 First you should convert them to shared versions.
 
 When you do a change shared object variable it will be synced to the original variable.
@@ -26,7 +26,7 @@ If you dont want this you should first create card manualy with `cr.obj.card.new
 Its about the **pointers** in C++.
 CROGUE uses `std::shared_ptr`s to store game status.
 All `cr.shared` and `cr.create_` functions returns shared_ptr's.
-And all containers you will use are uses shared_ptrs.
+And all containers you will use are stores shared_ptrs.
 
 ### Converting
 
@@ -77,5 +77,5 @@ local zombie = cr.create_card({
 })
 ```
 
-Simple and works read [Safe Creting With `cr.create_` Functions](./create_functions.md) to see full function list.
+Simple and works read [Safe Creating With `cr.create_` Functions](./create_functions.md) to see full function list.
 
