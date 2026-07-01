@@ -15,23 +15,24 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #define BOOST_STACKTRACE_USE_ADDR2LINE
-#include <execinfo.h>
 #include <ncurses.h>
 #include <unistd.h>
 #include <CLI/CLI.hpp>
-#include <boost/stacktrace.hpp>
 #include <clocale>
-#include <csignal>
 #include <cstdlib>
 #include <random>
 #include <string>
 
-#include "cards.hpp"
 #include "lua.hpp"
 #include "minilog.hpp"
 #include "scenes.hpp"
 #include "tui.hpp"
 #include "types.hpp"
+
+#ifdef DEBUG
+#include <execinfo.h>
+#include <boost/stacktrace.hpp>
+#include <csignal>
 
 void segfault_handler(int sig) {
         endwin();
@@ -41,6 +42,7 @@ void segfault_handler(int sig) {
 
         exit(139);
 }
+#endif
 
 void handle_cli(int argc, char **argv) {
         CLI::App app{"crogue - Card Based Roguelike Game"};
@@ -74,7 +76,9 @@ void handle_cli(int argc, char **argv) {
  */
 
 int main(int argc, char **argv) {
+#ifdef DEBUG
         signal(SIGSEGV, segfault_handler);
+#endif
 
         // setup minilog categories
         minilog::categories["seed"] = "3;98m";
