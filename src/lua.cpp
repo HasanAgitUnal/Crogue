@@ -20,7 +20,6 @@
 
 #include "cards.hpp"
 #include "minilog.hpp"
-#include "scenes.hpp"
 #include "tui.hpp"
 #include "types.hpp"
 
@@ -222,16 +221,6 @@ void setup_lua() {
 
         crogue["shared"] = shared;
 
-        // Scenes
-
-        sol::table scenes = game::lua.create_table();
-
-        scenes["main_menu"] = &scene::main_menu;
-        scenes["game"] = &scene::game;
-        scenes["plugin_errors"] = &plugin_errors;
-
-        crogue["scenes"] = scenes;
-
         // TUI
 
         sol::table tui = game::lua.create_table();
@@ -251,18 +240,21 @@ void setup_lua() {
 
         sol::table curses = game::lua.create_table();
         curses.new_usertype<attr_t>("attr_t", sol::constructors<attr_t>());
-        curses.new_usertype<mmask_t>("mmask_t", sol::constructors<mmask_t>());
 
-        curses["printw"] = &printw;
+        curses["ansi2attr"] = &parse_ansi_color;
+
         curses["move"] = &move;
+        curses["printw"] = &printw;
         curses["mvprintw"] = &mvprintw;
         curses["clear"] = &clear;
         curses["refresh"] = &refresh;
         curses["getch"] = &getch;
+
         curses["attron"] = &attron;
+        curses["attrset"] = &attrset;
         curses["attroff"] = &attroff;
+
         curses["curs_set"] = &curs_set;
-        curses["ansi2attr"] = &parse_ansi_color;
 
         curses["getmaxyx"] = []() {
                 int y, x;

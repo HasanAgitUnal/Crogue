@@ -1,7 +1,7 @@
 # Interacting With Game
 
 Maybe you need to ask something to user or log something to ui etc.
-There is functions for them.
+There are functions for them.
 
 ### `cr.log`
 
@@ -40,11 +40,11 @@ cr.create_card({
     name = "wishing well",
     type = cr.card_type.BASIC,
     level_ids = {},
-    logmsg = "You found a whising well",
+    logmsg = "You found a wishing well",
     ttl = 0,
     event = function()
         -- In this case we get just 2 characters. But you can get any length
-        local wish = cr.ask_string("What you are wishing? [hp / zr (zombification reset)]: ")
+        local wish = cr.ask_string("What are you wishing? [hp / zr (zombification reset)]: ")
         if wish == "hp" then
             cr.log("You feel better", cr.log_type.NORMAL)
             return 10

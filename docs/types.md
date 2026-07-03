@@ -4,7 +4,7 @@ Variable types you will work with listed here.
 
 > [!WARNING]
 >
-> Creating this types manually is not recommended and needs `cr.shared` functions to use.
+> Creating these types manually is not recommended and needs `cr.shared` functions to use.
 > Use `cr.create_` functions instead of them.
 
 ## Enums
@@ -21,7 +21,7 @@ Used to identify card behavior and symbol in ui slots.
 | `BASIC` | `+`          | Its event will be called normally. Card should have a **positive** effect.           |
 | `ITEM`  | `+`          | It will go to inventory first. Its event will be called when used from inventory |
 | `ENEMY` | `-`          | Its event will be called normally. Card should have a **negative** effect.           |
-| `EXIT`  | `#`          | Exit card's type. Mostly you dont need it.                                       |
+| `EXIT`  | `#`          | Exit card's type. Mostly you don't need it.                                       |
 
 
 ### `cr.log_type`

@@ -15,7 +15,9 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <ncurses.h>
-#include <regex>
+#include <charconv>
+#include <string_view>
+#include <vector>
 
 #include "minilog.hpp"
 #include "tui.hpp"
@@ -37,18 +39,111 @@ void print_line(int line) {
         attroff(COLOR_PAIR(9));
 }
 
-attr_t parse_ansi_color(const std::string &params) {
-        if (params == "0" || params == "" || params == "00")
-                return A_NORMAL;
+std::vector<std::string_view> split(std::string_view str, std::string_view delim) {
+        std::vector<std::string_view> output;
+        size_t first = 0;
+        size_t last = str.find_first_of(delim);
 
-        std::regex color_pattern("38;5;([0-9]+)");
-        std::smatch matches;
-
-        if (std::regex_search(params, matches, color_pattern)) {
-                int color_idx = std::stoi(matches[1].str());
-                return COLOR_PAIR(color_idx + 1);
+        while (last != std::string_view::npos) {
+                output.emplace_back(str.substr(first, last - first));
+                first = last + 1;
+                last = str.find_first_of(delim, first);
         }
-        return A_NORMAL;
+
+        output.emplace_back(str.substr(first));
+        return output;
+}
+
+int to_int(std::string_view sv) {
+        int value = 0;
+        std::from_chars(sv.data(), sv.data() + sv.size(), value);
+        return value;
+}
+
+attr_t parse_ansi_color(std::string params) {
+        attr_t style = A_NORMAL;
+        attr_t color = A_NORMAL;
+        bool started_256 = false;
+        std::string_view last;
+
+        // clean 'm'
+        if (!params.empty() && params.back() == 'm') {
+                params.pop_back();
+        }
+
+        for (auto code : split(params, ";")) {
+                int int_code = to_int(code);
+
+                // 256
+                if (started_256) {
+                        color = COLOR_PAIR(to_int(code) + 1);
+                        started_256 = false;
+                        last = "";
+                        continue;
+                }
+
+                // 256
+                if (last == "38" && code == "5") {
+                        started_256 = true;
+                }
+
+                // bold
+                else if (code == "1") {
+                        style |= A_BOLD;
+                }
+
+                // dim
+                else if (code == "2") {
+                        style |= A_DIM;
+                }
+
+                // italic
+                else if (code == "3") {
+                        style |= A_ITALIC;
+                }
+
+                // underline
+                else if (code == "4") {
+                        style |= A_UNDERLINE;
+                }
+
+                // blink
+                else if (code == "5") {
+                        style |= A_BLINK;
+                }
+
+                // reverse
+                else if (code == "7") {
+                        style |= A_REVERSE;
+                }
+
+                // invis
+                else if (code == "8") {
+                        style |= A_INVIS;
+                }
+
+                // 3X normal
+                else if (int_code >= 30 && int_code <= 37) {
+                        color = COLOR_PAIR(int_code - 29);
+                }
+
+                // 9X bright
+                else if (int_code >= 90 && int_code <= 97) {
+                        color = COLOR_PAIR(int_code - 81);
+
+                }
+
+                // reset
+                else if (code == "0") {
+                        style = A_NORMAL;
+                        color = A_NORMAL;
+                }
+
+                last = code;
+        }
+
+        // return game::lua.create_table_with("style", style, "color", color);
+        return style | color;
 }
 
 void print_ansi(const std::string &str) {
@@ -72,6 +167,11 @@ void print_ansi(const std::string &str) {
 
                 if (in_escape) {
                         if (ch == 'm') {
+                                /*
+                                sol::table ansiattr = parse_ansi_color(params);
+                                attrset(ansiattr.get<attr_t>("style"));
+                                attron(ansiattr.get<attr_t>("color"));
+                                */
                                 attrset(parse_ansi_color(params));
                                 params = "";
                                 in_escape = false;

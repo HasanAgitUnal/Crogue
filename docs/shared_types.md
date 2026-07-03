@@ -5,7 +5,7 @@ Read [Types](./types.md) first.
 Normal types are just normal variables. You can't put them inside [`cr.stat`](./game-status) containers like `cr.stat.deck`.
 First you should convert them to shared versions.
 
-When you do a change shared object variable it will be synced to the original variable.
+When you make changes to a shared object variable it will be synced to the original variable.
 Example:
 
 ```lua
@@ -23,7 +23,7 @@ If you dont want this you should first create card manualy with `cr.obj.card.new
 
 ### Why?
 
-Its about the **pointers** in C++.
+It's about the **pointers** in C++.
 CROGUE uses `std::shared_ptr`s to store game status.
 All `cr.shared` and `cr.create_` functions returns shared_ptr's.
 And all containers you will use are stores shared_ptrs.

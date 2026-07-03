@@ -13,7 +13,7 @@ You know level IDs from [Types](./types.md). The level ID at `cr.stat` contains 
 
 > [!WARNING]
 > Wrong usage of `cr.stat.set_levelid()` may fuck up game!
-> Actualy level ID just used to generate `cr.stat.card_set`. But if one plugin needs level ID, your plugin will fuck this plugin.
+> Actualy, the level ID just used to generate `cr.stat.card_set`. But if one plugin needs level ID, your plugin will fuck this plugin.
 
 Examples:
 ```lua
@@ -92,7 +92,7 @@ Every turn game checks this container. If one of the buffs level is not 0, its e
 
 A complex table contains the latest 9 logs. When you use `cr.log()` function new log will be put here.
 
-Struture of this table:
+Structure of the table:
 ```txt
 cr.stat.logs
 ├── <index number> 

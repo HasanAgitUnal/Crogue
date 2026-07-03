@@ -21,7 +21,12 @@
   * [Player Variables](./player)
 
 
-* **Interacting With Game**
+* **TUI**
 
   * [Interacting With Game](./interactions)
 
+  * [TUI Functions (`cr.tui`)](./tui.md)
+
+  * [ANSI Support](./ansi.md)
+
+  * [Using NCurses](./ncurses.md)

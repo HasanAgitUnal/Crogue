@@ -20,11 +20,11 @@ Under development.
 - [x] basics
   - [x] basic card/buff/level/biome creating & logs + ask_*()
   - [x] access to all variables
-  - [ ] game functions in game
+  - [x] game functions in game
 
 - [ ] updating ui from plugins
-  - [ ] print_*, clear(), refresh(), getch() functions
-  - [ ] create_custom_scene() to create a custom scene with its own move, printw functions and keyboard handler
+  - [x] ncurses && tui.hpp functions
+  - [ ] create_custom_scene() to create a custom scene with its own printing functions and keyboard handler
 
 - [ ] on_* events (level complete, keyboard handling in plugin etc.)
 
