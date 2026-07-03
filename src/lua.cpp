@@ -14,11 +14,13 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+#include <ncurses.h>
 #include <filesystem>
 #include <sol/sol.hpp>
 
 #include "cards.hpp"
 #include "minilog.hpp"
+#include "scenes.hpp"
 #include "tui.hpp"
 #include "types.hpp"
 
@@ -197,6 +199,20 @@ void setup_lua() {
         crogue["create_level"] = &create_level;
         crogue["create_biome"] = [](sol::table table) { return create_biome(table); };
 
+        crogue["reset_game"] = &reset_game;
+        crogue["generate_levels"] = &generate_levels;
+
+        crogue["draw_cards"] = &draw_cards;
+        crogue["draw_slots"] = &draw_slots;
+
+        crogue["handle_slot"] = &handle_slot;
+        crogue["handle_buffs"] = &handle_buffs;
+
+        crogue["basic_card_event"] = &basic_card_event;
+        crogue["card_event"] = &card_event;
+
+        // Shared
+
         sol::table shared = game::lua.create_table();
 
         shared["card"] = [](const card_t &card) { return std::make_shared<card_t>(card); };
@@ -206,6 +222,152 @@ void setup_lua() {
 
         crogue["shared"] = shared;
 
+        // Scenes
+
+        sol::table scenes = game::lua.create_table();
+
+        scenes["main_menu"] = &scene::main_menu;
+        scenes["game"] = &scene::game;
+        scenes["plugin_errors"] = &plugin_errors;
+
+        crogue["scenes"] = scenes;
+
+        // TUI
+
+        sol::table tui = game::lua.create_table();
+
+        tui["print_ansi"] = &print_ansi;
+        tui["print_line"] = &print_line;
+        tui["print_slots"] = &print_slots;
+        tui["print_stats"] = &print_stats;
+        tui["print_buffs"] = &print_buffs;
+        tui["print_logs"] = &print_logs;
+        tui["print_inventory"] = &print_inventory;
+        tui["print_all"] = &print_ui;
+
+        crogue["tui"] = tui;
+
+        // Curses
+
+        sol::table curses = game::lua.create_table();
+        curses.new_usertype<attr_t>("attr_t", sol::constructors<attr_t>());
+        curses.new_usertype<mmask_t>("mmask_t", sol::constructors<mmask_t>());
+
+        curses["printw"] = &printw;
+        curses["move"] = &move;
+        curses["mvprintw"] = &mvprintw;
+        curses["clear"] = &clear;
+        curses["refresh"] = &refresh;
+        curses["getch"] = &getch;
+        curses["attron"] = &attron;
+        curses["attroff"] = &attroff;
+        curses["curs_set"] = &curs_set;
+        curses["ansi2attr"] = &parse_ansi_color;
+
+        curses["getmaxyx"] = []() {
+                int y, x;
+                getmaxyx(stdscr, y, x);
+                return game::lua.create_table_with("y", y, "x", x);
+        };
+
+        // KEY_*
+        curses["KEY_CODE_YES"] = KEY_CODE_YES;
+        curses["KEY_MIN"] = KEY_MIN;
+        curses["KEY_BREAK"] = KEY_BREAK;
+        curses["KEY_SRESET"] = KEY_SRESET;
+        curses["KEY_RESET"] = KEY_RESET;
+        curses["KEY_DOWN"] = KEY_DOWN;
+        curses["KEY_UP"] = KEY_UP;
+        curses["KEY_LEFT"] = KEY_LEFT;
+        curses["KEY_RIGHT"] = KEY_RIGHT;
+        curses["KEY_HOME"] = KEY_HOME;
+        curses["KEY_BACKSPACE"] = KEY_BACKSPACE;
+        curses["KEY_F0"] = KEY_F(0);
+        curses["KEY_F"] = [](int n) { return KEY_F(n); };
+        curses["KEY_DL"] = KEY_DL;
+        curses["KEY_IL"] = KEY_IL;
+        curses["KEY_DC"] = KEY_DC;
+        curses["KEY_IC"] = KEY_IC;
+        curses["KEY_EIC"] = KEY_EIC;
+        curses["KEY_CLEAR"] = KEY_CLEAR;
+        curses["KEY_EOS"] = KEY_EOS;
+        curses["KEY_EOL"] = KEY_EOL;
+        curses["KEY_SF"] = KEY_SF;
+        curses["KEY_SR"] = KEY_SR;
+        curses["KEY_NPAGE"] = KEY_NPAGE;
+        curses["KEY_PPAGE"] = KEY_PPAGE;
+        curses["KEY_STAB"] = KEY_STAB;
+        curses["KEY_CTAB"] = KEY_CTAB;
+        curses["KEY_CATAB"] = KEY_CATAB;
+        curses["KEY_ENTER"] = KEY_ENTER;
+        curses["KEY_PRINT"] = KEY_PRINT;
+        curses["KEY_LL"] = KEY_LL;
+        curses["KEY_A1"] = KEY_A1;
+        curses["KEY_A3"] = KEY_A3;
+        curses["KEY_B2"] = KEY_B2;
+        curses["KEY_C1"] = KEY_C1;
+        curses["KEY_C3"] = KEY_C3;
+        curses["KEY_BTAB"] = KEY_BTAB;
+        curses["KEY_BEG"] = KEY_BEG;
+        curses["KEY_CANCEL"] = KEY_CANCEL;
+        curses["KEY_CLOSE"] = KEY_CLOSE;
+        curses["KEY_COMMAND"] = KEY_COMMAND;
+        curses["KEY_COPY"] = KEY_COPY;
+        curses["KEY_CREATE"] = KEY_CREATE;
+        curses["KEY_END"] = KEY_END;
+        curses["KEY_EXIT"] = KEY_EXIT;
+        curses["KEY_FIND"] = KEY_FIND;
+        curses["KEY_HELP"] = KEY_HELP;
+        curses["KEY_MARK"] = KEY_MARK;
+        curses["KEY_MESSAGE"] = KEY_MESSAGE;
+        curses["KEY_MOVE"] = KEY_MOVE;
+        curses["KEY_NEXT"] = KEY_NEXT;
+        curses["KEY_OPEN"] = KEY_OPEN;
+        curses["KEY_OPTIONS"] = KEY_OPTIONS;
+        curses["KEY_PREVIOUS"] = KEY_PREVIOUS;
+        curses["KEY_REDO"] = KEY_REDO;
+        curses["KEY_REFERENCE"] = KEY_REFERENCE;
+        curses["KEY_REFRESH"] = KEY_REFRESH;
+        curses["KEY_REPLACE"] = KEY_REPLACE;
+        curses["KEY_RESTART"] = KEY_RESTART;
+        curses["KEY_RESUME"] = KEY_RESUME;
+        curses["KEY_SAVE"] = KEY_SAVE;
+        curses["KEY_SBEG"] = KEY_SBEG;
+        curses["KEY_SCANCEL"] = KEY_SCANCEL;
+        curses["KEY_SCOMMAND"] = KEY_SCOMMAND;
+        curses["KEY_SCOPY"] = KEY_SCOPY;
+        curses["KEY_SCREATE"] = KEY_SCREATE;
+        curses["KEY_SDC"] = KEY_SDC;
+        curses["KEY_SDL"] = KEY_SDL;
+        curses["KEY_SELECT"] = KEY_SELECT;
+        curses["KEY_SEND"] = KEY_SEND;
+        curses["KEY_SEOL"] = KEY_SEOL;
+        curses["KEY_SEXIT"] = KEY_SEXIT;
+        curses["KEY_SFIND"] = KEY_SFIND;
+        curses["KEY_SHELP"] = KEY_SHELP;
+        curses["KEY_SHOME"] = KEY_SHOME;
+        curses["KEY_SIC"] = KEY_SIC;
+        curses["KEY_SLEFT"] = KEY_SLEFT;
+        curses["KEY_SMESSAGE"] = KEY_SMESSAGE;
+        curses["KEY_SMOVE"] = KEY_SMOVE;
+        curses["KEY_SNEXT"] = KEY_SNEXT;
+        curses["KEY_SOPTIONS"] = KEY_SOPTIONS;
+        curses["KEY_SPREVIOUS"] = KEY_SPREVIOUS;
+        curses["KEY_SPRINT"] = KEY_SPRINT;
+        curses["KEY_SREDO"] = KEY_SREDO;
+        curses["KEY_SREPLACE"] = KEY_SREPLACE;
+        curses["KEY_SRIGHT"] = KEY_SRIGHT;
+        curses["KEY_SRSUME"] = KEY_SRSUME;
+        curses["KEY_SSAVE"] = KEY_SSAVE;
+        curses["KEY_SSUSPEND"] = KEY_SSUSPEND;
+        curses["KEY_SUNDO"] = KEY_SUNDO;
+        curses["KEY_SUSPEND"] = KEY_SUSPEND;
+        curses["KEY_UNDO"] = KEY_UNDO;
+        curses["KEY_MOUSE"] = KEY_MOUSE;
+        curses["KEY_RESIZE"] = KEY_RESIZE;
+        curses["KEY_MAX"] = KEY_MAX;
+
+        crogue["curses"] = curses;
 
         /*
          * Variables

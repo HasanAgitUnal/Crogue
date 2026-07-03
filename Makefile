@@ -15,18 +15,17 @@ ifeq ($(COPY_COMPILE_COMMANDS),yes)
 endif
 
 build:
-	@printf "[ \033[34mBUILD\033[0m ] BUILD_TYPE: $(BUILD_TYPE)\n"
-	@printf "[ \033[34mBUILD\033[0m ] started\n"
+	@printf -- "-- APPNAME: $(APPNAME)\n"
+	@printf -- "-- CMAKE_FLAGS: $(CMAKE_FLAGS)\n"
 	@mkdir -p $(BUILD_DIR)
 	@cd $(BUILD_DIR) && cmake $(CMAKE_FLAGS) ..
 	@$(MAKE) -C $(BUILD_DIR)
-	@printf "[ \033[34mBUILD\033[0m ] finished\n"
 
 dbuild: BUILD_TYPE = -DCMAKE_BUILD_TYPE=Debug
 dbuild: build
 
 run: build
-	@printf "[ \033[32mRUN\033[0m ] started\n"
+	@printf "[ \033[32mRUN\033[0m ] running with flags: $(RUNFLAGS)\n"
 	@./$(BUILD_DIR)/bin/$(APPNAME) $(RUNFLAGS); \
 	printf "[ \033[32mRUN\033[0m ] finished with status: $$?\n"
 
@@ -37,7 +36,7 @@ test: build
 	@cd $(BUILD_DIR) && ctest --output-on-failure
 
 clean:
-	rm -rf $(BUILD_DIR)
+	@rm -rf $(BUILD_DIR)
 	@printf "[ \033[93mCLEAN\033[0m ] finished\n"
 
 log:

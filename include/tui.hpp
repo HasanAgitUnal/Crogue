@@ -43,6 +43,7 @@ attr_t parse_ansi_color(const std::string &params);
 void print_ansi(const std::string &str);
 int get_real_size(const std::string &line);
 std::string to_roman(int n);
+void print_line(int line);
 
 /*
  * Main Menu
