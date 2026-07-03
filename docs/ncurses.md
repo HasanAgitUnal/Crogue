@@ -3,6 +3,11 @@
 To allow plugins managing TUI completely, CROGUE opens some basic NCurses functions for plugins.
 Usage of them is not shown here. Look at NCurses documentation for them.
 
+> [!WARNING]
+> **Do not destroy TUI**
+> Avoid using clear() to refresh game UI.
+> You may remove a thing a plugin did.
+
 Functions:
 - `cr.curses.printw`
 - `cr.curses.move`
@@ -36,3 +41,22 @@ cr.curses.attroff(red)
 ```
 
 See [ANSI Support][./ansi.md] for the full list of supported ansi codes.
+
+## Keyboard Handling, `KEY_` variables
+
+All of the NCurses `KEY_` variables are accessable from `cr.curses`.
+See NCurses documentation or `ncurses.h` header on your system for full list of `KEY_` variables.
+Example:
+```lua
+local c = cr.curses
+
+c.printw("Press a key")
+c.refresh()
+
+local key = c.getch()
+if (key == c.KEY_ENTER)
+    c.printw("You pressed enter!")
+end
+```
+
+
