@@ -20,7 +20,7 @@
 
   * [Player Variables](./player)
 
-  * [Hooks](./hooks.md)
+  * [Hooks](hooks.md)
 
 * **TUI**
 
