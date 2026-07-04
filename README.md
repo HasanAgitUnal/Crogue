@@ -26,7 +26,7 @@ Under development.
   - [x] ncurses && tui.hpp functions
   - [x] create_scene() to create a custom scene with its own printing functions and keyboard handler
 
-- [ ] on_* events (level complete, keyboard handling in plugin etc.)
+- [x] hooks (level complete, keyboard handling in plugin etc.)
 
-- [ ] plugin settings in main menu
+- [ ] plugin manager && plugin settings in main menu
 - [ ] create vanilla plugins to make a playable game
