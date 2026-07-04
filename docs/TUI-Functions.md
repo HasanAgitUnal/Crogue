@@ -1,10 +1,8 @@
-# TUI Functions (`cr.tui`)
-
 You can update TUI from plugins.
 
 ### `cr.tui.print_ansi(str)`
 
-Prints a string contains ANSI codes. Look for [ANSI Support](./ansi.md) to see list of supported ANSI codes.
+Prints a string contains ANSI codes. Look for [ANSI Support](./ANSI-Support) to see list of supported ANSI codes.
 Game uses this function to print banner at main menu. This function is very usefull for ANSI arts.
 
 ### `cr.tui.print_line(line)`

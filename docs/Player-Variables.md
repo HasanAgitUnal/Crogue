@@ -1,5 +1,3 @@
-# Player Variables
-
 Player variables are under `cr.player` table.
 
 There are 3 variables under it:
@@ -10,4 +8,4 @@ There are 3 variables under it:
 | `cr.player.level`     | integer               | Level index of the player |
 | `cr.player.inventory` | Shared Card Container | Players inventory         |
 
-See [Game Status & Containers](./stat_containers.md) to understant containers.
+See [Game Status & Containers](./Game-Status-&-Containers.md) to understant containers.

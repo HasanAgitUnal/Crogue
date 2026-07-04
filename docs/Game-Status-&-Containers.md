@@ -1,5 +1,3 @@
-# Game Status & Containers
-
 Everything about game status accesed with `cr.stat` table.
 You can change or read values.
 
@@ -9,7 +7,7 @@ Some variables accesed with getters and setters.
 
 ### `cr.stat.get_levelid()` & `cr.stat.set_levelid()`
 
-You know level IDs from [Types](./types.md). The level ID at `cr.stat` contains the level ID of the current level.
+You know level IDs from [Variable Types](./Variable-Types). The level ID at `cr.stat` contains the level ID of the current level.
 
 > [!WARNING]
 > Wrong usage of `cr.stat.set_levelid()` may fuck up game!
@@ -60,7 +58,7 @@ cr.log("randomnumber: " .. tostring(randomnumber), cr.log_type.NORMAL)
 
 ### `cr.stat.deck`
 
-A table contains [shared](./shared_types.md) cards. Used to generate `cr.stat.card_set` content. When `cr.create_card()` is used, new cards will be added to this container.
+A table contains [shared](./Shared-Types) cards. Used to generate `cr.stat.card_set` content. When `cr.create_card()` is used, new cards will be added to this container.
 
 ##### `cr.stat.card_set`
 

@@ -1,5 +1,3 @@
-# Variable Types (`cr.obj`)
-
 Variable types you will work with listed here.
 
 > [!WARNING]
@@ -45,7 +43,7 @@ cr.log("Thats Important!!", cr.log_type.IMPORTANT)
 
 ## Types
 
-All types can be created with `cr.obj.<type name>.new()` function or [`cr.create_` functions](./create_functions.md)
+All types can be created with `cr.obj.<type name>.new()` function or [`cr.create_` functions](./Create-Functions)
 Always use `cr.create_` functions.
 
 ### Card Value `cr.obj.card`
@@ -180,7 +178,7 @@ You should not create this type of variable. But you can work with existing vari
 | `front`   | Shared Card   | Card at the front of slot |
 | `_lived`  | integer       | Look above (Time-to-live) |
 
-Look [Shared Types](./shared_types.md) to learn what is `cr.shared`.
+Look [Shared Types](./Shared-Types.md) to learn what is `cr.shared`.
 
 Example of changing name of the card at front of slot1:
 

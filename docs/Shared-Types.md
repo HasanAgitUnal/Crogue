@@ -1,8 +1,6 @@
-# Shared Types
-
 Read [Types](./types.md) first.
 
-Normal types are just normal variables. You can't put them inside [`cr.stat`](./game-status) containers like `cr.stat.deck`.
+Normal types are just normal variables. You can't put them inside [`cr.stat`](./Game-Status-&-Containers.md) containers like `cr.stat.deck`.
 First you should convert them to shared versions.
 
 When you make changes to a shared object variable it will be synced to the original variable.
@@ -77,5 +75,5 @@ local zombie = cr.create_card({
 })
 ```
 
-Simple and works read [Safe Creating With `cr.create_` Functions](./create_functions.md) to see full function list.
+Simple and works read [Create Functions](./Create-Functions) to see full function list.
 

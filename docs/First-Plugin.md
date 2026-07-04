@@ -1,5 +1,3 @@
-# First Plugin
-
 Take a quick look at api here:
 
 Create a level:

@@ -1,35 +1,35 @@
 * **Getting Started**
 
-  * [Getting Started](./getting_started)
+  * [Getting Started](./Getting-Started)
 
-  * [First Plugin](./first_plugin)
+  * [First Plugin](./First-Plugin)
 
 
 * **Variable Types and Variables**
 
-  * [Variable Types (`cr.obj`)](./types)
+  * [Variable Types](./Variable-Types)
 
-  * [Shared Types](./shared_types)
+  * [Shared Types](./Shared-Types)
 
-  * [Safe Creating With `cr.create_` Functions](./create_functions)
+  * [Create Functions](./Create-Functions)
 
 
 * **Game Status**
 
-  * [Game Status & Containers](./stat_containers)
+  * [Game Status & Containers](./Game-Status-&-Containers)
 
-  * [Player Variables](./player)
+  * [Player Variables](./Player-Variables)
 
-  * [Hooks](hooks)
+  * [Hooks](Hooks)
 
 * **TUI**
 
-  * [Interacting With Game](./interactions)
+  * [Interacting With Game](./Interacting-With-Game)
 
-  * [TUI Functions (`cr.tui`)](./tui)
+  * [TUI Functions](./TUI-Functions)
 
-  * [ANSI Support](./ansi)
+  * [ANSI Support](./ANSI-Support)
 
-  * [Using NCurses](./ncurses)
+  * [Using NCurses](./NCurses)
 
-  * [Scenes](./scenes)
+  * [Scenes](./Scenes)

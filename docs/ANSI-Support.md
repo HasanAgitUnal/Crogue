@@ -1,5 +1,3 @@
-# ANSI Support
-
 This page lists which ANSI codes `cr.curses.ansi2attr` supports
 **Background colors are not supported**.
 256-color palette is initialized before everything with +1 offset (see table).

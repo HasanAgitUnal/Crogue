@@ -1,5 +1,3 @@
-# Interacting With Game
-
 Maybe you need to ask something to user or log something to ui etc.
 There are functions for them.
 

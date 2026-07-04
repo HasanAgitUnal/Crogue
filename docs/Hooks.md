@@ -1,5 +1,3 @@
-# Hooks
-
 Hooks are functions to call after some events happens. Defined with `cr.hook()` function.
 
 Usage:

@@ -1,5 +1,3 @@
-# Scenes
-
 Scenes are very usefull. You can make a game inside a game with this feature. Scenes have their own ui refresh and keyboard handler function. You may use that for a minigame, boss fight, puzzle or something like that.
 
 Scenes are very simple for their job. Let's look `cr.obj.scene`'s fields again:

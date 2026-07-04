@@ -1,5 +1,3 @@
-# Using NCurses
-
 To allow plugins managing TUI completely, CROGUE opens some basic NCurses functions for plugins.
 Usage of them is not shown here. Look at NCurses documentation for them.
 

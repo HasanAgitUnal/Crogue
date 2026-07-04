@@ -1,5 +1,3 @@
-# Getting Started
-
 Let's create a plugin.
 
 Plugins directory locations:
@@ -9,6 +7,7 @@ Plugins directory locations:
 Create a new directory with your plugin name inside plugins directory.
 Then create a new file called `init.lua`.
 Then start writing your code!
-Look at [First Plugin](./first_plugin.md) to see an example.
+
+Look at [First Plugin](./First-Plugin) to see an example.
 You can also use `require` to create a modular plugin.
 
