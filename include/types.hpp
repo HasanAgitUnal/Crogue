@@ -16,6 +16,7 @@
 
 #pragma once
 #define SOL_ALL_SAFETIES_ON 1
+#include <ncurses.h>
 #include <cstdint>
 #include <deque>
 #include <functional>
@@ -86,6 +87,8 @@ inline uint64_t seed;
 inline sol::state lua;
 inline std::map<std::string, std::string> plugin_errors;
 
+inline int current_scene_id;
+
 namespace player {
 
 inline int hp = 100;
@@ -95,3 +98,22 @@ inline std::vector<std::shared_ptr<card_t>> inventory;
 
 }  // namespace player
 }  // namespace game
+
+struct scene_t {
+        std::function<void(void)> ui_refresh;
+        std::function<bool(int)> key_handler;
+        int exit_key = 'q';
+
+        void run() {
+                int key;
+                while (key != this->exit_key) {
+                        this->ui_refresh();
+
+                        key = getch();
+
+                        // if scene ends key_handler returns true
+                        if (this->key_handler(key))
+                                break;
+                }
+        };
+};

@@ -13,6 +13,8 @@ There is no function for `cr.obj.card_slot`
 | `cr.create_buff()`  | Shared Buff  |
 | `cr.create_level()` | Shared Level |
 | `cr.create_biome()` | Shared Biome |
+| `cr.create_scene()` | Shared Scene |
+
 
 ### Usage
 

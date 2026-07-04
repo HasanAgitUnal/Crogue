@@ -1,5 +1,3 @@
-require("test/curses")
-
 -- Levels --
 local ef = cr.create_level("Enterance I")
 local es = cr.create_level("Enterance II")

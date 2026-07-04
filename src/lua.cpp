@@ -16,6 +16,7 @@
 
 #include <ncurses.h>
 #include <filesystem>
+#include <random>
 #include <sol/sol.hpp>
 
 #include "cards.hpp"
@@ -64,9 +65,17 @@ void cleanup_lua() {
         game::slot3.back = nullptr;
         game::slot3.front = nullptr;
 
+        // Cleaanup package.laoded
+        game::lua.script(
+            "for k in pairs(package.loaded) do "
+            "  if k ~= '_G' and k ~= 'package' and k ~= 'table' and k ~= 'string' and k ~= 'math' then "
+            "    package.loaded[k] = nil "
+            "  end "
+            "end");
+
         // Force Lua garbage collection to clean up any remaining references
         game::lua.collect_garbage();
-}  // namespace std::filesystem
+}
 
 /*
  * Getters and Setters
@@ -109,6 +118,22 @@ void set_seed(const std::string &value) {
         } catch (const std::out_of_range &e) {
                 throw sol::error::runtime_error("Seed value is too big (max: 18446744073709551615).");
         }
+}
+
+std::shared_ptr<scene_t> create_scene(sol::table table) {
+        try {
+                scene_t new_scene;
+                new_scene.ui_refresh = table.get<std::function<void(void)>>("ui_refresh");
+                new_scene.key_handler = table.get<std::function<bool(int)>>("key_handler");
+                new_scene.exit_key = table.get_or<int>("exit_key", 'q');
+
+                return std::make_shared<scene_t>(new_scene);
+        } catch (const sol::error &e) {
+                minilog::fdebug(logfile, minilog::msg::error, "Error in plugin", e.what());
+                throw sol::error::runtime_error("Invalid table");
+        }
+
+        return nullptr;
 }
 
 /*
@@ -180,6 +205,12 @@ void setup_lua() {
                                 ),
                         "level", &buff_t::level);
 
+        objects.new_usertype<scene_t>("scene", sol::constructors<scene_t>(),
+                        "exit_key", &scene_t::exit_key,
+                        "ui_refresh", &scene_t::ui_refresh,
+                        "key_handler", &scene_t::key_handler,
+                        "run", &scene_t::run);
+
         crogue["obj"] = objects;
 
         // clang-format on
@@ -197,6 +228,7 @@ void setup_lua() {
         crogue["create_buff"] = [](sol::table table) { return create_buff(table); };
         crogue["create_level"] = &create_level;
         crogue["create_biome"] = [](sol::table table) { return create_biome(table); };
+        crogue["create_scene"] = &create_scene;
 
         crogue["reset_game"] = &reset_game;
         crogue["generate_levels"] = &generate_levels;

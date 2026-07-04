@@ -242,3 +242,18 @@ local biome = cr.create_biome({
     levels = { mine1, mine2, mine3, mine4 }
 })
 ```
+
+### Scenes (`cr.obj.scene`)
+
+Game scenes. 
+
+
+| Field                 | Type                      | Description                               |
+| :-:                   | :-:                       | ---                                       |
+| `exit_key`            | `integer`                 | Exit key. (default: `string.byte('q')')   |
+| `ui_refresh()`        | Function                  | Functions to refresh UI.                  |
+| `key_handler(key)`    | Function takes 1 integer  | Function to handle keyboard               |
+| `run()`               | Function                  | Run method                                |
+
+
+
