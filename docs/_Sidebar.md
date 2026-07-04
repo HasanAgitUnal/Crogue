@@ -20,16 +20,16 @@
 
   * [Player Variables](./player)
 
-  * [Hooks](hooks.md)
+  * [Hooks](hooks)
 
 * **TUI**
 
   * [Interacting With Game](./interactions)
 
-  * [TUI Functions (`cr.tui`)](./tui.md)
+  * [TUI Functions (`cr.tui`)](./tui)
 
-  * [ANSI Support](./ansi.md)
+  * [ANSI Support](./ansi)
 
-  * [Using NCurses](./ncurses.md)
+  * [Using NCurses](./ncurses)
 
-  * [Scenes](./scenes.md)
+  * [Scenes](./scenes)
