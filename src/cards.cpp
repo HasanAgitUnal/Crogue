@@ -69,6 +69,8 @@ bool check_die() {
 
                 log("You died!", IMPORTANT);
 
+                game::hooks::trigger(game::hooks::die);
+
                 clear();
                 print_ui();
                 refresh();
@@ -92,6 +94,9 @@ int exit_gate() {
         minilog::fdebugc("player", logfile, "player find an exit");
         game::player::level++;
         minilog::fdebugc("setup", logfile, "new level index: ", game::player::level);
+
+        game::hooks::trigger(game::hooks::level_up, game::player::level);
+
         if (game::player::level == (int)game::levels.size()) {
                 clear();
                 printw("You are exiting from dungeon with your loot!");
@@ -209,6 +214,8 @@ void generate_levels() {
                         game::levels.push_back(level);
                 }
         }
+
+        game::hooks::trigger(game::hooks::level_gen);
 
         minilog::fdebugc("setup", logfile, "Levels generated and sorted. Count: ", (int)game::levels.size());
 }
@@ -332,12 +339,19 @@ void draw_cards() {
         std::mt19937_64 rng(game::seed ^ (game::player::level + 1));  // some randomizing
         std::shuffle(game::card_set.begin(), game::card_set.end(), rng);
 
+        game::hooks::trigger(game::hooks::draw);
+
         minilog::fdebugc("setup", logfile, "card_set generated. Count: ", (int)game::card_set.size());
 }
 
 void basic_card_event(const std::shared_ptr<card_t> card, const int extra) {
         if (!card->logmsg.empty()) {
                 log(card->logmsg, NORMAL);
+        }
+
+        bool cancel = game::hooks::trigger_bool(game::hooks::card_event, card, extra);
+        if (cancel) {
+                return;
         }
 
         minilog::fdebugc("event", logfile, "Calling event for card: ", card->name);

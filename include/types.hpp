@@ -97,6 +97,49 @@ inline int level = 0;
 inline std::vector<std::shared_ptr<card_t>> inventory;
 
 }  // namespace player
+
+namespace hooks {
+
+inline std::vector<std::function<void(void)>> always, start, end, reload, die, draw, level_gen;
+
+// arg: key
+inline std::vector<std::function<void(int)>> key;
+
+// arg: level
+inline std::vector<std::function<void(int)>> level_up;
+
+// arg: slot num (1, 2, 3)
+// return is_canceled
+inline std::vector<std::function<bool(int)>> slot;
+
+// arg: item card
+// return: is_canceled
+inline std::vector<std::function<bool(std::shared_ptr<card_t>)>> item;
+
+// arg: card, extra
+// return: is_canceled?
+inline std::vector<std::function<bool(std::shared_ptr<card_t>, int)>> card_event;
+
+template <typename... Args>
+inline void trigger(std::vector<std::function<void(Args...)>> &hooks, Args... args) {
+        for (auto &hook : hooks) {
+                hook(args...);
+        }
+}
+
+template <typename... Args>
+inline bool trigger_bool(std::vector<std::function<bool(Args...)>> &hooks, Args... args) {
+        bool canceled = false;
+        for (auto &hook : hooks) {
+                if (hook(args...)) {
+                        canceled = true;
+                }
+        }
+        return canceled;
+}
+
+}  // namespace hooks
+
 }  // namespace game
 
 struct scene_t {

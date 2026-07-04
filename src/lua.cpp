@@ -16,7 +16,6 @@
 
 #include <ncurses.h>
 #include <filesystem>
-#include <random>
 #include <sol/sol.hpp>
 
 #include "cards.hpp"
@@ -241,6 +240,49 @@ void setup_lua() {
 
         crogue["basic_card_event"] = &basic_card_event;
         crogue["card_event"] = &card_event;
+
+        crogue["hook"] = [](std::string event, sol::function func) {
+                try {
+                        if (event == "always") {
+                                game::hooks::always.push_back(func.as<std::function<void(void)>>());
+
+                        } else if (event == "start") {
+                                game::hooks::start.push_back(func.as<std::function<void(void)>>());
+
+                        } else if (event == "end") {
+                                game::hooks::end.push_back(func.as<std::function<void(void)>>());
+
+                        } else if (event == "reload") {
+                                game::hooks::reload.push_back(func.as<std::function<void(void)>>());
+
+                        } else if (event == "key") {
+                                game::hooks::key.push_back(func.as<std::function<void(int)>>());
+
+                        } else if (event == "level_up") {
+                                game::hooks::level_up.push_back(func.as<std::function<void(int)>>());
+
+                        } else if (event == "slot") {
+                                game::hooks::slot.push_back(func.as<std::function<bool(int)>>());
+
+                        } else if (event == "item") {
+                                game::hooks::item.push_back(func.as<std::function<bool(std::shared_ptr<card_t>)>>());
+
+                        } else if (event == "draw") {
+                                game::hooks::draw.push_back(func.as<std::function<void(void)>>());
+
+                        } else if (event == "level_gen") {
+                                game::hooks::level_gen.push_back(func.as<std::function<void(void)>>());
+
+                        } else if (event == "card_event") {
+                                game::hooks::card_event.push_back(
+                                    func.as<std::function<bool(std::shared_ptr<card_t>, int)>>());
+                        }
+
+                        minilog::fdebugc("lua", logfile, "Added a ", event, " hook");
+                } catch (sol::error &e) {
+                        throw sol::error::runtime_error("Invalid hook function type");
+                }
+        };
 
         // Shared
 

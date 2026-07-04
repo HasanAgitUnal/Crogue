@@ -71,6 +71,7 @@ void main_menu() {
         setup_lua();
         load_plugins();
         plugin_errors();
+        game::hooks::trigger(game::hooks::start);
 
         if (game::_skip_main_menu) {
                 // play game for once and exit sliently
@@ -141,6 +142,8 @@ void main_menu() {
                                         setup_lua();
                                         load_plugins();
                                         plugin_errors();
+                                        game::hooks::trigger(game::hooks::reload);
+
                                         int max_y, max_x;
                                         getmaxyx(stdscr, max_y, max_x);
 
@@ -189,35 +192,57 @@ void game() {
                         break;
                 }
 
+                game::hooks::trigger(game::hooks::always);
+
                 clear();
                 print_ui();
                 refresh();
 
                 // keyboard handling
                 key = getch();
+                game::hooks::trigger(game::hooks::key, key);
+
                 minilog::fdebugc("key", logfile, "pressed key: ", key);
                 bool turn_taken = false;
                 card_slot_t *acted_slot = nullptr;
 
                 switch (key) {
-                        case 'a':
+                        case 'a': {
                                 minilog::fdebugc("game", logfile, "Picked card slot1");
+                                bool cancel = game::hooks::trigger_bool(game::hooks::slot, 1);
+                                if (cancel) {
+                                        break;
+                                }
+
                                 handle_slot(game::slot1);
                                 acted_slot = &game::slot1;
                                 turn_taken = true;
                                 break;
-                        case 'b':
+                        }
+                        case 'b': {
                                 minilog::fdebugc("game", logfile, "Picked card slot2");
+                                bool cancel = game::hooks::trigger_bool(game::hooks::slot, 2);
+                                if (cancel) {
+                                        break;
+                                }
+
                                 handle_slot(game::slot2);
                                 acted_slot = &game::slot2;
                                 turn_taken = true;
                                 break;
-                        case 'c':
+                        }
+                        case 'c': {
                                 minilog::fdebugc("game", logfile, "Picked card slot3");
+                                bool cancel = game::hooks::trigger_bool(game::hooks::slot, 3);
+                                if (cancel) {
+                                        break;
+                                }
+
                                 handle_slot(game::slot3);
                                 acted_slot = &game::slot3;
                                 turn_taken = true;
                                 break;
+                        }
                         case '0' ... '9': {
                                 int index = key - '0';
                                 minilog::fdebugc("inventory", logfile, "User tried to use item index: ", index);
@@ -225,6 +250,12 @@ void game() {
                                         if (game::player::inventory[index]) {
                                                 minilog::fdebugc("event", logfile, "Calling card event for item: ",
                                                                  game::player::inventory[index]->name);
+
+                                                bool canceled = game::hooks::trigger_bool(
+                                                    game::hooks::item, game::player::inventory[index]);
+                                                if (canceled) {
+                                                        continue;
+                                                }
 
                                                 basic_card_event(game::player::inventory[index], 0);
                                                 game::player::inventory[index] = nullptr;
@@ -238,6 +269,7 @@ void game() {
                                         int key = ask("Realy quit? [y/n]: ");
 
                                         if (key == 'y') {
+                                                game::hooks::trigger(game::hooks::end);
                                                 return;
                                         } else if (key == 'n') {
                                                 break;
