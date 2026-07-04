@@ -22,9 +22,9 @@ Under development.
   - [x] access to all variables
   - [x] game functions in game
 
-- [ ] updating ui from plugins
+- [x] updating ui from plugins
   - [x] ncurses && tui.hpp functions
-  - [ ] create_custom_scene() to create a custom scene with its own printing functions and keyboard handler
+  - [x] create_scene() to create a custom scene with its own printing functions and keyboard handler
 
 - [ ] on_* events (level complete, keyboard handling in plugin etc.)
 
