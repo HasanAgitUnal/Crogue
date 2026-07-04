@@ -20,6 +20,7 @@
 
   * [Player Variables](./player)
 
+  * [Hooks](./hooks.md)
 
 * **TUI**
 
@@ -30,3 +31,5 @@
   * [ANSI Support](./ansi.md)
 
   * [Using NCurses](./ncurses.md)
+
+  * [Scenes](./scenes.md)
