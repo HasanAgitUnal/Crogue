@@ -19,9 +19,9 @@
 #include <string_view>
 #include <vector>
 
+#include "game.hpp"
 #include "minilog.hpp"
 #include "tui.hpp"
-#include "types.hpp"
 
 void setup_colors() {
         // 256

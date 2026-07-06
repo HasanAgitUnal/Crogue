@@ -22,9 +22,9 @@
 #include <sstream>
 
 #include "cards.hpp"
+#include "game.hpp"
 #include "minilog.hpp"
 #include "tui.hpp"
-#include "types.hpp"
 
 using json = nlohmann::json;
 

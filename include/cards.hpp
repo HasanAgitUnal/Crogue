@@ -20,7 +20,7 @@
 #include <sol/sol.hpp>
 #include <string>
 
-#include "types.hpp"
+#include "game.hpp"
 
 void reset_game(bool full);
 

@@ -20,9 +20,9 @@
 #include <sol/sol.hpp>
 
 #include "cards.hpp"
+#include "game.hpp"
 #include "minilog.hpp"
 #include "tui.hpp"
-#include "types.hpp"
 
 void reset_game(bool full) {
         minilog::fdebugc("setup", logfile, "Resetting game state");

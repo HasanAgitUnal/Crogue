@@ -20,7 +20,7 @@
 #include <string>
 #include <vector>
 
-#include "types.hpp"
+#include "game.hpp"
 
 // Colored CROGUE word
 inline std::string banner = R"(

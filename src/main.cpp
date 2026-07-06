@@ -23,11 +23,11 @@
 #include <random>
 #include <string>
 
+#include "game.hpp"
 #include "lua.hpp"
 #include "minilog.hpp"
 #include "scenes.hpp"
 #include "tui.hpp"
-#include "types.hpp"
 
 #ifdef DEBUG
 #include <execinfo.h>
