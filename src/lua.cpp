@@ -16,12 +16,17 @@
 
 #include <ncurses.h>
 #include <filesystem>
+#include <fstream>
+#include <nlohmann/json.hpp>
 #include <sol/sol.hpp>
+#include <sstream>
 
 #include "cards.hpp"
 #include "minilog.hpp"
 #include "tui.hpp"
 #include "types.hpp"
+
+using json = nlohmann::json;
 
 namespace fs = std::filesystem;
 
@@ -77,7 +82,7 @@ void cleanup_lua() {
 }
 
 /*
- * Getters and Setters
+ * Wrapper Things
  */
 
 int get_player_hp() {
@@ -136,8 +141,171 @@ std::shared_ptr<scene_t> create_scene(sol::table table) {
 }
 
 /*
- * Setup
+ * Main Job
  */
+
+json load_json(const fs::path &path) {
+        std::ifstream metadata_file(path);
+
+        if (!fs::exists(path)) {
+                throw std::runtime_error("File doesn't exits: " + path.string());
+        }
+
+        if (!metadata_file.is_open()) {
+                throw std::runtime_error("Can't open file: " + path.string());
+        }
+
+        std::stringstream ss;
+        ss << metadata_file.rdbuf();
+
+        return json::parse(ss.str());
+}
+
+// clang-format off
+json safe_load(const std::string pluginname, const fs::path path) {
+        try {
+                return load_json(path);
+
+        } catch (json::parse_error &e) {
+                game::plugin_errors[pluginname] = "E: While parsing \"" + path.string() +  "\": " + std::string(e.what());
+
+        } catch (std::exception &e) {
+                game::plugin_errors[pluginname] = "E: While loading \"" + path.string() +  "\": " + std::string(e.what());
+        }
+
+        return json{};
+}
+
+// clang-format on
+
+
+// function moved to end of file
+// it was too long
+void setup_lua();
+
+void load_plugin(const fs::path &plugindir) {
+        std::string pluginname = plugindir.filename().string();
+
+        // load metadata
+        game::settings::metadata[pluginname] = safe_load(pluginname, plugindir / "metadata.json");
+        game::settings::settings[pluginname] = safe_load(pluginname, plugindir / "settings.json");
+
+        // if plugin is loaded its enabled
+        game::settings::settings[pluginname]["enabled"] = true;
+
+        // load lua script
+        fs::path initfile = plugindir / "init.lua";
+        minilog::fdebugc("lua", logfile, "Loading plugin: ", pluginname);
+
+        // update path
+        std::string original_path = game::lua["package"]["path"];
+        std::string plugin_path = plugindir.string() + "/?.lua;" + original_path;
+        game::lua["package"]["path"] = plugin_path;
+
+        // call the init.lua and handle errors
+        sol::protected_function_result result = game::lua.safe_script_file(initfile, &sol::script_pass_on_error);
+        if (!result.valid()) {
+                sol::error err = result;
+                game::plugin_errors[pluginname] = "E: " + std::string(err.what());
+                minilog::fdebugc("lua", logfile, minilog::msg::error, "In plugin: ", pluginname,
+                                 " Error: ", err.what());
+        }
+
+        // reload original_path
+        game::lua["package"]["path"] = original_path;
+}
+
+void load_plugins() {
+        minilog::fdebugc("lua", logfile, "Loading plugins");
+
+        // load game settings
+        fs::path settings_path = get_data_dir() / "settings.json";
+        json game_settings = json::object();
+        if (!fs::exists(settings_path)) {
+                // if does not exits, fill with empty value
+                std::ofstream settings_file(settings_path);
+
+                if (!settings_file.is_open()) {
+                        endwin();
+                        minilog::fatal(1, "Cant't open file: \"" + settings_path.string() + "\"");
+                }
+
+                settings_file << "{}";
+                settings_file.close();
+        } else {
+                std::ifstream settings_file(settings_path);
+
+                if (!settings_file.is_open()) {
+                        cleanup_lua();
+                        endwin();
+                        // TODO: create file empty
+                        minilog::fatal(1, "Cant't open file: \"" + settings_path.string() + "\"");
+                }
+
+                try {
+                        game_settings = json::parse(settings_file);
+                } catch (json::parse_error &e) {
+                        minilog::fdebug(logfile, minilog::msg::error, "While parsing settings.json: ", e.what());
+                }
+                minilog::fdebug(logfile, "loading settings.json");
+        }
+
+        game::settings::settings = game_settings;
+
+        // create plugins directory
+        fs::path plugins_directory;
+        try {
+                plugins_directory = get_data_dir() / "plugins";
+
+                if (!fs::exists(plugins_directory)) {
+                        minilog::fdebugc("lua", logfile, "Creating plugins directory: ", plugins_directory);
+                        fs::create_directories(plugins_directory);
+                }
+
+        } catch (const std::exception &e) {
+                minilog::fdebugc("lua", logfile, minilog::msg::fatal,
+                                 "Error while accessing plugins directory: ", e.what());
+                cleanup_lua();
+                endwin();
+                minilog::fatal(1, "Error while accessing plugins directory: ", e.what());
+        }
+
+        if (!fs::is_directory(plugins_directory)) {
+                minilog::fdebugc("lua", logfile, minilog::msg::fatal, '"', plugins_directory, "\" is not a directory.");
+                cleanup_lua();
+                endwin();
+                minilog::fatal(1, '"', plugins_directory, "\" is not a directory.");
+        }
+
+        // load plugins
+        for (const fs::path &subpath : fs::directory_iterator(plugins_directory)) {
+                if (!fs::is_directory(subpath) || !fs::exists(subpath / "init.lua"))
+                        continue;
+
+                std::string pluginname = subpath.filename().string();
+
+                // create "enabled" if does not exitst
+                if (!game::settings::settings.contains(pluginname) ||
+                    !game::settings::settings[pluginname].is_boolean()) {
+                        game::settings::settings[pluginname] = true;
+                        game_settings[pluginname] = true;
+                }
+
+                if (game::settings::settings[pluginname].get<bool>()) {
+                        load_plugin(subpath);
+                }
+        }
+
+        // write final version
+        std::ofstream settings_file(settings_path);
+        if (!settings_file.is_open()) {
+                endwin();
+                minilog::fatal(1, "Cant't open file: \"" + settings_path.string() + "\"");
+        }
+
+        settings_file << game_settings.dump(4);
+        settings_file.close();
+}
 
 void setup_lua() {
         game::lua.open_libraries(sol::lib::base, sol::lib::table, sol::lib::package, sol::lib::string, sol::lib::math);
@@ -470,65 +638,4 @@ void setup_lua() {
         crogue["player"] = player;
 
         game::lua["cr"] = crogue;
-}
-
-void load_plugin(const fs::path &plugindir) {
-        fs::path initfile = plugindir / "init.lua";
-        std::string pluginname = plugindir.filename().string();
-        minilog::fdebugc("lua", logfile, "Loading plugin: ", pluginname);
-
-        // update path
-        std::string original_path = game::lua["package"]["path"];
-        std::string plugin_path = plugindir.string() + "/?.lua;" + original_path;
-        game::lua["package"]["path"] = plugin_path;
-
-        // call the init.lua and handle errors
-        sol::protected_function_result result = game::lua.safe_script_file(initfile, &sol::script_pass_on_error);
-        if (!result.valid()) {
-                sol::error err = result;
-                game::plugin_errors[pluginname] = "E: " + std::string(err.what());
-                minilog::fdebugc("lua", logfile, minilog::msg::error, "In plugin: ", pluginname,
-                                 " Error: ", err.what());
-        }
-
-        // reload original_path
-        game::lua["package"]["path"] = original_path;
-}
-
-void load_plugins() {
-        minilog::fdebugc("lua", logfile, "Loading plugins");
-
-        fs::path plugins_directory;
-        try {
-                plugins_directory = get_data_dir() / "plugins";
-
-                if (!fs::exists(plugins_directory)) {
-                        minilog::fdebugc("lua", logfile, "Creating plugins directory: ", plugins_directory);
-                        fs::create_directories(plugins_directory);
-                }
-
-        } catch (const std::exception &e) {
-                minilog::fdebugc("lua", logfile, minilog::msg::fatal,
-                                 "Error while accessing plugins directory: ", e.what());
-                cleanup_lua();
-                endwin();
-                minilog::fatal(1, "Error while accessing plugins directory: ", e.what());
-        }
-
-        if (!fs::is_directory(plugins_directory)) {
-                minilog::fdebugc("lua", logfile, minilog::msg::fatal, '"', plugins_directory, "\" is not a directory.");
-                cleanup_lua();
-                endwin();
-                minilog::fatal(1, '"', plugins_directory, "\" is not a directory.");
-        }
-
-        // load plugins
-        for (const fs::path &subpath : fs::directory_iterator(plugins_directory)) {
-                if (!fs::is_directory(subpath) || !fs::exists(subpath / "init.lua") ||
-                    !fs::is_regular_file(subpath / "init.lua")) {
-                        continue;
-                }
-
-                load_plugin(subpath);
-        }
 }

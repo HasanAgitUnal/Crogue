@@ -22,8 +22,11 @@
 #include <functional>
 #include <map>
 #include <memory>
+#include <nlohmann/json.hpp>
 #include <sol/sol.hpp>
 #include <string>
+
+using json = nlohmann::json;
 
 const std::string logfile = "./build/debug.log";
 
@@ -139,6 +142,13 @@ inline bool trigger_bool(std::vector<std::function<bool(Args...)>> &hooks, Args.
 }
 
 }  // namespace hooks
+
+namespace settings {
+
+inline json settings = json::object();
+inline json metadata = json::object();
+
+}  // namespace settings
 
 }  // namespace game
 
