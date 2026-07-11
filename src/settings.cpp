@@ -131,9 +131,29 @@ void plugin_manager() {
                 key = getch();
                 switch (key) {
                         case 10:
-                        case KEY_ENTER:
+                        case KEY_ENTER: {
                                 bool enabled = game::settings::settings[plugin_names[choice]]["enabled"].get<bool>();
                                 game::settings::settings[plugin_names[choice]]["enabled"] = !enabled;
+                                break;
+                        }
+
+                        case 'j':
+                        case KEY_DOWN:
+                                if (choice == itemsc - 1) {
+                                        choice = 0;
+                                } else {
+                                        choice++;
+                                }
+
+                                break;
+
+                        case 'k':
+                        case KEY_UP:
+                                if (choice == 0) {
+                                        choice = itemsc - 1;
+                                } else {
+                                        choice--;
+                                }
                                 break;
                 }
         }
