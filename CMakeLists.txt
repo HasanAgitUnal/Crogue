@@ -23,6 +23,12 @@ set(TESTBIN ${APPNAME}-test)
 
 option(TEST_ENABLED "Enable Tests" OFF)
 
+find_program(CCACHE_PROGRAM ccache)
+if(CCACHE_PROGRAM)
+    set(CMAKE_CXX_COMPILER_LAUNCHER "${CCACHE_PROGRAM}")
+    set(CMAKE_C_COMPILER_LAUNCHER "${CCACHE_PROGRAM}")
+endif()
+
 #
 # Building
 #
@@ -46,7 +52,16 @@ find_package(PkgConfig REQUIRED)
 
 pkg_check_modules(NCURSESW REQUIRED IMPORTED_TARGET ncursesw)
 
+# Precompiled Headers
+target_precompile_headers(${APPNAME} PRIVATE
+    <ncurses.h>
+    <nlohmann/json.hpp>
+    <sol/sol.hpp>
+)
+
+#
 # Linking
+#
 
 if(UNIX)
         target_link_options(${APPNAME} PRIVATE -rdynamic)
@@ -65,7 +80,8 @@ if(TEST_ENABLED)
         enable_testing()
         find_package(GTest REQUIRED)
         include(GoogleTest)
-        add_executable(${TESTBIN} tests/test_main.cpp src/logic.cpp)
+        file(GLOB_RECURSE TEST_SOURCE_FILES "test/*.c" "test/*.cpp")
+        add_executable(${TESTBIN} ${TEST_SOURCE_FILES})
         target_link_libraries(${TESTBIN} PRIVATE GTest::gtest_main)
         add_test(NAME all_tests COMMAND ${TESTBIN})
 endif()

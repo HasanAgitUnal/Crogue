@@ -15,6 +15,7 @@ ifeq ($(COPY_COMPILE_COMMANDS),yes)
 endif
 
 build:
+	@sleep 0.5
 	@printf -- "-- APPNAME: $(APPNAME)\n"
 	@printf -- "-- CMAKE_FLAGS: $(CMAKE_FLAGS)\n"
 	@mkdir -p $(BUILD_DIR)
