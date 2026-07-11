@@ -17,7 +17,8 @@ These events does not take any argument and does not return a value.
 
 - `start`: Runned before everything and main menu.
 - `reload`: Runned when plugins are reloaded.
-- `always`: Always runned before UI refresh.
+- `after_refresh`: Always runned after UI refresh.
+- `before_refresh`: Always runned before UI refresh.
 - `end`: Runned when game ends.
 - `die`: Runned when player dies.
 - `draw`: Runned after `cr.draw_cards()`.

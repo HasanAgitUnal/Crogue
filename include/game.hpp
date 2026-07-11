@@ -103,7 +103,7 @@ inline std::vector<std::shared_ptr<card_t>> inventory;
 
 namespace hooks {
 
-inline std::vector<std::function<void(void)>> always, start, end, reload, die, draw, level_gen;
+inline std::vector<std::function<void(void)>> after_refresh, before_refresh, start, end, reload, die, draw, level_gen;
 
 // arg: key
 inline std::vector<std::function<void(int)>> key;

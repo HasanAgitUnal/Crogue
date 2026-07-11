@@ -196,11 +196,13 @@ void game() {
                         break;
                 }
 
-                game::hooks::trigger(game::hooks::always);
+                game::hooks::trigger(game::hooks::before_refresh);
 
                 clear();
                 print_ui();
                 refresh();
+
+                game::hooks::trigger(game::hooks::after_refresh);
 
                 // keyboard handling
                 key = getch();

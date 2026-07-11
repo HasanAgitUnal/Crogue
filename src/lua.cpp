@@ -422,8 +422,11 @@ void setup_lua() {
 
         crogue["hook"] = [](std::string event, sol::function func) {
                 try {
-                        if (event == "always") {
-                                game::hooks::always.push_back(func.as<std::function<void(void)>>());
+                        if (event == "before_refresh") {
+                                game::hooks::before_refresh.push_back(func.as<std::function<void(void)>>());
+
+                        } else if (event == "after_refresh") {
+                                game::hooks::after_refresh.push_back(func.as<std::function<void(void)>>());
 
                         } else if (event == "start") {
                                 game::hooks::start.push_back(func.as<std::function<void(void)>>());
