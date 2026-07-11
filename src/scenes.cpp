@@ -74,6 +74,8 @@ void main_menu() {
         plugin_errors();
         game::hooks::trigger(game::hooks::start);
 
+        create_card(1, "~ Exit Gate ~", EXIT, {}, "", 0, exit_gate);
+
         if (game::_skip_main_menu) {
                 // play game for once and exit sliently
                 game();
@@ -179,8 +181,6 @@ void game() {
 
         game::levelid = game::levels[0]->id;
         log("You are now at level: " + game::levels[game::player::level]->name, WARN);
-
-        create_card(1, "~ Exit Gate ~", EXIT, {}, "", 0, exit_gate);
 
         minilog::fdebugc("setup", logfile, "deck size: ", game::deck.size());
         draw_cards();

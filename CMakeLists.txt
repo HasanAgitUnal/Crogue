@@ -54,7 +54,6 @@ pkg_check_modules(NCURSESW REQUIRED IMPORTED_TARGET ncursesw)
 
 # Precompiled Headers
 target_precompile_headers(${APPNAME} PRIVATE
-    <ncurses.h>
     <nlohmann/json.hpp>
     <sol/sol.hpp>
 )
@@ -81,7 +80,12 @@ if(TEST_ENABLED)
         find_package(GTest REQUIRED)
         include(GoogleTest)
         file(GLOB_RECURSE TEST_SOURCE_FILES "test/*.c" "test/*.cpp")
-        add_executable(${TESTBIN} ${TEST_SOURCE_FILES})
-        target_link_libraries(${TESTBIN} PRIVATE GTest::gtest_main)
-        add_test(NAME all_tests COMMAND ${TESTBIN})
+
+        if(TEST_SOURCE_FILES)
+                add_executable(${TESTBIN} ${TEST_SOURCE_FILES})
+                target_link_libraries(${TESTBIN} PRIVATE GTest::gtest_main)
+                add_test(NAME all_tests COMMAND ${TESTBIN})
+        else()
+                message(WARNING "Testing enabled but no test file found under test/ directory")
+        endif()
 endif()

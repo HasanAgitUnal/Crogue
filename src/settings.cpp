@@ -1,18 +1,3 @@
-/*
- * Manage
- * ----------------
- *
- * ==# Vanilla
- *     Official base plugin for CROGUE
- *
- * #== Something
- *     Description for something
- *
- *
- * Enter to enable/disable, hjkl or arrow keys to navigate.
- *
- */
-
 #include <ncurses.h>
 #include <fstream>
 #include <sstream>
@@ -114,23 +99,44 @@ void plugin_manager() {
         mvprintw(0, 1, "Settings");
         print_line(1);
 
-        WINDOW *win = newwin(max_y - 4, max_x - 2, 3, 1);
-
-        int lastend = 0;
-        for (auto &[key, value] : game::settings::settings.items()) {
-                std::string name = key;
-                plugin_item_t plugin;
-                lastend = plugin2item(win, name, lastend, plugin);
-                print_plugin(win, plugin, true);
-        }
-
-        wrefresh(win);
-
         // bottom
         mvprintw(max_y - 2, 1, "Enter to enable/disable, hjkl or arrow keys to navigate");
 
-        // no keyboard handling yet, for testing ui printing without scroll
-        getch();
+        // center
+        WINDOW *win = newwin(max_y - 4, max_x - 2, 3, 1);
+
+        std::vector<std::string> plugin_names;
+        for (auto &[key, value] : game::settings::settings.items()) {
+                plugin_names.push_back(key);
+        }
+
+        int itemsc = game::settings::settings.size();
+        int choice = 0;
+        int key;
+        while (key != 'q') {
+                werase(win);
+
+                int lastend = 0;
+                int index = 0;
+                for (auto &[key, value] : game::settings::settings.items()) {
+                        std::string name = key;
+                        plugin_item_t plugin;
+                        lastend = plugin2item(win, name, lastend, plugin);
+                        print_plugin(win, plugin, index == choice ? true : false);
+                        index++;
+                }
+
+                wrefresh(win);
+
+                key = getch();
+                switch (key) {
+                        case 10:
+                        case KEY_ENTER:
+                                bool enabled = game::settings::settings[plugin_names[choice]]["enabled"].get<bool>();
+                                game::settings::settings[plugin_names[choice]]["enabled"] = !enabled;
+                                break;
+                }
+        }
 
         delwin(win);
 }
