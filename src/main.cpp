@@ -33,16 +33,24 @@
 #include <execinfo.h>
 #include <boost/stacktrace.hpp>
 #include <csignal>
+#endif
 
 void segfault_handler(int sig) {
         endwin();
 
+#ifdef DEBUG
         minilog::err(minilog::msg::error, "=== SEGMENTATION FAULT ===\033[0m\n");
         minilog::err(boost::stacktrace::stacktrace());
 
+#endif
         exit(139);
 }
-#endif
+
+void interrupt_handler(int sig) {
+        endwin();
+        cleanup_lua();
+        exit(130);
+}
 
 void handle_cli(int argc, char **argv) {
         CLI::App app{"crogue - Card Based Roguelike Game"};
@@ -76,9 +84,9 @@ void handle_cli(int argc, char **argv) {
  */
 
 int main(int argc, char **argv) {
-#ifdef DEBUG
         signal(SIGSEGV, segfault_handler);
-#endif
+        signal(SIGTERM, interrupt_handler);
+        signal(SIGINT, interrupt_handler);
 
         // setup minilog categories
         minilog::categories["seed"] = "3;98m";
@@ -93,6 +101,7 @@ int main(int argc, char **argv) {
         minilog::categories["uilog"] = "1;3;93m";
         minilog::categories["test"] = "31m";
         minilog::categories["lua"] = "38;5;21m";
+        minilog::categories["settings"] = "38;5;49m";
 
         minilog::fout(logfile, minilog::msg::info, "---- START ----");
 
@@ -111,8 +120,14 @@ int main(int argc, char **argv) {
 
         setup_colors();
 
-        // start game
-        scene::main_menu();
+        try {
+                // start game
+                scene::main_menu();
+
+        } catch (std::exception &e) {
+                endwin();
+                minilog::fatal(1, "An exception throwed: ", e.what());
+        }
 
         cleanup_lua();
         endwin();

@@ -186,13 +186,6 @@ void setup_lua();
 void load_plugin(const fs::path &plugindir) {
         std::string pluginname = plugindir.filename().string();
 
-        // load metadata
-        game::settings::metadata[pluginname] = safe_load(pluginname, plugindir / "metadata.json");
-        game::settings::settings[pluginname] = safe_load(pluginname, plugindir / "settings.json");
-
-        // if plugin is loaded its enabled
-        game::settings::settings[pluginname]["enabled"] = true;
-
         // load lua script
         fs::path initfile = plugindir / "init.lua";
         minilog::fdebugc("lua", logfile, "Loading plugin: ", pluginname);
@@ -284,15 +277,33 @@ void load_plugins() {
 
                 std::string pluginname = subpath.filename().string();
 
-                // create "enabled" if does not exitst
+                // true by default
+                bool is_enabled = game_settings.contains(pluginname) ? game_settings[pluginname].get<bool>() : true;
+
+                // create pluginname key
                 if (!game::settings::settings.contains(pluginname) ||
-                    !game::settings::settings[pluginname].is_boolean()) {
-                        game::settings::settings[pluginname] = true;
-                        game_settings[pluginname] = true;
+                    !game::settings::settings[pluginname].is_object()) {
+                        game::settings::settings[pluginname] = json::object();
                 }
 
-                if (game::settings::settings[pluginname].get<bool>()) {
+                // set enabled
+                game::settings::settings[pluginname]["enabled"] = is_enabled;
+
+                if (is_enabled) {
                         load_plugin(subpath);
+                }
+
+                // plugin metadata
+                game::settings::metadata[pluginname] = safe_load(pluginname, subpath / "metadata.json");
+
+                // plugin settings
+                json plugin_cfg = safe_load(pluginname, subpath / "settings.json");
+                if (plugin_cfg.is_object()) {
+                        for (auto &[key, value] : plugin_cfg.items()) {
+                                if (key != "enabled") {  // do not override enabled
+                                        game::settings::settings[pluginname][key] = value;
+                                }
+                        }
                 }
         }
 

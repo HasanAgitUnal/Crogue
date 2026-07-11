@@ -24,6 +24,7 @@
 #include "lua.hpp"
 #include "minilog.hpp"
 #include "scenes.hpp"
+#include "settings.hpp"
 #include "tui.hpp"
 
 namespace scene {
@@ -151,9 +152,7 @@ void main_menu() {
                                         press_enter_to_continue();
 
                                 } else if (menu[choice] == "Settings") {
-                                        mvprintw(0, 0, "settings: %s", game::settings::settings.dump(2).c_str());
-                                        refresh();
-                                        getch();
+                                        settings();
 
                                 } else if (menu[choice] == "Quit") {
                                         return;

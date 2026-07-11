@@ -24,10 +24,23 @@
 #include "tui.hpp"
 
 void setup_colors() {
-        // 256
+        //// 256 ////
         for (int i = 0; i < COLORS && i < COLOR_PAIRS - 1; i++) {
                 init_pair(i + 1, i, -1);
         }
+
+        //// settings ////
+
+        // enabled switch
+        init_extended_pair(310, COLOR_WHITE, 245);
+        init_extended_pair(311, COLOR_WHITE, 250);  // head
+
+        // disabled switch
+        init_extended_pair(312, COLOR_WHITE, 235);
+        init_extended_pair(313, COLOR_WHITE, 240);  // head
+
+        // hovered item
+        init_extended_pair(314, COLOR_WHITE, 236);
 }
 
 void print_line(int line) {
