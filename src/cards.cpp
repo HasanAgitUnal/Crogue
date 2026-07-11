@@ -51,6 +51,20 @@ void reset_game(bool full) {
                 game::deck.clear();
                 game::buffs.clear();
                 game::plugin_errors.clear();
+
+                game::hooks::start.clear();
+                game::hooks::reload.clear();
+                game::hooks::before_refresh.clear();
+                game::hooks::after_refresh.clear();
+                game::hooks::end.clear();
+                game::hooks::card_event.clear();
+                game::hooks::item.clear();
+                game::hooks::key.clear();
+                game::hooks::level_up.clear();
+                game::hooks::level_gen.clear();
+                game::hooks::slot.clear();
+                game::hooks::die.clear();
+                game::hooks::draw.clear();
         }
 }
 
