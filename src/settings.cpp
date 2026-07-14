@@ -95,15 +95,9 @@ void plugin_manager() {
         int max_y, max_x;
         getmaxyx(stdscr, max_y, max_x);
 
-        // top
-        mvprintw(0, 1, "Manager");
-        print_line(1);
-
-        // bottom
-        mvprintw(max_y - 2, 1, "Enter to enable/disable, d to delete, hjkl or arrow keys to navigate");
-
-        // center
-        WINDOW *win = newwin(max_y - 5, max_x - 2, 3, 1);
+        // scrollable pad
+        WINDOW *pad = newpad(200, max_x - 2);
+        int offset = 0;
 
         std::vector<std::string> plugin_names;
         for (auto &[key, value] : game::settings::settings.items()) {
@@ -114,7 +108,19 @@ void plugin_manager() {
         int choice = 0;
         int key;
         while (key != 'q') {
-                werase(win);
+                clear();
+                // top
+                mvprintw(0, 1, "Manager");
+                print_line(1);
+
+                // bottom
+                mvprintw(max_y - 1, 1, "Enter to enable/disable, d to delete, hjkl or arrow keys to navigate");
+                refresh();
+
+                // center
+                int view_height = (max_y - 3) - 3;
+
+                werase(pad);
 
                 int lastend = 0;
                 int index = 0;
@@ -122,15 +128,28 @@ void plugin_manager() {
                 for (auto &[key, value] : game::settings::settings.items()) {
                         std::string name = key;
                         plugin_item_t plugin;
-                        lastend = plugin2item(win, name, lastend, plugin);
-                        print_plugin(win, plugin, index == choice ? true : false);
+                        lastend = plugin2item(pad, name, lastend, plugin);
+                        print_plugin(pad, plugin, index == choice ? true : false);
+
+                        if (index == choice) {
+                                if (plugin.startline < offset)
+                                        offset = plugin.startline;
+                                if (plugin.startline >= offset + view_height)
+                                        offset = plugin.startline - view_height + 1;
+                        }
+
                         index++;
                 }
 
-                wrefresh(win);
+                prefresh(pad, offset, 0, 3, 1, 3 + view_height, max_x - 2);
 
                 key = getch();
                 switch (key) {
+                        case KEY_RESIZE:
+                                getmaxyx(stdscr, max_y, max_x);
+                                wresize(pad, 200, max_x - 2);
+                                break;
+
                         case 10:
                         case KEY_ENTER: {
                                 bool enabled = game::settings::settings[plugin_names[choice]]["enabled"].get<bool>();
@@ -140,32 +159,24 @@ void plugin_manager() {
 
                         case 'j':
                         case KEY_DOWN:
-                                if (choice == itemsc - 1) {
-                                        choice = 0;
-                                } else {
-                                        choice++;
-                                }
-
+                                choice = (choice + 1) % itemsc;
                                 break;
 
                         case 'k':
                         case KEY_UP:
-                                if (choice == 0) {
-                                        choice = itemsc - 1;
-                                } else {
-                                        choice--;
-                                }
+                                choice = (choice - 1 + itemsc) % itemsc;
                                 break;
+
                         case 'd': {
                                 std::string plugin = plugin_names[choice];
 
                                 int y, x;
-                                getmaxyx(win, y, x);
-                                wattron(win, COLOR_PAIR(5));
+                                getmaxyx(pad, y, x);
+                                wattron(pad, COLOR_PAIR(5));
                                 curs_set(2);
-                                mvwprintw(win, y - 2, 0, "Are you sure [Y/n]?");
-                                wattroff(win, COLOR_PAIR(5));
-                                wrefresh(win);
+                                mvwprintw(pad, y - 2, 0, "Are you sure [Y/n]?");
+                                wattroff(pad, COLOR_PAIR(5));
+                                wrefresh(pad);
 
                                 while (true) {
                                         int key = getch();
@@ -203,7 +214,7 @@ void plugin_manager() {
                 }
         }
 
-        delwin(win);
+        delwin(pad);
 }
 
 void settings() {
