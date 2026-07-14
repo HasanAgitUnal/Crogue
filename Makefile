@@ -16,8 +16,11 @@ endif
 
 build:
 	@sleep 0.5
-	@printf -- "-- APPNAME: $(APPNAME)\n"
-	@printf -- "-- CMAKE_FLAGS: $(CMAKE_FLAGS)\n"
+	@printf -- "-- COPY_COMPILE_COMMANDS  : $(COPY_COMPILE_COMMANDS)\n"
+	@printf -- "-- APPNAME                : $(APPNAME)\n"
+	@printf -- "-- RUNFLAGS               : $(RUNFLAGS)\n"
+	@printf -- "-- CMAKE_FLAGS            : $(CMAKE_FLAGS)\n"
+	@printf -- "-- Running CMake\n"
 	@mkdir -p $(BUILD_DIR)
 	@cd $(BUILD_DIR) && cmake $(CMAKE_FLAGS) ..
 	@$(MAKE) -C $(BUILD_DIR)
@@ -26,9 +29,9 @@ dbuild: BUILD_TYPE = -DCMAKE_BUILD_TYPE=Debug
 dbuild: build
 
 run: build
-	@printf "[ \033[32mRUN\033[0m ] running with flags: $(RUNFLAGS)\n"
+	@printf -- "-- Running $(APPNAME) with flags: $(RUNFLAGS)\n"
 	@./$(BUILD_DIR)/bin/$(APPNAME) $(RUNFLAGS); \
-	printf "[ \033[32mRUN\033[0m ] finished with status: $$?\n"
+	printf -- "-- $(APPNAME) finished with status: $$?\n"
 
 drun: dbuild run
 
@@ -38,7 +41,7 @@ test: build
 
 clean:
 	@rm -rf $(BUILD_DIR)
-	@printf "[ \033[93mCLEAN\033[0m ] finished\n"
+	@printf -- "-- Cleaned build directory\n"
 
 log:
 	@-tail -n 1 -F $(LOGFILE)

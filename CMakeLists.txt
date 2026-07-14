@@ -25,8 +25,20 @@ option(TEST_ENABLED "Enable Tests" OFF)
 
 find_program(CCACHE_PROGRAM ccache)
 if(CCACHE_PROGRAM)
-    set(CMAKE_CXX_COMPILER_LAUNCHER "${CCACHE_PROGRAM}")
-    set(CMAKE_C_COMPILER_LAUNCHER "${CCACHE_PROGRAM}")
+        message(STATUS "CCache found and using it")
+        set(CMAKE_CXX_COMPILER_LAUNCHER "${CCACHE_PROGRAM}")
+        set(CMAKE_C_COMPILER_LAUNCHER "${CCACHE_PROGRAM}")
+else()
+        message(STATUS "CCache not found")
+endif()
+
+find_program(LLD_PROGRAM ld.lld)
+if(LLD_PROGRAM)
+        message(STATUS "LLD found and using it")
+        set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -fuse-ld=lld")
+        set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -fuse-ld=lld")
+else()
+        message(STATUS "LLD not found")
 endif()
 
 #
@@ -54,8 +66,8 @@ pkg_check_modules(NCURSESW REQUIRED IMPORTED_TARGET ncursesw)
 
 # Precompiled Headers
 target_precompile_headers(${APPNAME} PRIVATE
-    <nlohmann/json.hpp>
-    <sol/sol.hpp>
+        <nlohmann/json.hpp>
+        <sol/sol.hpp>
 )
 
 #
@@ -76,6 +88,7 @@ target_link_libraries(${APPNAME} PRIVATE
 #
 
 if(TEST_ENABLED)
+        message(STATUS "Testing is enabled so configuring it")
         enable_testing()
         find_package(GTest REQUIRED)
         include(GoogleTest)
