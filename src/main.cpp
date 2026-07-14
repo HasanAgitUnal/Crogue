@@ -48,7 +48,6 @@ void segfault_handler(int sig) {
 
 void interrupt_handler(int sig) {
         endwin();
-        cleanup_lua();
         exit(130);
 }
 
@@ -125,6 +124,7 @@ int main(int argc, char **argv) {
                 scene::main_menu();
 
         } catch (std::exception &e) {
+                cleanup_lua();
                 endwin();
                 minilog::fatal(1, "An exception throwed: ", e.what());
         }

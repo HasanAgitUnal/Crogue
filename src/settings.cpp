@@ -96,14 +96,14 @@ void plugin_manager() {
         getmaxyx(stdscr, max_y, max_x);
 
         // top
-        mvprintw(0, 1, "Settings");
+        mvprintw(0, 1, "Manager");
         print_line(1);
 
         // bottom
-        mvprintw(max_y - 2, 1, "Enter to enable/disable, hjkl or arrow keys to navigate");
+        mvprintw(max_y - 2, 1, "Enter to enable/disable, d to delete, hjkl or arrow keys to navigate");
 
         // center
-        WINDOW *win = newwin(max_y - 4, max_x - 2, 3, 1);
+        WINDOW *win = newwin(max_y - 5, max_x - 2, 3, 1);
 
         std::vector<std::string> plugin_names;
         for (auto &[key, value] : game::settings::settings.items()) {
@@ -118,6 +118,7 @@ void plugin_manager() {
 
                 int lastend = 0;
                 int index = 0;
+
                 for (auto &[key, value] : game::settings::settings.items()) {
                         std::string name = key;
                         plugin_item_t plugin;
@@ -155,6 +156,50 @@ void plugin_manager() {
                                         choice--;
                                 }
                                 break;
+                        case 'd': {
+                                std::string plugin = plugin_names[choice];
+
+                                int y, x;
+                                getmaxyx(win, y, x);
+                                wattron(win, COLOR_PAIR(5));
+                                curs_set(2);
+                                mvwprintw(win, y - 2, 0, "Are you sure [Y/n]?");
+                                wattroff(win, COLOR_PAIR(5));
+                                wrefresh(win);
+
+                                while (true) {
+                                        int key = getch();
+                                        if (key == 'Y' || key == 'y') {
+                                                fs::path plugin_path = get_data_dir() / plugin;
+                                                std::error_code e;
+                                                fs::remove_all(plugin_path, e);
+                                                if (e) {
+                                                        endwin();
+                                                        minilog::fatal(1, "Can't delete directory \"", plugin,
+                                                                       "\": ", e.message());
+                                                }
+
+                                                // update plugin names
+                                                plugin_names.clear();
+                                                for (auto &[key, value] : game::settings::settings.items()) {
+                                                        plugin_names.push_back(key);
+                                                }
+
+                                                int itemsc = game::settings::settings.size();
+                                                if (choice == itemsc) {
+                                                        choice--;
+                                                }
+
+                                                break;
+
+                                        } else if (key == 'n' || key == 'N') {
+                                                break;
+                                        }
+                                }
+
+                                curs_set(0);
+                                break;
+                        }
                 }
         }
 
@@ -162,6 +207,8 @@ void plugin_manager() {
 }
 
 void settings() {
+        clear();
+        refresh();
         plugin_manager();
 
         // save settings

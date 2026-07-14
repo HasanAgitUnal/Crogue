@@ -29,4 +29,6 @@ Under development.
 - [x] hooks (level complete, keyboard handling in plugin etc.)
 
 - [ ] plugin manager && plugin settings in main menu
+  - [x] Plugin manager to enable/disable or delete plugins
+  - [ ] Plugin settings
 - [ ] create vanilla plugins to make a playable game
