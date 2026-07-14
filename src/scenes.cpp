@@ -82,7 +82,7 @@ void main_menu() {
                 return;
         }
 
-        std::vector<std::string> menu = {"Play", "Random Seed", "Seed:", "Reload Plugins", "Settings", "Quit"};
+        std::vector<std::string> menu = {"Play", "Random Seed", "Seed:", "Plugin Manager", "Reload Plugins", "Quit"};
         int choice = 0;
         int key = 0;
 
@@ -153,7 +153,7 @@ void main_menu() {
                                         mvprintw(max_y - 2, 0, "Successfuly reloaded plugins!");
                                         press_enter_to_continue();
 
-                                } else if (menu[choice] == "Settings") {
+                                } else if (menu[choice] == "Plugin Manager") {
                                         settings();
 
                                 } else if (menu[choice] == "Quit") {

@@ -88,6 +88,17 @@ int plugin2item(WINDOW *win, std::string &pluginname, int start, plugin_item_t &
         return start + plugin.desc.size() + 2;
 }
 
+void plugin_settings(std::string pluginname) {
+        int max_y, max_x;
+        getmaxyx(stdscr, max_y, max_x);
+
+        // scrollable pad
+        WINDOW *manager_pad = newpad(200, max_x - 2);
+        int offset = 0;
+
+        // TODO create a scrollable settings menu
+}
+
 void plugin_manager() {
         minilog::fdebugc("settings", logfile, "settings: ", game::settings::settings.dump(4));
         minilog::fdebugc("settings", logfile, "metadata: ", game::settings::metadata.dump(4));
@@ -96,7 +107,7 @@ void plugin_manager() {
         getmaxyx(stdscr, max_y, max_x);
 
         // scrollable pad
-        WINDOW *pad = newpad(200, max_x - 2);
+        WINDOW *manager_pad = newpad(200, max_x - 2);
         int offset = 0;
 
         std::vector<std::string> plugin_names;
@@ -114,13 +125,13 @@ void plugin_manager() {
                 print_line(1);
 
                 // bottom
-                mvprintw(max_y - 1, 1, "Enter to enable/disable, d to delete, hjkl or arrow keys to navigate");
+                mvprintw(max_y - 1, 1, "[Enter] Toggle, [d] Delete, [j/k/arrows] Navigate");
                 refresh();
 
                 // center
                 int view_height = (max_y - 3) - 3;
 
-                werase(pad);
+                werase(manager_pad);
 
                 int lastend = 0;
                 int index = 0;
@@ -128,8 +139,8 @@ void plugin_manager() {
                 for (auto &[key, value] : game::settings::settings.items()) {
                         std::string name = key;
                         plugin_item_t plugin;
-                        lastend = plugin2item(pad, name, lastend, plugin);
-                        print_plugin(pad, plugin, index == choice ? true : false);
+                        lastend = plugin2item(manager_pad, name, lastend, plugin);
+                        print_plugin(manager_pad, plugin, index == choice ? true : false);
 
                         if (index == choice) {
                                 if (plugin.startline < offset)
@@ -141,13 +152,13 @@ void plugin_manager() {
                         index++;
                 }
 
-                prefresh(pad, offset, 0, 3, 1, 3 + view_height, max_x - 2);
+                prefresh(manager_pad, offset, 0, 3, 1, 3 + view_height, max_x - 2);
 
                 key = getch();
                 switch (key) {
                         case KEY_RESIZE:
                                 getmaxyx(stdscr, max_y, max_x);
-                                wresize(pad, 200, max_x - 2);
+                                wresize(manager_pad, 200, max_x - 2);
                                 break;
 
                         case 10:
@@ -171,12 +182,12 @@ void plugin_manager() {
                                 std::string plugin = plugin_names[choice];
 
                                 int y, x;
-                                getmaxyx(pad, y, x);
-                                wattron(pad, COLOR_PAIR(5));
+                                getmaxyx(manager_pad, y, x);
+                                wattron(manager_pad, COLOR_PAIR(5));
                                 curs_set(2);
-                                mvwprintw(pad, y - 2, 0, "Are you sure [Y/n]?");
-                                wattroff(pad, COLOR_PAIR(5));
-                                wrefresh(pad);
+                                mvwprintw(manager_pad, y - 2, 0, "Are you sure [Y/n]?");
+                                wattroff(manager_pad, COLOR_PAIR(5));
+                                wrefresh(manager_pad);
 
                                 while (true) {
                                         int key = getch();
@@ -214,7 +225,7 @@ void plugin_manager() {
                 }
         }
 
-        delwin(pad);
+        delwin(manager_pad);
 }
 
 void settings() {

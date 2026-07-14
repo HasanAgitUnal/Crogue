@@ -19,6 +19,7 @@
 #include <unistd.h>
 #include <CLI/CLI.hpp>
 #include <clocale>
+#include <csignal>
 #include <cstdlib>
 #include <random>
 #include <string>
@@ -32,7 +33,6 @@
 #ifdef DEBUG
 #include <execinfo.h>
 #include <boost/stacktrace.hpp>
-#include <csignal>
 #endif
 
 void segfault_handler(int sig) {
