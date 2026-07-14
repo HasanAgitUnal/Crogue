@@ -170,7 +170,7 @@ void plugin_manager() {
                                 while (true) {
                                         int key = getch();
                                         if (key == 'Y' || key == 'y') {
-                                                fs::path plugin_path = get_data_dir() / plugin;
+                                                fs::path plugin_path = get_data_dir() / "plugins" / plugin;
                                                 std::error_code e;
                                                 fs::remove_all(plugin_path, e);
                                                 if (e) {
