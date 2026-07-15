@@ -77,6 +77,8 @@ void cleanup_lua() {
 
         // Force Lua garbage collection to clean up any remaining references
         game::lua.collect_garbage();
+
+        minilog::fdebugc("setup", logfile, "Cleaned Lua");
 }
 
 /*

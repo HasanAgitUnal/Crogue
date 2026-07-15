@@ -101,6 +101,7 @@ int main(int argc, char **argv) {
         minilog::categories["test"] = "31m";
         minilog::categories["lua"] = "38;5;21m";
         minilog::categories["settings"] = "38;5;49m";
+        minilog::categories["cli"] = "38;5;178m";
 
         minilog::fout(logfile, minilog::msg::info, "---- START ----");
 

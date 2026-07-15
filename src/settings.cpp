@@ -192,6 +192,8 @@ void plugin_manager() {
                                 while (true) {
                                         int key = getch();
                                         if (key == 'Y' || key == 'y') {
+                                                minilog::fdebugc("settings", logfile, "Deleting plugin: ", plugin);
+
                                                 fs::path plugin_path = get_data_dir() / "plugins" / plugin;
                                                 std::error_code e;
                                                 fs::remove_all(plugin_path, e);
@@ -200,6 +202,8 @@ void plugin_manager() {
                                                         minilog::fatal(1, "Can't delete directory \"", plugin,
                                                                        "\": ", e.message());
                                                 }
+
+                                                minilog::fdebugc("settings", logfile, "Deleted plugin: ", plugin);
 
                                                 // update plugin names
                                                 plugin_names.clear();
@@ -241,6 +245,7 @@ void settings() {
         }
 
         fs::path settings_path = get_data_dir() / "settings.json";
+        minilog::fdebugc("settings", logfile, "Saving game settings to ", settings_path.string());
         std::ofstream settings_file(settings_path.string());
         if (!settings_file.is_open()) {
                 clear();
@@ -249,8 +254,9 @@ void settings() {
                 attroff(COLOR_PAIR(4));  // yellow
                 refresh();
                 getch();
+        } else {
+                settings_file << game_settings.dump(4);
+                settings_file.close();
+                minilog::fdebugc("settings", logfile, "Saved game settings to ", settings_path.string());
         }
-
-        settings_file << game_settings.dump(4);
-        settings_file.close();
 }

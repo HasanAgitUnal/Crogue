@@ -78,6 +78,7 @@ void main_menu() {
 
         if (game::_skip_main_menu) {
                 // play game for once and exit sliently
+                minilog::fdebugc("cli", logfile, "Skipping main menu");
                 game();
                 return;
         }
