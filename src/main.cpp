@@ -37,6 +37,7 @@
 
 void segfault_handler(int sig) {
         endwin();
+        cleanup_lua();
 
 #ifdef DEBUG
         minilog::err(minilog::msg::error, "=== SEGMENTATION FAULT ===\033[0m\n");
@@ -48,6 +49,7 @@ void segfault_handler(int sig) {
 
 void interrupt_handler(int sig) {
         endwin();
+        cleanup_lua();
         exit(130);
 }
 
