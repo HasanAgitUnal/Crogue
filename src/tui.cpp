@@ -245,6 +245,41 @@ std::string to_roman(int n) {
         return res;
 }
 
+std::string handle_input(WINDOW *win, int y, int start_x, int box_size, std::string value, std::string allowed_chars,
+                         std::function<void(void)> refresher) {
+
+        curs_set(2);
+        auto redraw_input = [&]() {
+                mvwprintw(win, y, start_x, "%-*s", box_size, value.c_str());
+                mvwchgat(win, y, start_x, box_size, A_NORMAL, 501, NULL);
+                wmove(win, y, start_x + value.length());
+                refresher();  // support for refresh(), wrefresh() and prefresh() in lazy way
+        };
+
+        int ch;
+        while (ch != '\n' && ch != KEY_ENTER && ch != 10) {
+                redraw_input();
+
+                ch = getch();
+
+                if (ch == 27)
+                        break;
+
+                if (ch == KEY_BACKSPACE || ch == 127 || ch == 8) {
+                        if (!value.empty())
+                                value.pop_back();
+
+                } else if (value.length() < (size_t)box_size) {
+                        if (allowed_chars.empty() || allowed_chars.find((char)ch) != std::string::npos) {
+                                value += (char)ch;
+                        }
+                }
+        }
+        curs_set(0);
+
+        return value;
+}
+
 /*
  * Main Menu
  */

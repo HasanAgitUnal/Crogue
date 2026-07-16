@@ -20,8 +20,6 @@
 #include <string>
 #include <vector>
 
-#include "game.hpp"
-
 // Colored CROGUE word
 inline std::string banner = R"(
 [38;5;7m   [38;5;236m▒[38;5;242m██[38;5;239m█[38;5;22m█[38;5;236m▒[38;5;7m  [38;5;240m██[38;5;22m██[38;5;244m██[38;5;236m▒[38;5;7m    [38;5;2m░[38;5;22m█[38;5;28m█[38;5;242m██[38;5;240m░[38;5;7m     [38;5;236m▒[38;5;244m██[38;5;22m██[38;5;54m▒[38;5;7m  [38;5;22m██[38;5;7m    [38;5;55m█[38;5;54m█[38;5;7m  [38;5;55m█[38;5;56m█[38;5;93m███[38;5;56m█[38;5;55m██
@@ -46,6 +44,9 @@ void print_ansi(const std::string &str);
 int get_real_size(const std::string &line);
 std::string to_roman(int n);
 void print_line(int line);
+std::string handle_input(WINDOW *win, int y, int start_x, int box_size, std::string value, std::string allowed_chars,
+                         std::function<void(void)> refresher);
+
 
 /*
  * Main Menu

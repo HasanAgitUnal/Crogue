@@ -83,7 +83,7 @@ void print_plugin(WINDOW *win, plugin_item_t &plugin, bool hovered) {
 }
 
 // function used to edit settings
-void toggle_setting(WINDOW *win, settings_item_t &setting) {
+void toggle_setting(WINDOW *win, settings_item_t &setting, std::function<void(void)> refresher) {
         json current_value = game::settings::settings[setting.plugin_name][setting.data["option"].get<std::string>()];
         if (setting.data["type"].get<std::string>() == "switch") {
                 bool value = current_value.get<bool>();
@@ -91,7 +91,20 @@ void toggle_setting(WINDOW *win, settings_item_t &setting) {
                 game::settings::settings[setting.plugin_name][setting.data["option"]] = !value;
 
         } else if (setting.data["type"].get<std::string>() == "input") {
-                // SOME AI TOUCH HERE NEEDED
+                int max_y, max_x;
+                getmaxyx(stdscr, max_y, max_x);
+
+                std::string current_str = current_value.get<std::string>();
+
+                // clang-format off
+
+                int box_size = 6 + setting.title.length();
+                std::string new_value = handle_input(win, setting.startline, box_size, max_x - box_size - 2, current_str, "", refresher);
+
+                // clang-format on
+
+                game::settings::settings[setting.plugin_name][setting.data["option"]] = new_value;
+
         } else if (setting.data["type"].get<std::string>() == "choose") {
                 // empty for now
         }
@@ -120,8 +133,30 @@ void print_setting(WINDOW *win, settings_item_t &setting, bool hovered) {
 
 
         } else if (setting.data["type"].get<std::string>() == "input") {
-                std::string value = current_value.get<std::string>();
-                // SOME AI TOUCH HERE NEEDED
+                std::string val = current_value.get<std::string>();
+
+                int max_y, max_x;
+                getmaxyx(win, max_y, max_x);
+
+                int start_x = 4 + setting.title.length() + 2;
+                int box_size = max_x - start_x - 2;
+
+                if (hovered) {
+                        wattr_set(win, A_UNDERLINE, (int)314, NULL);
+                        mvwprintw(win, setting.startline, 4, "%s:", setting.title.c_str());
+                        wattr_set(win, A_NORMAL, 0, NULL);
+                } else {
+                        mvwprintw(win, setting.startline, 4, "%s:", setting.title.c_str());
+                }
+
+                mvwprintw(win, setting.startline, start_x, "%-*s", box_size, val.c_str());
+
+                mvwchgat(win, setting.startline, start_x, box_size, A_NORMAL, 500, NULL);
+
+                int line_n = setting.startline + 1;
+                for (std::string line : setting.desc) {
+                        mvwprintw(win, line_n++, 4, "%s", line.c_str());
+                }
 
         } else if (setting.data["type"].get<std::string>() == "choose") {
                 std::string value = current_value.get<std::string>();
@@ -162,22 +197,67 @@ void plugin_settings(std::string pluginname) {
         getmaxyx(stdscr, max_y, max_x);
 
         // scrollable pad
-        WINDOW *manager_pad = newpad(500, max_x - 2);
-        //  TEST:
+        WINDOW *settings_pad = newpad(500, max_x - 2);
 
-        settings_item_t item;
+        int offset = 0;
+        auto refresher = [&]() { prefresh(settings_pad, offset, 0, 0, 0, max_y - 1, max_x - 2); };
 
-        setting2item(manager_pad, pluginname, 0, game::settings::metadata[pluginname]["settings"][0], item);
+        // generate UI
+        std::vector<settings_item_t> items;
+        int lastend = 0;
+        for (auto setting : game::settings::metadata[pluginname]["settings"]) {
+                settings_item_t item;
+                lastend = setting2item(settings_pad, pluginname, lastend, setting, item);
+                items.push_back(item);
+        }
 
-        print_setting(manager_pad, item, false);
+        int itemsc = items.size();
+        int key = 0;
+        int choice = 0;
+        while (key != 'q') {
+                int view_height = max_y - 1;
+                werase(settings_pad);
 
-        prefresh(manager_pad, 0, 0, 0, 0, max_y - 1, max_x - 1);
+                for (int i = 0; i < itemsc; i++) {
+                        print_setting(settings_pad, items[i], i == choice);
 
-        getch();
+                        if (i == choice) {
+                                if (items[i].startline < offset)
+                                        offset = items[i].startline;
+                                if (items[i].startline >= offset + view_height - 2)
+                                        offset = items[i].startline - view_height + 3;
+                        }
+                }
 
-        //  TEST:
+                refresher();
 
-        delwin(manager_pad);
+                key = getch();
+                switch (key) {
+                        case 'j':
+                        case KEY_DOWN:
+                                choice = (choice + 1) % itemsc;
+                                break;
+
+                        case 'k':
+                        case KEY_UP:
+                                choice = (choice - 1 + itemsc) % itemsc;
+                                break;
+
+                        case 10:
+                        case KEY_ENTER:
+                                toggle_setting(settings_pad, items[choice], refresher);
+                                break;
+
+                        case KEY_RESIZE:
+                                getmaxyx(stdscr, max_y, max_x);
+                                wresize(settings_pad, 200, max_x - 2);
+                                clear();
+                                refresh();
+                                break;
+                }
+        }
+
+        delwin(settings_pad);
 }
 
 void plugin_manager() {
@@ -234,11 +314,6 @@ void plugin_manager() {
 
                 key = getch();
                 switch (key) {
-                        case KEY_RESIZE:
-                                getmaxyx(stdscr, max_y, max_x);
-                                wresize(manager_pad, 200, max_x - 2);
-                                break;
-
                         case 10:
                         case KEY_ENTER: {
                                 bool enabled = game::settings::settings[plugin_names[choice]]["enabled"].get<bool>();
@@ -304,6 +379,11 @@ void plugin_manager() {
                                 curs_set(0);
                                 break;
                         }
+
+                        case KEY_RESIZE:
+                                getmaxyx(stdscr, max_y, max_x);
+                                wresize(manager_pad, 200, max_x - 2);
+                                break;
                 }
         }
 
