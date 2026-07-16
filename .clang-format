@@ -1,0 +1,29 @@
+---
+BasedOnStyle: Google
+
+IndentWidth: 8
+AccessModifierOffset: -8
+UseTab: Never
+ColumnLimit: 120
+
+MaxEmptyLinesToKeep: 3
+KeepEmptyLinesAtTheStartOfBlocks: true
+
+SeparateDefinitionBlocks: Always
+
+EmptyLineBeforeAccessModifier: Always
+
+AllowShortFunctionsOnASingleLine: Empty
+BraceWrapping:
+  SplitEmptyFunction: false
+  AfterClass: false
+
+AllowShortBlocksOnASingleLine: false
+AllowShortIfStatementsOnASingleLine: Never
+AllowShortLoopsOnASingleLine: false
+
+PointerAlignment: Right
+SpaceBeforeParens: ControlStatements
+IndentCaseLabels: true
+IncludeBlocks: Preserve
+---

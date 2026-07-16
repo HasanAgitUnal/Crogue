@@ -46,4 +46,12 @@ clean:
 log:
 	@-tail -n 10 -F $(LOGFILE)
 
-.PHONY: all build dbuild run drun test clean log
+format:
+	@command -v clang-format >/dev/null 2>&1 || { printf -- '-- clang-format not found\n'; exit 1; }
+	@for dir in src include test; do \
+		if [ -d "$$dir" ]; then \
+			find "$$dir" -type f \( -name "*.cpp" -o -name "*.h" -o -name "*.cc" -o -name "*.hpp" \) -exec clang-format -i -style=file {} \; ; \
+		fi; \
+	done
+
+.PHONY: all build dbuild run drun test clean log format
