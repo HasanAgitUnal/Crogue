@@ -72,7 +72,7 @@ inline void debug(const MSG &...msg) {
 
 template <typename... MSG>
 inline void fatal(const char e_code, const MSG &...message) {
-        err(msg::fatal, message...);
+        err(msg::fatal, message..., "\033[0m");
         exit(e_code);
 }
 
@@ -97,7 +97,7 @@ inline void fdebug(const std::string &filename, const MSG &...msg) {
 
 template <typename... MSG>
 inline void ffatal(const std::string &filename, const MSG &...message) {
-        fout(filename, msg::fatal, message...);
+        fout(filename, msg::fatal, message..., "\033[0m");
         exit(1);
 }
 
@@ -128,7 +128,7 @@ inline void debugc(const std::string cat, const MSG &...msg) {
 
 template <typename... MSG>
 inline void fatalc(const std::string cat, const char e_code, const MSG &...message) {
-        errc(cat, msg::fatal, message...);
+        errc(cat, msg::fatal, message..., "\033[0m");
         exit(e_code);
 }
 

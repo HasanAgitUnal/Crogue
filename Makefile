@@ -44,6 +44,6 @@ clean:
 	@printf -- "-- Cleaned build directory\n"
 
 log:
-	@-tail -n 1 -F $(LOGFILE)
+	@-tail -n 10 -F $(LOGFILE)
 
 .PHONY: all build dbuild run drun test clean log

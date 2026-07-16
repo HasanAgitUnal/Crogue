@@ -15,7 +15,17 @@ struct plugin_item_t {
         int startline;
 };
 
+struct settings_item_t {
+        std::string plugin_name;
+        std::string title;
+        std::string option;
+        std::vector<std::string> desc;
+        int startline;
+        json data;
+};
+
 std::vector<std::string> wrap_text(std::string text, int width) {
+
         std::vector<std::string> lines;
         std::stringstream ss(text);
         std::string word, line;
@@ -34,32 +44,29 @@ std::vector<std::string> wrap_text(std::string text, int width) {
         return lines;
 }
 
-void print_switch(WINDOW *win, plugin_item_t &plugin) {
-        bool enabled = game::settings::settings[plugin.name]["enabled"].get<bool>();
+void print_switch(WINDOW *win, int line, bool enabled) {
         if (enabled) {
                 wattr_set(win, A_NORMAL, (int)311, NULL);
-                mvwprintw(win, plugin.startline, 0, "  ");
+                mvwprintw(win, line, 0, "  ");
 
                 wattr_set(win, A_NORMAL, (int)310, NULL);
-                mvwprintw(win, plugin.startline, 2, " ");
+                mvwprintw(win, line, 2, " ");
 
                 wattr_set(win, A_NORMAL, 0, NULL);
         } else {
                 wattr_set(win, A_NORMAL, (int)313, NULL);
-                mvwprintw(win, plugin.startline, 0, " ");
+                mvwprintw(win, line, 0, " ");
 
                 wattr_set(win, A_NORMAL, (int)312, NULL);
-                mvwprintw(win, plugin.startline, 1, "  ");
+                mvwprintw(win, line, 1, "  ");
 
                 wattr_set(win, A_NORMAL, 0, NULL);
         }
 }
 
 void print_plugin(WINDOW *win, plugin_item_t &plugin, bool hovered) {
-        wmove(win, plugin.startline, 1);
-
         bool enabled = game::settings::settings[plugin.name]["enabled"].get<bool>();
-        print_switch(win, plugin);
+        print_switch(win, plugin.startline, enabled);
 
         if (hovered) {
                 wattr_set(win, A_UNDERLINE, (int)314, NULL);
@@ -72,6 +79,53 @@ void print_plugin(WINDOW *win, plugin_item_t &plugin, bool hovered) {
         int line_n = plugin.startline + 1;
         for (std::string line : plugin.desc) {
                 mvwprintw(win, line_n++, 4, "%s", line.c_str());
+        }
+}
+
+// function used to edit settings
+void toggle_setting(WINDOW *win, settings_item_t &setting) {
+        json current_value = game::settings::settings[setting.plugin_name][setting.data["option"].get<std::string>()];
+        if (setting.data["type"].get<std::string>() == "switch") {
+                bool value = current_value.get<bool>();
+                // invert value
+                game::settings::settings[setting.plugin_name][setting.data["option"]] = !value;
+
+        } else if (setting.data["type"].get<std::string>() == "input") {
+                // SOME AI TOUCH HERE NEEDED
+        } else if (setting.data["type"].get<std::string>() == "choose") {
+                // empty for now
+        }
+}
+
+void print_setting(WINDOW *win, settings_item_t &setting, bool hovered) {
+        minilog::fdebugc("settings", logfile, setting.data.dump(4));
+        json current_value = game::settings::settings[setting.plugin_name][setting.data["option"].get<std::string>()];
+
+        if (setting.data["type"].get<std::string>() == "switch") {
+                bool enabled = current_value.get<bool>();
+                print_switch(win, setting.startline, enabled);
+
+                if (hovered) {
+                        wattr_set(win, A_UNDERLINE, (int)314, NULL);
+                        mvwprintw(win, setting.startline, 4, "%s", setting.title.c_str());
+                        wattr_set(win, A_NORMAL, 0, NULL);
+                } else {
+                        mvwprintw(win, setting.startline, 4, "%s", setting.title.c_str());
+                }
+
+                int line_n = setting.startline + 1;
+                for (std::string line : setting.desc) {
+                        mvwprintw(win, line_n++, 4, "%s", line.c_str());
+                }
+
+
+        } else if (setting.data["type"].get<std::string>() == "input") {
+                std::string value = current_value.get<std::string>();
+                // SOME AI TOUCH HERE NEEDED
+
+        } else if (setting.data["type"].get<std::string>() == "choose") {
+                std::string value = current_value.get<std::string>();
+                // empty for now
         }
 }
 
@@ -88,26 +142,50 @@ int plugin2item(WINDOW *win, std::string &pluginname, int start, plugin_item_t &
         return start + plugin.desc.size() + 2;
 }
 
+int setting2item(WINDOW *win, std::string plugin, int start, json &data, settings_item_t &setting) {
+        int max_y, max_x;
+        getmaxyx(win, max_y, max_x);
+
+        setting.plugin_name = plugin;
+        setting.title = data["name"];
+        setting.desc = wrap_text(data["description"].get<std::string>(), max_x);
+        setting.option = data["option"];
+        setting.startline = start;
+        setting.data = data;
+
+        // end line
+        return start + setting.desc.size() + 2;
+}
+
 void plugin_settings(std::string pluginname) {
         int max_y, max_x;
         getmaxyx(stdscr, max_y, max_x);
 
         // scrollable pad
-        WINDOW *manager_pad = newpad(200, max_x - 2);
-        int offset = 0;
+        WINDOW *manager_pad = newpad(500, max_x - 2);
+        //  TEST:
 
-        // TODO create a scrollable settings menu
+        settings_item_t item;
+
+        setting2item(manager_pad, pluginname, 0, game::settings::metadata[pluginname]["settings"][0], item);
+
+        print_setting(manager_pad, item, false);
+
+        prefresh(manager_pad, 0, 0, 0, 0, max_y - 1, max_x - 1);
+
+        getch();
+
+        //  TEST:
+
+        delwin(manager_pad);
 }
 
 void plugin_manager() {
-        minilog::fdebugc("settings", logfile, "settings: ", game::settings::settings.dump(4));
-        minilog::fdebugc("settings", logfile, "metadata: ", game::settings::metadata.dump(4));
-
         int max_y, max_x;
         getmaxyx(stdscr, max_y, max_x);
 
         // scrollable pad
-        WINDOW *manager_pad = newpad(200, max_x - 2);
+        WINDOW *manager_pad = newpad(500, max_x - 2);
         int offset = 0;
 
         std::vector<std::string> plugin_names;
@@ -233,8 +311,18 @@ void plugin_manager() {
 }
 
 void settings() {
+        minilog::fdebugc("settings", logfile, "settings: ", game::settings::settings.dump(4));
+        minilog::fdebugc("settings", logfile, "metadata: ", game::settings::metadata.dump(4));
+
         clear();
         refresh();
+
+#ifdef DEBUG
+        // TEST:
+        plugin_settings("vanilla");
+        return;
+#endif
+
         plugin_manager();
 
         // save settings

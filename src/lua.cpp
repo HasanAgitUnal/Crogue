@@ -261,16 +261,30 @@ void load_plugins() {
                 }
 
                 // plugin metadata
+                // TODO: add a check_metadata function
                 game::settings::metadata[pluginname] = safe_load(pluginname, subpath / "metadata.json");
 
                 // plugin settings
-                json plugin_cfg = safe_load(pluginname, subpath / "settings.json");
-                if (plugin_cfg.is_object()) {
-                        for (auto &[key, value] : plugin_cfg.items()) {
-                                if (key != "enabled") {  // do not override enabled
-                                        game::settings::settings[pluginname][key] = value;
+                if (fs::exists(subpath / "settings.json")) {
+                        json plugin_cfg = safe_load(pluginname, subpath / "settings.json");
+                        if (plugin_cfg.is_object()) {
+                                for (auto &[key, value] : plugin_cfg.items()) {
+                                        if (key != "enabled") {  // do not override enabled
+                                                game::settings::settings[pluginname][key] = value;
+                                        }
                                 }
                         }
+                } else {
+                        minilog::fdebugc("settings", logfile, "Generating default settings.json file for ", pluginname);
+                        for (auto setting : game::settings::metadata[pluginname]["settings"]) {
+                                game::settings::settings[pluginname][setting.at("option")] = setting.at("default");
+                        }
+
+                        std::ofstream file(subpath / "settings.json");
+                        json settings = game::settings::settings[pluginname];
+                        settings.erase("enabled");
+                        file << settings.dump(4);
+                        file.close();
                 }
         }
 

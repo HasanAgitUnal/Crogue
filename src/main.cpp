@@ -127,6 +127,8 @@ int main(int argc, char **argv) {
         } catch (std::exception &e) {
                 cleanup_lua();
                 endwin();
+                minilog::fdebugc("setup", logfile, "Exiting with status: 1");
+                minilog::fout(logfile, minilog::msg::info, "----  END  ----");
                 minilog::fatal(1, "An exception throwed: ", e.what());
         }
 

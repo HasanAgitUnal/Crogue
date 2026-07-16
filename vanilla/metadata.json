@@ -1,4 +1,33 @@
 {
         "name": "Vanilla",
-        "description": "Official base plugin for CROGUE"
+        "description": "Official base plugin for CROGUE",
+        "settings": [
+                {
+                        "type": "switch",
+                        "name": "Enable Teleporter",
+                        "description": "enable teleporter",
+                        "option": "enable_teleporter",
+                        "default": true
+                },
+                {
+                        "type": "input",
+                        "name": "Zombie Name",
+                        "description": "Custom zombie name",
+                        "option": "zombie_name",
+                        "hint": "",
+                        "default": "zombie"
+                },
+                {
+                        "type": "choose",
+                        "name": "Mode",
+                        "description": "Select Mode",
+                        "option": "my_mode",
+                        "values": [
+                                "Easy",
+                                "Normal",
+                                "Hard"
+                        ],
+                        "default": "Normal"
+                }
+        ]
 }
