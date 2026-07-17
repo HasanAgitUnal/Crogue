@@ -4,6 +4,10 @@
 
   * [First Plugin](./First-Plugin)
 
+* **Metadata**
+
+  * [Metadata][./Metadata]
+  * [Settings][./Settings]
 
 * **Variable Types and Variables**
 
