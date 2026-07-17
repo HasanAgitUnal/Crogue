@@ -42,6 +42,6 @@ All keys of the objects under `settings` are **REQUIRED** when `settings` is giv
 
 If `metadata.json` is invalid, CROGUE won't load your plugin and give an error to user.
 
-See [Settings][./Settings] for usage of this settings on lua code.
+See [Settings](./Settings) for usage of this settings on lua code.
 
 
