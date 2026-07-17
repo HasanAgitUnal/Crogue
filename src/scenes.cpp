@@ -112,7 +112,9 @@ void main_menu() {
                         case 'l':
                         case KEY_ENTER:
                                 if (menu[choice] == "Play") {
+                                        minilog::fdebugc("setup", logfile, "Starting game.");
                                         game();
+
                                 } else if (menu[choice] == "Seed:") {
                                         int max_y, max_x;
                                         getmaxyx(stdscr, max_y, max_x);

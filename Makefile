@@ -50,7 +50,7 @@ format:
 	@command -v clang-format >/dev/null 2>&1 || { printf -- '-- clang-format not found\n'; exit 1; }
 	@for dir in src include test; do \
 		if [ -d "$$dir" ]; then \
-			find "$$dir" -type f \( -name "*.cpp" -o -name "*.h" -o -name "*.cc" -o -name "*.hpp" -o "*.cxx" -o "*.hxx" -o "*.ixx" \) -exec clang-format -i -style=file {} \; ; \
+			find "$$dir" -type f \( -name "*.cpp" -o -name "*.h" -o -name "*.cc" -o -name "*.hpp" -o -name "*.cxx" -o -name "*.hxx" -o -name "*.ixx" \) -exec clang-format -i -style=file {} \; ; \
 		fi; \
 	done
 

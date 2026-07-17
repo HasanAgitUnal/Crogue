@@ -82,6 +82,61 @@ void print_plugin(WINDOW *win, plugin_item_t &plugin, bool hovered) {
         }
 }
 
+// offset of plugin_settings offset value
+// its here because choosable settings type needs this to draw choose menu
+int settings_offset = 0;
+
+std::string handle_menu(WINDOW *win, std::vector<std::string> items) {
+        int itemsc = items.size();
+        int key;
+        int choice = 0;
+        int offset = 0;
+        int max_y, max_x;
+        getmaxyx(win, max_y, max_x);
+
+        while (true) {
+                werase(win);
+
+                if (choice < offset)
+                        offset = choice;
+                if (choice >= offset + max_y)
+                        offset = choice - max_y + 1;
+
+                for (int i = 0; i < itemsc; i++) {
+                        if (i >= offset && i < offset + max_y) {
+                                int y_pos = i - offset;
+
+                                mvwprintw(win, y_pos, 0, "%s", items[i].c_str());
+
+                                mvwchgat(win, y_pos, 0, max_x, A_NORMAL, 501, NULL);
+
+                                if (i == choice) {
+                                        mvwchgat(win, y_pos, 0, max_x, A_BOLD, (int)314, NULL);
+                                }
+                        }
+                }
+
+                wrefresh(win);
+
+                key = getch();
+                switch (key) {
+                        case 'j':
+                        case KEY_DOWN:
+                                choice = (choice + 1) % itemsc;
+                                break;
+                        case 'k':
+                        case KEY_UP:
+                                choice = (choice - 1 + itemsc) % itemsc;
+                                break;
+                        case 10:  // ENTER
+                        case KEY_ENTER:
+                                return items[choice];
+                        case 27:  // ESC
+                                return "";
+                }
+        }
+}
+
 // function used to edit settings
 void toggle_setting(WINDOW *win, settings_item_t &setting, std::function<void(void)> refresher) {
         json current_value = game::settings::settings[setting.plugin_name][setting.data["option"].get<std::string>()];
@@ -106,12 +161,42 @@ void toggle_setting(WINDOW *win, settings_item_t &setting, std::function<void(vo
                 game::settings::settings[setting.plugin_name][setting.data["option"]] = new_value;
 
         } else if (setting.data["type"].get<std::string>() == "choose") {
-                // empty for now
+                std::vector<std::string> options = setting.data["values"].get<std::vector<std::string>>();
+
+                int screen_max_y, screen_max_x;
+                getmaxyx(stdscr, screen_max_y, screen_max_x);
+
+                int current_line_y = setting.startline - settings_offset;
+                int menu_height = (int)options.size();
+
+                int menu_y;
+                if (current_line_y + 1 + menu_height < screen_max_y) {
+                        menu_y = current_line_y + 1;
+                } else {
+                        menu_y = current_line_y - menu_height;
+                }
+
+                int start_x = 4 + setting.title.length() + 2;
+                int box_size = screen_max_x - start_x - 4;
+
+                // Pencereyi oluştur
+                WINDOW *menu_win = newwin(menu_height, box_size, menu_y, start_x);
+                keypad(menu_win, TRUE);
+
+                // Menüyü çalıştır
+                std::string selected = handle_menu(menu_win, options);
+
+                if (!selected.empty()) {
+                        game::settings::settings[setting.plugin_name][setting.data["option"]] = selected;
+                }
+
+                delwin(menu_win);
+                touchwin(win);
+                refresher();
         }
 }
 
 void print_setting(WINDOW *win, settings_item_t &setting, bool hovered) {
-        minilog::fdebugc("settings", logfile, setting.data.dump(4));
         json current_value = game::settings::settings[setting.plugin_name][setting.data["option"].get<std::string>()];
 
         if (setting.data["type"].get<std::string>() == "switch") {
@@ -159,8 +244,30 @@ void print_setting(WINDOW *win, settings_item_t &setting, bool hovered) {
                 }
 
         } else if (setting.data["type"].get<std::string>() == "choose") {
-                std::string value = current_value.get<std::string>();
-                // empty for now
+                std::string val = current_value.get<std::string>();
+
+                int max_y, max_x;
+                getmaxyx(win, max_y, max_x);
+
+                int start_x = 4 + setting.title.length() + 2;
+                int box_size = max_x - start_x - 2;
+
+                if (hovered) {
+                        wattr_set(win, A_UNDERLINE, (int)314, NULL);
+                        mvwprintw(win, setting.startline, 4, "%s:", setting.title.c_str());
+                        wattr_set(win, A_NORMAL, 0, NULL);
+                } else {
+                        mvwprintw(win, setting.startline, 4, "%s:", setting.title.c_str());
+                }
+
+                mvwprintw(win, setting.startline, start_x, "%-*s", box_size, val.c_str());
+
+                mvwchgat(win, setting.startline, start_x, box_size, A_NORMAL, (int)314, NULL);
+
+                int line_n = setting.startline + 1;
+                for (std::string line : setting.desc) {
+                        mvwprintw(win, line_n++, 4, "%s", line.c_str());
+                }
         }
 }
 
@@ -199,12 +306,12 @@ void plugin_settings(std::string pluginname) {
         // scrollable pad
         WINDOW *settings_pad = newpad(500, max_x - 2);
 
-        int offset = 0;
-        auto refresher = [&]() { prefresh(settings_pad, offset, 0, 0, 0, max_y - 1, max_x - 2); };
+        auto refresher = [&]() { prefresh(settings_pad, settings_offset, 0, 3, 0, max_y - 5, max_x - 2); };
 
         // generate UI
         std::vector<settings_item_t> items;
         int lastend = 0;
+
         for (auto setting : game::settings::metadata[pluginname]["settings"]) {
                 settings_item_t item;
                 lastend = setting2item(settings_pad, pluginname, lastend, setting, item);
@@ -215,17 +322,23 @@ void plugin_settings(std::string pluginname) {
         int key = 0;
         int choice = 0;
         while (key != 'q') {
-                int view_height = max_y - 1;
+                mvprintw(0, 1, "Settings: %s", pluginname.c_str());
+                print_line(1);
+
+                mvprintw(max_y - 1, 0, "[q] Quit, [Enter] Edit, [r] Reset to default, [j/k/arrows] Navigate");
+                refresh();
+
+                int view_height = max_y - 5;
                 werase(settings_pad);
 
                 for (int i = 0; i < itemsc; i++) {
                         print_setting(settings_pad, items[i], i == choice);
 
                         if (i == choice) {
-                                if (items[i].startline < offset)
-                                        offset = items[i].startline;
-                                if (items[i].startline >= offset + view_height - 2)
-                                        offset = items[i].startline - view_height + 3;
+                                if (items[i].startline < settings_offset)
+                                        settings_offset = items[i].startline;
+                                if (items[i].startline >= settings_offset + view_height - 2)
+                                        settings_offset = items[i].startline - view_height + 3;
                         }
                 }
 
@@ -243,6 +356,12 @@ void plugin_settings(std::string pluginname) {
                                 choice = (choice - 1 + itemsc) % itemsc;
                                 break;
 
+                        case 'r':
+                                // reset to default
+                                game::settings::settings[pluginname][items[choice].data["option"]] =
+                                    items[choice].data["default"];
+                                break;
+
                         case 10:
                         case KEY_ENTER:
                                 toggle_setting(settings_pad, items[choice], refresher);
@@ -256,6 +375,17 @@ void plugin_settings(std::string pluginname) {
                                 break;
                 }
         }
+
+        // save settings
+        fs::path file_path = get_data_dir() / "plugins" / pluginname / "settings.json";
+        std::ofstream file(file_path);
+
+        json settings = game::settings::settings[pluginname];
+        settings.erase("enabled");
+
+        file << settings.dump(4);
+        file.close();
+        minilog::fdebugc("settings", logfile, "Saved plugin settings to ", file_path);
 
         delwin(settings_pad);
 }
@@ -277,13 +407,10 @@ void plugin_manager() {
         int choice = 0;
         int key;
         while (key != 'q') {
-                clear();
-                // top
                 mvprintw(0, 1, "Manager");
                 print_line(1);
 
-                // bottom
-                mvprintw(max_y - 1, 1, "[Enter] Toggle, [d] Delete, [j/k/arrows] Navigate");
+                mvprintw(max_y - 1, 0, "[q] Quit, [Enter] Toggle, [d] Delete, [s] Settings, [j/k/arrows] Navigate");
                 refresh();
 
                 // center
@@ -329,6 +456,12 @@ void plugin_manager() {
                         case 'k':
                         case KEY_UP:
                                 choice = (choice - 1 + itemsc) % itemsc;
+                                break;
+
+                        case 's':
+                                if (game::settings::metadata[plugin_names[choice]].contains("settings")) {
+                                        plugin_settings(plugin_names[choice]);
+                                }
                                 break;
 
                         case 'd': {
@@ -391,17 +524,11 @@ void plugin_manager() {
 }
 
 void settings() {
-        minilog::fdebugc("settings", logfile, "settings: ", game::settings::settings.dump(4));
-        minilog::fdebugc("settings", logfile, "metadata: ", game::settings::metadata.dump(4));
+        minilog::fdebugc("settings", logfile, "settings: ", game::settings::settings.dump());
+        minilog::fdebugc("settings", logfile, "metadata: ", game::settings::metadata.dump());
 
         clear();
         refresh();
-
-#ifdef DEBUG
-        // TEST:
-        plugin_settings("vanilla");
-        return;
-#endif
 
         plugin_manager();
 

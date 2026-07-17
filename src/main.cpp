@@ -90,7 +90,7 @@ int main(int argc, char **argv) {
         signal(SIGINT, interrupt_handler);
 
         // setup minilog categories
-        minilog::categories["seed"] = "3;98m";
+        minilog::categories["seed"] = "3;96m";
         minilog::categories["setup"] = "32m";
         minilog::categories["event"] = "36m";
         minilog::categories["player"] = "1;96m";

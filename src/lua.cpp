@@ -78,7 +78,7 @@ void cleanup_lua() {
         // Force Lua garbage collection to clean up any remaining references
         game::lua.collect_garbage();
 
-        minilog::fdebugc("setup", logfile, "Cleaned Lua");
+        minilog::fdebugc("lua", logfile, "Cleaned Lua");
 }
 
 /*
@@ -181,7 +181,7 @@ void load_plugins() {
                 } catch (json::parse_error &e) {
                         minilog::fdebug(logfile, minilog::msg::error, "While parsing settings.json: ", e.what());
                 }
-                minilog::fdebug(logfile, "loading settings.json");
+                minilog::fdebugc("settings", logfile, "loading settings.json");
         }
 
         // get enabled values
