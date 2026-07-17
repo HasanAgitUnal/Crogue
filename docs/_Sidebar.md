@@ -6,8 +6,8 @@
 
 * **Metadata**
 
-  * [Metadata][./Metadata]
-  * [Settings][./Settings]
+  * [Metadata](./Metadata)
+  * [Settings](./Settings)
 
 * **Variable Types and Variables**
 
