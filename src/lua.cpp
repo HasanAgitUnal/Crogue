@@ -119,6 +119,90 @@ json safe_load(const std::string pluginname, const fs::path path) {
 
 // clang-format on
 
+std::string check_metadata(const json &metadata) {
+        if (!metadata.contains("name")) {
+                return "does not contains \"name\" key";
+        }
+
+        if (!metadata.contains("description")) {
+                return "does not contains \"description\" key";
+        }
+
+        if (!metadata["name"].is_string()) {
+                return "\"name\" key is not string";
+        }
+
+        if (!metadata["description"].is_string()) {
+                return "\"description\" key is not string";
+        }
+
+        if (metadata.contains("settings")) {
+                if (!metadata["settings"].is_array()) {
+                        return "\"settings\" key is not array";
+                }
+
+                if (metadata["settings"].empty()) {
+                        return "\"settings\" key is empty";
+                }
+
+                for (auto s : metadata["settings"]) {
+                        std::vector<std::string> required_keys = {"type", "name", "description", "option"};
+
+                        for (auto key : required_keys) {
+                                if (!s.contains(key) || !s[key].is_string()) {
+                                        return "\"key\" is not found / has invalid type on a setting";
+                                }
+                        }
+
+                        if (!s.contains("default")) {
+                                return "a setting does not contains \"default\" key";
+                        }
+
+                        std::string type = s["type"].get<std::string>();
+                        if (type == "switch") {
+                                if (!s["default"].is_boolean()) {
+                                        return "default value type of a switch setting is wrong";
+                                }
+
+                        } else if (type == "input") {
+                                if (!s["default"].is_string()) {
+                                        return "default value type of a input setting is wrong";
+                                }
+
+                        } else if (type == "choose") {
+                                if (!s["default"].is_string()) {
+                                        return "default value type of a choose setting is wrong";
+                                }
+
+                                if (!s.contains("values") || !s["values"].is_array()) {
+                                        return "a choose setting does not contains \"values\" key";
+                                }
+
+                                for (auto v : s["values"]) {
+                                        if (!v.is_string()) {
+                                                return "a value of choose setting is not a string";
+                                        }
+                                }
+
+                                bool found = false;
+                                for (const auto &val : s["values"]) {
+                                        if (val == s["default"]) {
+                                                found = true;
+                                                break;
+                                        }
+                                }
+
+                                if (!found) {
+                                        return "default value of a choose setting is not found in its values array";
+                                }
+                        } else {
+                                return "a setting has a invalid type";
+                        }
+                }
+        }
+
+        return "";
+}
 
 // function moved to end of file
 // it was too long
@@ -244,25 +328,18 @@ void load_plugins() {
 
                 std::string pluginname = subpath.filename().string();
 
-                // true by default
-                bool is_enabled = game_settings.contains(pluginname) ? game_settings[pluginname].get<bool>() : true;
-
-                // create pluginname key
-                if (!game::settings::settings.contains(pluginname) ||
-                    !game::settings::settings[pluginname].is_object()) {
-                        game::settings::settings[pluginname] = json::object();
-                }
-
-                // set enabled
-                game::settings::settings[pluginname]["enabled"] = is_enabled;
-
-                if (is_enabled) {
-                        load_plugin(subpath);
-                }
-
                 // plugin metadata
-                // TODO: add a check_metadata function
-                game::settings::metadata[pluginname] = safe_load(pluginname, subpath / "metadata.json");
+                json metadata = safe_load(pluginname, subpath / "metadata.json");
+                std::string error = check_metadata(metadata);
+                if (!error.empty()) {
+                        game::plugin_errors[pluginname] = "E: metadata.json: " + error;
+                        // clean game::settings to prevent errors
+                        game::settings::settings.erase(pluginname);
+                        game::settings::metadata.erase(pluginname);
+                        continue;
+                }
+
+                game::settings::metadata[pluginname] = metadata;
 
                 // plugin settings
                 if (fs::exists(subpath / "settings.json")) {
@@ -285,6 +362,23 @@ void load_plugins() {
                         settings.erase("enabled");
                         file << settings.dump(4);
                         file.close();
+                }
+
+                // true by default
+                bool is_enabled = game_settings.contains(pluginname) ? game_settings[pluginname].get<bool>() : true;
+
+                // create pluginname key
+                if (!game::settings::settings.contains(pluginname) ||
+                    !game::settings::settings[pluginname].is_object()) {
+                        game::settings::settings[pluginname] = json::object();
+                }
+
+                // set enabled
+                game::settings::settings[pluginname]["enabled"] = is_enabled;
+
+                // load lua file
+                if (is_enabled) {
+                        load_plugin(subpath);
                 }
         }
 

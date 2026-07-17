@@ -527,6 +527,15 @@ void settings() {
         minilog::fdebugc("settings", logfile, "settings: ", game::settings::settings.dump());
         minilog::fdebugc("settings", logfile, "metadata: ", game::settings::metadata.dump());
 
+        if (game::settings::metadata.empty()) {
+                // return if no plugin loaded
+                int max_y, max_x;
+                getmaxyx(stdscr, max_y, max_x);
+                mvprintw(max_y - 1, 0, "No plugin loaded!");
+                getch();
+                return;
+        }
+
         clear();
         refresh();
 

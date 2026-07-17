@@ -65,6 +65,30 @@ std::shared_ptr<scene_t> create_scene(sol::table table) {
         return nullptr;
 }
 
+sol::table get_settings(const std::string plugin) {
+        sol::table table = game::lua.create_table();
+
+        minilog::fdebug(logfile, "plugin name: '", plugin, "'");
+
+        if (!game::settings::settings.contains(plugin)) {
+                throw sol::error::runtime_error("Invalid plugin name");
+        }
+
+        auto plugin_settings = game::settings::settings[plugin];
+        minilog::fdebug(logfile, "value!!", game::settings::settings.dump(4));
+        for (auto [key, value] : plugin_settings.items()) {
+                if (value.is_boolean()) {
+                        bool v = value.get<bool>();
+                        table[key] = v;
+                } else if (value.is_string()) {
+                        std::string v = value.get<std::string>();
+                        table[key] = v;
+                }
+        }
+
+        return table;
+}
+
 void setup_lua() {
         game::lua.open_libraries(sol::lib::base, sol::lib::table, sol::lib::package, sol::lib::string, sol::lib::math);
         // clang-format off
@@ -166,6 +190,8 @@ void setup_lua() {
 
         crogue["basic_card_event"] = &basic_card_event;
         crogue["card_event"] = &card_event;
+
+        crogue["settings"] = &get_settings;
 
         crogue["hook"] = [](std::string event, sol::function func) {
                 try {

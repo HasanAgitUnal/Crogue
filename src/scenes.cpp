@@ -169,15 +169,24 @@ void main_menu() {
 }
 
 void game() {
+        if (game::settings::metadata.empty()) {
+                // return if no plugin loaded
+                int max_y, max_x;
+                getmaxyx(stdscr, max_y, max_x);
+                mvprintw(max_y - 1, 0, "No plugin loaded!");
+                getch();
+                return;
+        }
+
         reset_game(false);
 
         minilog::fdebugc("setup", logfile, "Generating levels");
         generate_levels();
 
         if (game::levels.empty()) {
-                clear();
-                printw("No level created!!");
-                refresh();
+                int max_y, max_x;
+                getmaxyx(stdscr, max_y, max_x);
+                mvprintw(max_y - 1, 0, "No level created!");
                 getch();
                 return;
         }
