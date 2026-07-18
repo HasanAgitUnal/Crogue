@@ -300,6 +300,9 @@ int setting2item(WINDOW *win, std::string plugin, int start, json &data, setting
 }
 
 void plugin_settings(std::string pluginname) {
+        clear();
+        refresh();
+
         int max_y, max_x;
         getmaxyx(stdscr, max_y, max_x);
 
@@ -322,7 +325,7 @@ void plugin_settings(std::string pluginname) {
         int key = 0;
         int choice = 0;
         while (key != 'q') {
-                mvprintw(0, 1, "Settings: %s", pluginname.c_str());
+                mvprintw(0, 1, "Settings: %s", game::settings::metadata[pluginname]["name"].get<std::string>().c_str());
                 print_line(1);
 
                 mvprintw(max_y - 1, 0, "[q] Quit, [Enter] Edit, [r] Reset to default, [j/k/arrows] Navigate");
@@ -388,6 +391,9 @@ void plugin_settings(std::string pluginname) {
         minilog::fdebugc("settings", logfile, "Saved plugin settings to ", file_path);
 
         delwin(settings_pad);
+
+        clear();
+        refresh();
 }
 
 void plugin_manager() {

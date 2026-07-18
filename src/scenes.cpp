@@ -208,6 +208,16 @@ void game() {
                         break;
                 }
 
+                if (game::player::level == (int)game::levels.size()) {
+                        clear();
+                        printw("You are exiting from dungeon with your loot!");
+                        refresh();
+                        getch();
+
+                        minilog::fdebugc("setup", logfile, "player reached last level");
+                        return;
+                }
+
                 game::hooks::trigger(game::hooks::before_refresh);
 
                 clear();

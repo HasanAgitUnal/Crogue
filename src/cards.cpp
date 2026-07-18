@@ -112,14 +112,7 @@ int exit_gate() {
         game::hooks::trigger(game::hooks::level_up, game::player::level);
 
         if (game::player::level == (int)game::levels.size()) {
-                clear();
-                printw("You are exiting from dungeon with your loot!");
-                refresh();
-                getch();
-
-                minilog::fdebugc("setup", logfile, "player reached last level, exiting with status: 0");
-                endwin();
-                exit(0);
+                return 0;
         }
 
         game::levelid = game::levels[game::player::level]->id;
@@ -132,6 +125,10 @@ int exit_gate() {
         minilog::fdebugc("setup", logfile, "card_set size: ", (int)game::card_set.size());
 
         draw_slots();
+
+        game::slot1._lived = 0;
+        game::slot2._lived = 0;
+        game::slot3._lived = 0;
 
         log("You are now at level: " + game::levels[game::player::level]->name, WARN);
         return 0;
