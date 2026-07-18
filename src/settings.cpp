@@ -467,13 +467,15 @@ void plugin_manager() {
                         case 'd': {
                                 std::string plugin = plugin_names[choice];
 
-                                int y, x;
-                                getmaxyx(manager_pad, y, x);
-                                wattron(manager_pad, COLOR_PAIR(5));
+                                // clang-format off
+                                attron(COLOR_PAIR(5));
                                 curs_set(2);
-                                mvwprintw(manager_pad, y - 2, 0, "Are you sure [Y/n]?");
-                                wattroff(manager_pad, COLOR_PAIR(5));
-                                wrefresh(manager_pad);
+                                //                      [q] Quit, [Enter] Toggle, [d] Delete, [s] Settings, [j/k/arrows] Navigate
+                                mvprintw(max_y - 1, 0, "Are you sure [Y/n]?                                                      ");
+                                move (max_y-1, 19); // move cursor to the right position
+                                attroff(COLOR_PAIR(5));
+                                refresh();
+                                // clang-format on
 
                                 while (true) {
                                         int key = getch();
@@ -504,7 +506,7 @@ void plugin_manager() {
 
                                                 break;
 
-                                        } else if (key == 'n' || key == 'N') {
+                                        } else if (key == 'n' || key == 'N' || key == 27) {
                                                 break;
                                         }
                                 }
@@ -516,6 +518,8 @@ void plugin_manager() {
                         case KEY_RESIZE:
                                 getmaxyx(stdscr, max_y, max_x);
                                 wresize(manager_pad, 200, max_x - 2);
+                                clear();
+                                refresh();
                                 break;
                 }
         }

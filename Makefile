@@ -44,7 +44,7 @@ clean:
 	@printf -- "-- Cleaned build directory\n"
 
 log:
-	@-tail -n 10 -F $(LOGFILE)
+	@-tail -n 10 -F $(LOGFILE) 2>/dev/null
 
 format:
 	@command -v clang-format >/dev/null 2>&1 || { printf -- '-- clang-format not found\n'; exit 1; }
