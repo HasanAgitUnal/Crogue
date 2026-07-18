@@ -271,9 +271,11 @@ std::string handle_input(WINDOW *win, int y, int start_x, int box_size, std::str
 
                 } else if (value.length() < (size_t)box_size) {
                         // do not allow enter by default, but this can be overriden with allowed_chars
-                        if (ch != '\n' || ch != 10 || ch != KEY_ENTER || allowed_chars.empty() ||
-                            allowed_chars.find((char)ch) != std::string::npos) {
+                        if (allowed_chars.empty() && (ch != '\n' || ch != 10 || ch != KEY_ENTER)) {
+                                continue;
+                        }
 
+                        if (allowed_chars.empty() || allowed_chars.find((char)ch) != std::string::npos) {
                                 value += (char)ch;
                         }
                 }
