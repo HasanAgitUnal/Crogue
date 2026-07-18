@@ -26,6 +26,13 @@ option(TEST_ENABLED "Enable Tests" OFF)
 find_program(CCACHE_PROGRAM ccache)
 if(CCACHE_PROGRAM)
         message(STATUS "CCache found and using it")
+
+        message(STATUS "Configuring CCache")
+        execute_process(
+                COMMAND "${CCACHE_PROGRAM}" -o sloppiness=time_macros,pch_defines -o pch_external_checksum=true
+                WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+        )
+
         set(CMAKE_CXX_COMPILER_LAUNCHER "${CCACHE_PROGRAM}")
         set(CMAKE_C_COMPILER_LAUNCHER "${CCACHE_PROGRAM}")
 else()
@@ -45,7 +52,7 @@ endif()
 # Building
 #
 
-file(GLOB_RECURSE SOURCE_FILES "src/*.c" "src/*.cpp")
+file(GLOB_RECURSE SOURCE_FILES "src/*.c" "src/*.cpp" "src/*.cxx")
 
 add_executable(${APPNAME} ${SOURCE_FILES})
 
