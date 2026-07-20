@@ -31,6 +31,7 @@ zombie.name = "Zombie"
 zombie.type = cr.card_type.ENEMY
 zombie.level_ids = {}
 zombie.logmsg = "You killed a zombie"
+zombie.power = 1
 zombie.ttl = 3
 zombie.event = function()
     return -1;
@@ -45,6 +46,7 @@ local zombie = cr.create_card({
     type = cr.card_type.ENEMY,
     level_ids = {},
     logmsg = "You killed a zombie",
+    power = 1,
     ttl = 3,
     event = function()
         return -1;

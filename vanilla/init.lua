@@ -53,6 +53,7 @@ cr.create_card({
         level_ids = {},
         logmsg = "You killed a zombie",
         ttl = 3,
+        power = 1,
         event = function()
                 zombie_buff.level = zombie_buff.level + 1
                 return -1
@@ -67,6 +68,7 @@ if add_spider then
                 level_ids = { mf.id, ms.id },
                 logmsg = "You killed a spider",
                 ttl = 5,
+                power = 2,
                 event = function()
                         poison_buff.level = poison_buff.level + 3
                         return -2
@@ -82,6 +84,7 @@ cr.create_card({
         level_ids = {},
         logmsg = "You feel better",
         ttl = 0,
+        power = 0,
         event = function()
                 return 5
         end
@@ -94,6 +97,7 @@ cr.create_card({
         level_ids = {},
         logmsg = "",
         ttl = 10,
+        power = 10,
         event = function()
                 cr.log("You cant fight with a god!", cr.log_type.IMPORTANT)
                 cr.player.set_hp(0)
@@ -109,6 +113,7 @@ if add_apple then
                 level_ids = {},
                 logmsg = "This apple was yummy",
                 ttl = 0,
+                power = 0,
                 event = function()
                         return 1
                 end
@@ -123,12 +128,17 @@ if teleporter_enabled then
                 level_ids = { ef.id, mf.id },
                 logmsg = "You are teleported",
                 ttl = 0,
+                power = 0,
                 event = function()
                         local slots = { cr.stat.slot1, cr.stat.slot2, cr.stat.slot3 }
                         for _, slot in ipairs(slots) do
                                 if slot.front and slot.front.name ~= "~ Exit Gate ~" then
                                         -- move card at back to front and reset _lived
-                                        slot.front = slot.back
+                                        if slot.back then
+                                                slot.front = slot.back
+                                        else
+                                                slot.front = nil
+                                        end
                                         slot._lived = 0
 
                                         -- get a new card from card set for slot.back
@@ -153,8 +163,9 @@ cr.create_card({
         level_ids = {},
         logmsg = "You found a whising well",
         ttl = 0,
+        power = 0,
         event = function()
-                local whish = cr.ask_string("What you are whising? [hp / zr (zombification reset)]")
+                local whish = cr.ask_string("What you are whising? [hp / zr (zombification reset)]: ")
                 if whish == "hp" then
                         cr.log("You feel better", cr.log_type.NORMAL)
                         return 10

@@ -50,21 +50,23 @@ Always use `cr.create_` functions.
 
 `cr.obj.card` is the main variable type. It has this fields:
 
-| Field       | Type                | Description                                                                               |
-| :-:         | :-:                 | ---                                                                                       |
-| `count`     | integer             | Count of the card in deck                                                                 |
-| `name`      | string              | Card name                                                                                 |
-| `type`      | `cr.card_type`      | Card type                                                                                 |
-| `level_ids` | table with integers | A table contains level ids will card show up. If empty, card will show up in every level. |
-| `logmsg`    | string              | The log will appear after card used. Leave empty to disable.                              |
-| `ttl`       | integer             | Time-to-live for card. See below to understand. 0 to disable.                             | 
-| `event`     | function            | Card event to call. See below for details                                                 | 
+| Field       | Type                | Description                                                                                               |
+| :-:         | :-:                 | ---                                                                                                       |
+| `count`     | integer             | Count of the card in deck                                                                                 |
+| `name`      | string              | Card name                                                                                                 |
+| `type`      | `cr.card_type`      | Card type                                                                                                 |
+| `level_ids` | table with integers | A table contains level ids will card show up. If empty, card will show up in every level.                 |
+| `logmsg`    | string              | The log will appear after card used. Leave empty to disable.                                              |
+| `ttl`       | integer             | Time-to-live for card. See below to understand. 0 to disable.                                             |
+| `power`     | integer             | Power of the card. Not damage!!. No limit for its value but be carefull with it (1 = weak, 5 = powerfull, 10 = boss)    |
+| `event`     | function            | Card event to call. See below for details                                                                 |
 
 
 ###### Time-to-live
 
 `cr.obj.card_slot_t` has `_lived` field. If `_lived` value equals `ttl` value of the card at front of the slot, card event will be called.
-And also an extra damage will be applied. Extra damage calculated with: `_lived^2 / ttl`. If you dont want extra damage, you must manualy increase `cr.player.hp` to revert change.
+And also an extra damage will be applied. Extra damage calculated with: `power + (_lived * power / _lived) + (ttl / 2)`. If you dont want extra damage, you must manualy increase `cr.player.hp` to revert change.
+
 Best practice is using `ttl` **ALWAYS on negative** effecting cards.
 
 ###### Card Events
@@ -82,6 +84,7 @@ zombie.name = "Zombie"
 zombie.type = cr.card_type.ENEMY
 zombie.level_ids = {}  -- Zombie will appear on all levels!
 zombie.logmsg = "You killed a zombie"
+zombie.power = 1
 zombie.ttl = 3
 zombie.event = function()
     return -1;  -- Hit for 1 hp
@@ -102,6 +105,7 @@ local zombie = cr.create_card({
     type = cr.card_type.ENEMY,
     level_ids = {},
     logmsg = "You killed a zombie",
+    power = 1,
     ttl = 3,
     event = function()
         return -1;

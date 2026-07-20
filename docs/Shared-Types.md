@@ -50,13 +50,14 @@ shared_zombie.name = "Zombie"
 shared_zombie.type = cr.card_type.ENEMY
 shared_zombie.level_ids = {}
 shared_zombie.logmsg = "You killed a zombie"
+shared_zombie.power = 1
 shared_zombie.ttl = 3
 shared_zombie.event = function()
     return -1;
 end
 ```
 
-### I'm lazy
+### Auto-Synced and Readable Method
 
 I know you dont want to use that long syntax and add object to containers manualy.
 There is shortcuts and recommended ways for them:
@@ -69,6 +70,7 @@ local zombie = cr.create_card({
     level_ids = {},
     logmsg = "You killed a zombie",
     ttl = 3,
+    power = 1,
     event = function()
         return -1;
     end

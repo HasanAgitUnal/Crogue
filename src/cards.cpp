@@ -282,6 +282,7 @@ std::shared_ptr<card_t> create_card(const int count,
                 const std::vector<int> levelids,
                 const std::string &logmsg,
                 int ttl,
+                int power,
                 std::function<int()> event) {
 
 
@@ -292,6 +293,7 @@ std::shared_ptr<card_t> create_card(const int count,
                     levelids,
                     logmsg,
                     ttl,
+                    power,
                     std::move(event)}
         );
 
@@ -309,7 +311,9 @@ std::shared_ptr<card_t> create_card(sol::table table) {
                                 table.get<card_type>("type"),
                                 table.get<std::vector<int>>("level_ids"),
                                 table.get<std::string>("logmsg"),
-                                table.get<int>("ttl"), table.get<std::function<int()>>("event")
+                                table.get<int>("ttl"),
+                                table.get<int>("power"),
+                                table.get<std::function<int()>>("event")
                                 );
 
         } catch (const sol::error &e) {
@@ -459,7 +463,7 @@ void handle_slot(card_slot_t &slot) {
 
         int extra = 0;
         if (slot.front->ttl > 0) {
-                extra = (slot._lived * slot._lived) / slot.front->ttl;
+                extra = slot.front->power + (slot._lived * slot.front->power) / slot.front->ttl + (slot._lived / 2);
         }
         minilog::fdebugc("event", logfile, "Extra damage: ", extra);
         card_event(slot.front, extra);

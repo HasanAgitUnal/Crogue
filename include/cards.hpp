@@ -39,6 +39,7 @@ std::shared_ptr<card_t> create_card(const int count,
                 const std::vector<int> levelids,
                 const std::string &logmsg,
                 int ttl,
+                int power,
                 std::function<int()> event);
 // clang-format on
 

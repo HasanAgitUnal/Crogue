@@ -40,7 +40,8 @@ struct card_t {
         card_type type = BASIC;
         std::vector<int> level_ids;
         std::string logmsg = "";
-        int ttl = 0;  // time-to-live
+        int ttl = 0;    // time-to-live
+        int power = 0;  // power of the card (used for extra damage)
         std::function<int()> event = nullptr;
 };
 

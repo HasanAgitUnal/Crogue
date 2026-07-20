@@ -74,7 +74,7 @@ void main_menu() {
         plugin_errors();
         game::hooks::trigger(game::hooks::start);
 
-        create_card(1, "~ Exit Gate ~", EXIT, {}, "", 0, exit_gate);
+        create_card(1, "~ Exit Gate ~", EXIT, {}, "", 0, 0, exit_gate);
 
         if (game::_skip_main_menu) {
                 // play game for once and exit sliently
