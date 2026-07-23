@@ -227,8 +227,8 @@ bool on_level_complete(int curr_level) {
 
         attron(COLOR_PAIR(3));
 
-        mvprintw(0, 0, "Congratulations, you completed level %d. Next level is %s", curr_level,
-                 game::levels[curr_level - 1]->name.c_str());
+        mvprintw(0, 0, "Congratulations, you completed level %d (%s). Next level is %s", curr_level,
+                 game::levels[curr_level - 1]->name.c_str(), game::levels[curr_level]->name.c_str());
 
         attroff(COLOR_PAIR(3));
 
@@ -237,12 +237,9 @@ bool on_level_complete(int curr_level) {
         // clear logs
         game::logs.clear();
 
-        if (game::player::level == (int)game::levels.size()) {
-                return false;
-        }
-
         game::levelid = game::levels[game::player::level]->id;
         minilog::fdebugc("setup", logfile, "new level id: ", game::levelid);
+        minilog::fdebugc("setup", logfile, "new level name: ", game::levels[game::player::level]->name);
 
         minilog::fdebugc("setup", logfile, "resetting the cards");
         game::card_set = {};
@@ -301,13 +298,6 @@ void game() {
                 if (check_die()) {
                         break;
                 }
-
-                // check if level changed
-                if (last_level != game::player::level && last_level != -1) {
-                        on_level_complete(game::player::level);
-                }
-
-                last_level = game::player::level;
 
                 game::hooks::trigger(game::hooks::before_refresh);
 
@@ -395,6 +385,18 @@ void game() {
                                         }
                                 }
                 }
+                // check if level changed
+                if (last_level != game::player::level && last_level != -1) {
+                        // return if amulet of yendor found
+                        if (on_level_complete(game::player::level)) {
+                                return;
+                        }
+
+                        last_level = game::player::level;
+                        continue;
+                }
+
+                last_level = game::player::level;
 
                 // time-to-live
                 if (turn_taken) {

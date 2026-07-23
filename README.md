@@ -31,4 +31,10 @@ Under development.
 - [x] plugin manager && plugin settings in main menu
   - [x] Plugin manager to enable/disable or delete plugins
   - [x] Plugin settings
+
+- [ ] game saves system
+- [ ] add ncurses WINDOW management to cr.curses
+- [ ] allow plugins to save values (like cr.data.save("plugin_name", "scores.txt", data)).
+- [ ] code quality
+- [ ] optimizations
 - [ ] create vanilla plugins to make a playable game

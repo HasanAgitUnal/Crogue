@@ -561,7 +561,8 @@ void print_stats(int line) {
         attroff(COLOR_PAIR(9));
 
         mvprintw(line + 1, start_x + 2, "HP: %d", game::player::hp);
-        mvprintw(line + 2, start_x + 2, "LVL: %d", game::player::level);
+        mvprintw(line + 2, start_x + 2, "LVL: %d (%s)", game::player::level + 1,
+                 game::levels[game::player::level]->name.c_str());
 }
 
 int print_inventory(int line) {
