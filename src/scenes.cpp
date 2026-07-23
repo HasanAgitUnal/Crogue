@@ -385,6 +385,7 @@ void game() {
                                         }
                                 }
                 }
+
                 // check if level changed
                 if (last_level != game::player::level && last_level != -1) {
                         // return if amulet of yendor found
@@ -418,6 +419,18 @@ void game() {
                                 }
                         }
                 }
+
+                // check again
+                if (last_level != game::player::level && last_level != -1) {
+                        if (on_level_complete(game::player::level)) {
+                                return;
+                        }
+
+                        last_level = game::player::level;
+                        continue;
+                }
+
+                last_level = game::player::level;
         }
 }
 
