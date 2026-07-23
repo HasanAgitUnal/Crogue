@@ -21,6 +21,7 @@
 
 #include "cards.hpp"
 #include "game.hpp"
+#include "lua.hpp"
 #include "minilog.hpp"
 #include "tui.hpp"
 
@@ -172,7 +173,7 @@ std::shared_ptr<level_t> create_level(const std::string name) {
 
 std::shared_ptr<biome_t> create_biome(const int difficulty, const std::vector<std::shared_ptr<level_t>> &levels) {
         if (difficulty > 100 || difficulty < 0) {
-                endwin();
+                end_program();
                 minilog::fout(minilog::msg::fatal,
                               "[setup] While creating a biome: difficulty value should be in range 0-100");
                 minilog::fatal(1, "While creating a biome: difficulty value should be in range 0-100");

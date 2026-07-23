@@ -492,7 +492,7 @@ void plugin_manager() {
                                                 std::error_code e;
                                                 fs::remove_all(plugin_path, e);
                                                 if (e) {
-                                                        endwin();
+                                                        end_program();
                                                         minilog::fatal(1, "Can't delete directory \"", plugin,
                                                                        "\": ", e.message());
                                                 }

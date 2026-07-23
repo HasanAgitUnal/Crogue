@@ -36,8 +36,7 @@
 #endif
 
 void segfault_handler(int sig) {
-        endwin();
-        cleanup_lua();
+        end_program();
 
 #ifdef DEBUG
         minilog::err(minilog::msg::error, "=== SEGMENTATION FAULT ===\033[0m\n");
@@ -48,8 +47,7 @@ void segfault_handler(int sig) {
 }
 
 void interrupt_handler(int sig) {
-        endwin();
-        cleanup_lua();
+        end_program();
         exit(130);
 }
 
@@ -105,8 +103,6 @@ int main(int argc, char **argv) {
         minilog::categories["settings"] = "38;5;49m";
         minilog::categories["cli"] = "38;5;178m";
 
-        minilog::fout(logfile, minilog::msg::info, "---- START ----");
-
         handle_cli(argc, argv);
 
         // ncurses things
@@ -127,16 +123,10 @@ int main(int argc, char **argv) {
                 scene::main_menu();
 
         } catch (std::exception &e) {
-                cleanup_lua();
-                endwin();
-                minilog::fdebugc("setup", logfile, "Exiting with status: 1");
-                minilog::fout(logfile, minilog::msg::info, "----  END  ----");
+                end_program();
                 minilog::fatal(1, "An exception throwed: ", e.what());
         }
 
-        cleanup_lua();
-        endwin();
-        minilog::fdebugc("setup", logfile, "Exiting with status: 0");
-        minilog::fout(logfile, minilog::msg::info, "----  END  ----");
+        end_program();
         return 0;
 }

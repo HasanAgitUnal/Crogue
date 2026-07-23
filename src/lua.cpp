@@ -81,6 +81,11 @@ void cleanup_lua() {
         minilog::fdebugc("lua", logfile, "Cleaned Lua");
 }
 
+void end_program() {
+        cleanup_lua();
+        endwin();
+}
+
 /*
  * Main Job
  */
@@ -244,7 +249,7 @@ void load_plugins() {
                 std::ofstream settings_file(settings_path);
 
                 if (!settings_file.is_open()) {
-                        endwin();
+                        end_program();
                         minilog::fatal(1, "Cant't open file: \"" + settings_path.string() + "\"");
                 }
 
@@ -254,8 +259,7 @@ void load_plugins() {
                 std::ifstream settings_file(settings_path);
 
                 if (!settings_file.is_open()) {
-                        cleanup_lua();
-                        endwin();
+                        end_program();
                         // TODO: create file empty
                         minilog::fatal(1, "Cant't open file: \"" + settings_path.string() + "\"");
                 }
@@ -286,15 +290,13 @@ void load_plugins() {
         } catch (const std::exception &e) {
                 minilog::fdebugc("lua", logfile, minilog::msg::fatal,
                                  "Error while accessing plugins directory: ", e.what());
-                cleanup_lua();
-                endwin();
+                end_program();
                 minilog::fatal(1, "Error while accessing plugins directory: ", e.what());
         }
 
         if (!fs::is_directory(plugins_directory)) {
                 minilog::fdebugc("lua", logfile, minilog::msg::fatal, '"', plugins_directory, "\" is not a directory.");
-                cleanup_lua();
-                endwin();
+                end_program();
                 minilog::fatal(1, '"', plugins_directory, "\" is not a directory.");
         }
 
@@ -385,7 +387,7 @@ void load_plugins() {
         // write final version
         std::ofstream settings_file(settings_path);
         if (!settings_file.is_open()) {
-                endwin();
+                end_program();
                 minilog::fatal(1, "Cant't open file: \"" + settings_path.string() + "\"");
         }
 

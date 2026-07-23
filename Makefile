@@ -1,4 +1,5 @@
 COPY_COMPILE_COMMANDS ?= no
+LOG_ENABLED ?= 1
 APPNAME := $(shell grep 'set(APPNAME' CMakeLists.txt | cut -d' ' -f2 | tr -d ')')
 RUNFLAGS :=
 LOGFILE := build/debug.log
@@ -28,10 +29,19 @@ build:
 dbuild: BUILD_TYPE = -DCMAKE_BUILD_TYPE=Debug
 dbuild: build
 
+BEFORE_RUN :=
+AFTER_RUN :=
+ifeq ($(LOG_ENABLED), 1)
+	BEFORE_RUN := printf -- "--- START ---\n" >> $(LOGFILE)
+	AFTER_RUN := printf -- "--- END ---\n" >> $(LOGFILE)
+endif
+
 run: build
+	@$(BEFORE_RUN)
 	@printf -- "-- Running $(APPNAME) with flags: $(RUNFLAGS)\n"
 	@./$(BUILD_DIR)/bin/$(APPNAME) $(RUNFLAGS); \
 	printf -- "-- $(APPNAME) finished with status: $$?\n"
+	@$(AFTER_RUN)
 
 drun: dbuild run
 
@@ -43,8 +53,15 @@ clean:
 	@rm -rf $(BUILD_DIR)
 	@printf -- "-- Cleaned build directory\n"
 
+ifeq ($(LOG_ENABLED), 1)
 log:
 	@-tail -n 10 -F $(LOGFILE) 2>/dev/null
+
+else
+log:
+	@printf -- "-- Logging is not enabled!!\n-- Enable for single run with LOG_ENABLED=1 option.\n"
+
+endif
 
 format:
 	@command -v clang-format >/dev/null 2>&1 || { printf -- '-- clang-format not found\n'; exit 1; }
