@@ -109,29 +109,6 @@ int exit_gate() {
         minilog::fdebugc("player", logfile, "player find an exit");
         game::player::level++;
         minilog::fdebugc("setup", logfile, "new level index: ", game::player::level);
-
-        game::hooks::trigger(game::hooks::level_up, game::player::level);
-
-        if (game::player::level == (int)game::levels.size()) {
-                return 0;
-        }
-
-        game::levelid = game::levels[game::player::level]->id;
-        minilog::fdebugc("setup", logfile, "new level id: ", game::levelid);
-
-        minilog::fdebugc("setup", logfile, "resetting the cards");
-        game::card_set = {};
-
-        draw_cards();
-        minilog::fdebugc("setup", logfile, "card_set size: ", (int)game::card_set.size());
-
-        draw_slots();
-
-        game::slot1._lived = 0;
-        game::slot2._lived = 0;
-        game::slot3._lived = 0;
-
-        log("You are now at level: " + game::levels[game::player::level]->name, WARN);
         return 0;
 }
 

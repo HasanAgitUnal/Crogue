@@ -81,8 +81,10 @@ void main_menu() {
                 return;
         }
 
+        bool seed_changed = true;
+
         std::vector<std::string> main = {"Play", "Plugin Manager", "Reload All Plugins", "Quit"};
-        std::vector<std::string> play = {"Start", "Seed:", "Random Seed", "Back"};
+        std::vector<std::string> play = {"~~~ Start ~~~", "Seed:", "Random Seed", "Back"};
 
         std::vector<std::string> menu = main;
         int choice = 0;
@@ -92,6 +94,19 @@ void main_menu() {
                 init_pair(500, -1, 236);
                 init_pair(501, -1, 234);
                 print_menu(menu, choice);
+
+                // on play menu show a warning if user does not changes seed.
+                if (menu[0] != "Play" && !seed_changed) {
+                        int max_y, max_x;
+                        getmaxyx(stdscr, max_y, max_x);
+                        attron(COLOR_PAIR(4));
+                        mvprintw(
+                            max_y - 1, 0,
+                            "You are playing with same seed! May you want to change it before starting a new game.");
+                        attroff(COLOR_PAIR(4));
+                        refresh();
+                }
+
                 key = getch();
 
                 switch (key) {
@@ -112,9 +127,12 @@ void main_menu() {
                         case 10:
                         case 'l':
                         case KEY_ENTER:
-                                if (menu[choice] == "Start") {
+                                if (menu[choice] == "~~~ Start ~~~") {
                                         minilog::fdebugc("setup", logfile, "Starting game.");
                                         game();
+                                        menu = main;
+                                        choice = 0;
+                                        seed_changed = false;
 
                                 } else if (menu[choice] == "Play") {
                                         menu = play;
@@ -139,13 +157,22 @@ void main_menu() {
                                         int start_y = (max_y - total_h) / 2;
                                         int menu_start_y = start_y + banner_h + spacing;
 
+                                        uint64_t last_seed = game::seed;
                                         handle_seed_input(menu_start_y + (choice * 2), max_x);
+                                        if (game::seed != last_seed) {
+                                                seed_changed = true;
+                                        }
 
                                 } else if (menu[choice] == "Random Seed") {
+                                        uint64_t last_seed = game::seed;
                                         std::random_device rd;
                                         std::mt19937_64 gen(rd());
                                         std::uniform_int_distribution<uint64_t> dis;
                                         game::seed = dis(gen);
+
+                                        if (game::seed != last_seed) {
+                                                seed_changed = true;
+                                        }
 
                                 } else if (menu[choice] == "Back") {
                                         menu = main;
@@ -175,6 +202,63 @@ void main_menu() {
                                 break;
                 }
         }
+}
+
+bool on_level_complete(int curr_level) {
+        game::hooks::trigger(game::hooks::level_up, game::player::level);
+
+        if (game::player::level == (int)game::levels.size()) {
+                clear();
+                attron(COLOR_PAIR(4));
+                mvprintw(0, 0, "You found Amulet of Yendor!!!");
+                mvprintw(1, 0, "And exiting from dungeon with your loot!");
+                attroff(COLOR_PAIR(4));
+
+                game::hooks::trigger(game::hooks::ending);
+
+                refresh();
+                getch();
+
+                minilog::fdebugc("setup", logfile, "player reached last level");
+                return true;
+        }
+
+        clear();
+
+        attron(COLOR_PAIR(3));
+
+        mvprintw(0, 0, "Congratulations, you completed level %d. Next level is %s", curr_level,
+                 game::levels[curr_level - 1]->name.c_str());
+
+        attroff(COLOR_PAIR(3));
+
+        press_enter_to_continue();
+
+        // clear logs
+        game::logs.clear();
+
+        if (game::player::level == (int)game::levels.size()) {
+                return false;
+        }
+
+        game::levelid = game::levels[game::player::level]->id;
+        minilog::fdebugc("setup", logfile, "new level id: ", game::levelid);
+
+        minilog::fdebugc("setup", logfile, "resetting the cards");
+        game::card_set = {};
+
+        draw_cards();
+        minilog::fdebugc("setup", logfile, "card_set size: ", (int)game::card_set.size());
+
+        draw_slots();
+
+        game::slot1._lived = 0;
+        game::slot2._lived = 0;
+        game::slot3._lived = 0;
+
+        log("You are now at level: " + game::levels[game::player::level]->name, WARN);
+
+        return false;
 }
 
 void game() {
@@ -210,6 +294,7 @@ void game() {
         draw_slots();
 
         int key = 0;
+        int last_level = -1;
         while (true) {
                 handle_buffs();
 
@@ -217,15 +302,12 @@ void game() {
                         break;
                 }
 
-                if (game::player::level == (int)game::levels.size()) {
-                        clear();
-                        printw("You are exiting from dungeon with your loot!");
-                        refresh();
-                        getch();
-
-                        minilog::fdebugc("setup", logfile, "player reached last level");
-                        return;
+                // check if level changed
+                if (last_level != game::player::level && last_level != -1) {
+                        on_level_complete(game::player::level);
                 }
+
+                last_level = game::player::level;
 
                 game::hooks::trigger(game::hooks::before_refresh);
 

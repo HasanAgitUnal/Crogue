@@ -237,6 +237,9 @@ void setup_lua() {
                         } else if (event == "reload") {
                                 game::hooks::reload.push_back(func.as<std::function<void(void)>>());
 
+                        } else if (event == "ending") {
+                                game::hooks::ending.push_back(func.as<std::function<void(void)>>());
+
                         } else if (event == "key") {
                                 game::hooks::key.push_back(func.as<std::function<void(int)>>());
 

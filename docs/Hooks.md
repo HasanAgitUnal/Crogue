@@ -23,6 +23,7 @@ These events does not take any argument and does not return a value.
 - `die`: Runned when player dies.
 - `draw`: Runned after `cr.draw_cards()`.
 - `level_gen`: Runned after `cr.generate_levels()`
+- `ending`: Runned when player finds Amulet of Yendor.
 
 ### Has a return type or argument
 
