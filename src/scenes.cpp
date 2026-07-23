@@ -81,7 +81,10 @@ void main_menu() {
                 return;
         }
 
-        std::vector<std::string> menu = {"Play", "Random Seed", "Seed:", "Plugin Manager", "Reload Plugins", "Quit"};
+        std::vector<std::string> main = {"Play", "Plugin Manager", "Reload All Plugins", "Quit"};
+        std::vector<std::string> play = {"Start", "Seed:", "Random Seed", "Back"};
+
+        std::vector<std::string> menu = main;
         int choice = 0;
         int key = 0;
 
@@ -109,9 +112,13 @@ void main_menu() {
                         case 10:
                         case 'l':
                         case KEY_ENTER:
-                                if (menu[choice] == "Play") {
+                                if (menu[choice] == "Start") {
                                         minilog::fdebugc("setup", logfile, "Starting game.");
                                         game();
+
+                                } else if (menu[choice] == "Play") {
+                                        menu = play;
+                                        choice = 0;
 
                                 } else if (menu[choice] == "Seed:") {
                                         int max_y, max_x;
@@ -140,7 +147,11 @@ void main_menu() {
                                         std::uniform_int_distribution<uint64_t> dis;
                                         game::seed = dis(gen);
 
-                                } else if (menu[choice] == "Reload Plugins") {
+                                } else if (menu[choice] == "Back") {
+                                        menu = main;
+                                        choice = 0;
+
+                                } else if (menu[choice] == "Reload All Plugins") {
                                         cleanup_lua();
                                         reset_game(true);
                                         setup_lua();

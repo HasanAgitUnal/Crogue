@@ -101,7 +101,6 @@ sol::table get_settings(const std::string plugin) {
         }
 
         auto plugin_settings = game::settings::settings[plugin];
-        minilog::fdebug(logfile, "value!!", game::settings::settings.dump(4));
         for (auto [key, value] : plugin_settings.items()) {
                 if (value.is_boolean()) {
                         bool v = value.get<bool>();
