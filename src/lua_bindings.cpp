@@ -22,6 +22,16 @@
 #include "minilog.hpp"
 #include "tui.hpp"
 
+// clang-format off
+#define SHARED_PROPERTY(self_type, type, member)\
+        #member, sol::property(\
+                        [](self_type& self) -> std::shared_ptr<type> { return self.member; },\
+                        [](self_type& self, sol::optional<std::shared_ptr<type>> value) {\
+                                self.member = value.value_or(nullptr);\
+                        }\
+                )
+// clang-format on
+
 /*
  * Wrapper Things
  */
@@ -141,6 +151,7 @@ void setup_lua() {
                         "logmsg", &card_t::logmsg,
                         "ttl", &card_t::ttl,
                         "power", &card_t::power,
+                        // TODO: this may be buggy check this
                         "event", sol::property(
                                 // getter
                                 [](card_t& c) -> std::function<int()>& { return c.event; },
@@ -149,8 +160,8 @@ void setup_lua() {
                                 ));
 
         objects.new_usertype<card_slot_t>("card_slot", sol::constructors<card_slot_t>(),
-                        "back", &card_slot_t::back,
-                        "front", &card_slot_t::front,
+                        SHARED_PROPERTY(card_slot_t, card_t, back),
+                        SHARED_PROPERTY(card_slot_t, card_t, front),
                         "_lived", &card_slot_t::_lived);
 
         objects.new_usertype<level_t>("level", sol::constructors<level_t>(),
@@ -248,6 +259,8 @@ void setup_lua() {
                         } else if (event == "card_event") {
                                 game::hooks::card_event.push_back(
                                     func.as<std::function<bool(std::shared_ptr<card_t>, int)>>());
+                        } else {
+                                throw sol::error::runtime_error("Invalid hook name!: " + event);
                         }
 
                         minilog::fdebugc("lua", logfile, "Added a ", event, " hook");

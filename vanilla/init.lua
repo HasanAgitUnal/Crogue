@@ -134,11 +134,7 @@ if teleporter_enabled then
                         for _, slot in ipairs(slots) do
                                 if slot.front and slot.front.name ~= "~ Exit Gate ~" then
                                         -- move card at back to front and reset _lived
-                                        if slot.back then
-                                                slot.front = slot.back
-                                        else
-                                                slot.front = nil
-                                        end
+                                        slot.front = slot.back
                                         slot._lived = 0
 
                                         -- get a new card from card set for slot.back
