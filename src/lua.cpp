@@ -21,6 +21,7 @@
 #include <sol/sol.hpp>
 #include <sstream>
 
+#include "cards.hpp"
 #include "game.hpp"
 #include "minilog.hpp"
 
@@ -241,7 +242,9 @@ void load_plugin(const fs::path &plugindir) {
 void load_plugins() {
         minilog::fdebugc("lua", logfile, "Loading plugins");
 
-        // load game settings
+        create_card(1, "~ Exit Gate ~", EXIT, {}, "", 0, 0, exit_gate);
+
+        // laod game settings
         fs::path settings_path = get_data_dir() / "settings.json";
         json game_settings = json::object();
         if (!fs::exists(settings_path)) {
