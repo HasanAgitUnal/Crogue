@@ -6,6 +6,7 @@
 
 #include "game.hpp"
 #include "minilog.hpp"
+#include "package.hpp"
 #include "tui.hpp"
 
 struct plugin_item_t {

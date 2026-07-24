@@ -24,32 +24,11 @@
 #include "cards.hpp"
 #include "game.hpp"
 #include "minilog.hpp"
+#include "package.hpp"
 
 using json = nlohmann::json;
 
 namespace fs = std::filesystem;
-
-fs::path get_data_dir() {
-        fs::path base_path;
-
-#if defined(_WIN32)
-        const char *appdata = std::getenv("APPDATA");
-        if (appdata) {
-                base_path = fs::path(appdata);
-        } else {
-                base_path = fs::path(std::getenv("USERPROFILE")) / "AppData" / "Roaming";
-        }
-#else
-        const char *xdg_data = std::getenv("XDG_DATA_HOME");
-        if (xdg_data && *xdg_data) {
-                base_path = fs::path(xdg_data);
-        } else {
-                base_path = fs::path(std::getenv("HOME")) / ".local" / "share";
-        }
-#endif
-
-        return base_path / "crogue";
-}
 
 void cleanup_lua() {
         // Clear all vectors that contain objects with Lua references

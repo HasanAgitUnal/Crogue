@@ -1,14 +1,14 @@
 #pragma once
 
-#include <filesystem>
+#include <nlohmann/json.hpp>
 
-namespace fs = std::filesystem;
+using json = nlohmann::json;
 
 // from lua.cpp
-fs::path get_data_dir();
 void cleanup_lua();
 void end_program();
 void load_plugins();
+std::string check_metadata(const json &metadata);
 
 // from lua_bindings.cpp
 void setup_lua();

@@ -69,6 +69,8 @@ target_include_directories(${APPNAME} PRIVATE ${LUA_INCLUDE_DIR})
 
 find_package(PkgConfig REQUIRED)
 
+find_package(minizip-ng REQUIRED)
+
 pkg_check_modules(NCURSESW REQUIRED IMPORTED_TARGET ncursesw)
 
 # Precompiled Headers
@@ -88,6 +90,7 @@ endif()
 target_link_libraries(${APPNAME} PRIVATE 
         ${LUA_LIBRARIES} 
         PkgConfig::NCURSESW
+        MINIZIP::minizip-ng
 )
 
 #

@@ -27,8 +27,11 @@
 #include "game.hpp"
 #include "lua.hpp"
 #include "minilog.hpp"
+#include "package.hpp"
 #include "scenes.hpp"
 #include "tui.hpp"
+
+bool game_running = false;
 
 #ifdef DEBUG
 #include <execinfo.h>
@@ -36,7 +39,9 @@
 #endif
 
 void segfault_handler(int sig) {
-        end_program();
+        if (game_running) {
+                end_program();
+        }
 
 #ifdef DEBUG
         minilog::err(minilog::msg::error, "=== SEGMENTATION FAULT ===\033[0m\n");
@@ -47,7 +52,9 @@ void segfault_handler(int sig) {
 }
 
 void interrupt_handler(int sig) {
-        end_program();
+        if (game_running) {
+                end_program();
+        }
         exit(130);
 }
 
@@ -55,15 +62,114 @@ void handle_cli(int argc, char **argv) {
         CLI::App app{"crogue - Card Based Roguelike Game"};
 
         uint64_t custom_seed = 0;
+
         app.add_option("-s,--seed", custom_seed, "Set game seed");
 
         app.add_flag("-m,--skip-menu", game::_skip_main_menu, "Skip Main Menu");
+
+        // subcommands
+        auto *pack_cmd = app.add_subcommand("pack", "Create a plugin package");
+        auto *list_cmd = app.add_subcommand("list", "List installed plugins");
+
+        bool force = false;
+        std::string plugin_name;
+        auto *remove_cmd = app.add_subcommand("remove", "Remove a plugin");
+        remove_cmd->add_option("PLUGIN", plugin_name, "Plugin name")->required();
+        remove_cmd->add_flag("-F,--force", force, "Force to remove");
+
+        auto *reset_cmd = app.add_subcommand("reset", "Reset plugin settings");
+        reset_cmd->add_option("PLUGIN", plugin_name, "Plugin name")->required();
+        reset_cmd->add_flag("-F,--force", force, "Force to reset");
+
+        auto *install_cmd = app.add_subcommand("install", "Install one or multiple packages");
+
+        install_cmd->add_flag("-F,--force", force, "Force installation");
+
+        std::vector<std::string> pack_files;
+        install_cmd->add_option("-f,--file", pack_files, "Package file name(s)");
+
+        std::vector<std::string> pack_repos;
+        install_cmd->add_option("-g,--git-repo", pack_repos, "Package git repo(s)");
+
+        /*
+        auto *install_cmd = app.add_subcommand("install", "Install a package");
+
+        bool install_force = false;
+        install_cmd->add_flag("-F,--force", install_force, "Force installation / overwrite");
+
+        // Opsiyon grubunu oluştur
+        auto *src_group = install_cmd->add_option_group("source", "Package Source");
+
+        std::string pack_file;
+        src_group->add_option("-f,--file", pack_file, "Package file name");
+
+        std::string pack_repo;
+        src_group->add_option("-g,--git-repo", pack_repo, "Package git repo");
+
+        // Bu gruptan sadece 1 tanesi girilebilir
+        src_group->require_option(1);
+
+        */
+
+        //// parse
 
         try {
                 app.parse(argc, argv);
         } catch (const CLI::ParseError &e) {
                 exit(app.exit(e));
         }
+
+        if (*pack_cmd) {
+                package::pack();
+                exit(0);
+        }
+
+        if (*list_cmd) {
+                package::list();
+                exit(0);
+        }
+
+        if (*remove_cmd) {
+                package::remove(plugin_name, force);
+                exit(0);
+        }
+
+        if (*reset_cmd) {
+                package::reset(plugin_name);
+                exit(0);
+        }
+
+        if (*install_cmd) {
+                if (pack_files.empty() && pack_repos.empty()) {
+                        minilog::fatal(1, "At least one package source (-f or -g) must be specified.");
+                }
+
+                for (const auto &file : pack_files) {
+                        minilog::out("\033[32m==>\033[0m Installing plugin from file: ", file);
+                        package::install_file(file, force);
+                }
+
+                for (const auto &repo : pack_repos) {
+                        minilog::out("\033[32m==>\033[0m Installing plugin via git: ", repo);
+                        package::install_git(repo, force);
+                }
+
+                exit(0);
+        }
+
+        /*
+                if (*install_cmd) {
+                        if (!pack_file.empty()) {
+                                minilog::out("\033[32m==>\033[0m Installing plugin from file: ", pack_file);
+                                package::install_file(pack_file, force);
+                        } else if (!pack_repo.empty()) {
+                                minilog::out("\033[32m==>\033[0m Installing plugin via git: ", pack_repo);
+                                package::install_git(pack_repo, force);
+                        }
+
+                        exit(0);
+                }
+        */
 
         // seed
         if (custom_seed) {
@@ -117,6 +223,8 @@ int main(int argc, char **argv) {
         use_default_colors();
 
         setup_colors();
+
+        game_running = true;
 
         try {
                 // start game
