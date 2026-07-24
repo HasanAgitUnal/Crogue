@@ -81,6 +81,10 @@ void handle_cli(int argc, char **argv) {
         reset_cmd->add_option("PLUGIN", plugin_name, "Plugin name")->required();
         reset_cmd->add_flag("-F,--force", force, "Force to reset");
 
+        std::vector<std::string> update_plugins;
+        auto *update_cmd = app.add_subcommand("update", "Update plugins installed from git");
+        update_cmd->add_option("PLUGINS", update_plugins, "Plugin name(s) to update");
+
         auto *install_cmd = app.add_subcommand("install", "Install one or multiple packages");
 
         install_cmd->add_flag("-F,--force", force, "Force installation");
@@ -90,26 +94,6 @@ void handle_cli(int argc, char **argv) {
 
         std::vector<std::string> pack_repos;
         install_cmd->add_option("-g,--git-repo", pack_repos, "Package git repo(s)");
-
-        /*
-        auto *install_cmd = app.add_subcommand("install", "Install a package");
-
-        bool install_force = false;
-        install_cmd->add_flag("-F,--force", install_force, "Force installation / overwrite");
-
-        // Opsiyon grubunu oluştur
-        auto *src_group = install_cmd->add_option_group("source", "Package Source");
-
-        std::string pack_file;
-        src_group->add_option("-f,--file", pack_file, "Package file name");
-
-        std::string pack_repo;
-        src_group->add_option("-g,--git-repo", pack_repo, "Package git repo");
-
-        // Bu gruptan sadece 1 tanesi girilebilir
-        src_group->require_option(1);
-
-        */
 
         //// parse
 
@@ -139,6 +123,11 @@ void handle_cli(int argc, char **argv) {
                 exit(0);
         }
 
+        if (*update_cmd) {
+                package::update(update_plugins);
+                exit(0);
+        }
+
         if (*install_cmd) {
                 if (pack_files.empty() && pack_repos.empty()) {
                         minilog::fatal(1, "At least one package source (-f or -g) must be specified.");
@@ -156,20 +145,6 @@ void handle_cli(int argc, char **argv) {
 
                 exit(0);
         }
-
-        /*
-                if (*install_cmd) {
-                        if (!pack_file.empty()) {
-                                minilog::out("\033[32m==>\033[0m Installing plugin from file: ", pack_file);
-                                package::install_file(pack_file, force);
-                        } else if (!pack_repo.empty()) {
-                                minilog::out("\033[32m==>\033[0m Installing plugin via git: ", pack_repo);
-                                package::install_git(pack_repo, force);
-                        }
-
-                        exit(0);
-                }
-        */
 
         // seed
         if (custom_seed) {

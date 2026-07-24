@@ -29,8 +29,11 @@
 #include <minizip-ng/mz_zip.h>
 #include <minizip-ng/mz_zip_rw.h>
 // clang-format on
+#include <array>
+#include <cstdlib>
 #include <filesystem>
 #include <fstream>
+#include <memory>
 #include <random>
 #include <string>
 
@@ -187,6 +190,82 @@ bool confirm(const std::string msg) {
         return true;
 }
 
+bool check_git() {
+#if defined(_WIN32)
+        int status = std::system("where git > nul 2>&1");
+#else
+        int status = std::system("command -v git > /dev/null 2>&1");
+#endif
+        return (status == 0);
+}
+
+void clone_git(const std::string &repo_url, const fs::path &target_dir) {
+        if (!check_git()) {
+                minilog::fatal(1, "git binary not found in PATH. Please install git first.");
+        }
+
+        minilog::out("\033[32m==>\033[0m Cloning ", repo_url, "...");
+        std::string cmd = "git clone --depth 1 " + repo_url + " " + target_dir.string() + " > /dev/null 2>&1";
+
+        int status = std::system(cmd.c_str());
+        if (status != 0) {
+                minilog::fatal(1, "Failed to clone repository: ", repo_url);
+        }
+}
+
+std::string get_git_commit(const fs::path &repo_dir) {
+        std::string cmd = "git -C " + repo_dir.string() + " rev-parse HEAD 2>/dev/null";
+
+        std::array<char, 128> buffer;
+        std::string result;
+
+        using PipeDeleter = int (*)(FILE *);
+        std::unique_ptr<FILE, PipeDeleter> pipe(popen(cmd.c_str(), "r"), pclose);
+
+        if (!pipe) {
+                return "";
+        }
+
+        while (fgets(buffer.data(), buffer.size(), pipe.get()) != nullptr) {
+                result += buffer.data();
+        }
+
+        return trim(result);
+}
+
+bool check_git_update(const std::string &repo_url, const std::string &local_commit) {
+        if (!check_git()) {
+                return false;
+        }
+
+        std::string cmd = "git ls-remote " + repo_url + " HEAD 2>/dev/null";
+
+        std::array<char, 128> buffer;
+        std::string result;
+
+        using PipeDeleter = int (*)(FILE *);
+        std::unique_ptr<FILE, PipeDeleter> pipe(popen(cmd.c_str(), "r"), pclose);
+        if (!pipe) {
+                return false;
+        }
+
+        while (fgets(buffer.data(), buffer.size(), pipe.get()) != nullptr) {
+                result += buffer.data();
+        }
+
+        std::stringstream ss(result);
+        std::string remote_commit;
+        ss >> remote_commit;
+
+        remote_commit = trim(remote_commit);
+
+        if (remote_commit.empty() || local_commit.empty()) {
+                return false;
+        }
+
+        return (remote_commit != local_commit);
+}
+
 void pack() {
         fs::path cwd = fs::current_path();
 
@@ -324,8 +403,77 @@ void install_file(const std::string &path, bool force) {
 }
 
 void install_git(const std::string &repo_url, bool force) {
+        fs::path temp_dir = create_temp_dir();
+        clone_git(repo_url, temp_dir);
 
+        check_package(temp_dir);
+
+        std::ifstream file(temp_dir / "pack_name.txt");
+        std::string raw_name((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
+        file.close();
+
+        std::string plugin_name = trim(raw_name);
+        if (plugin_name.empty()) {
+                fs::remove_all(temp_dir);
+                minilog::fatal(1, "pack_name.txt is empty.");
+        }
+
+        // save repo url & git commit to allow updating later
+        std::ofstream repo_file(temp_dir / "git_repo.json");
+        json repo_info = json::object();
+        repo_info["url"] = repo_url;
+        repo_info["commit"] = get_git_commit(temp_dir);
+        repo_file << repo_info.dump();
+        repo_file.close();
+
+        // remove .git directory
+        fs::remove_all(temp_dir / ".git");
+
+        install(temp_dir, plugin_name, force);
 };
+
+void update(std::vector<std::string> packages) {
+        fs::path plugins_dir(get_data_dir() / "plugins");
+        if (packages.empty()) {
+                // update all if no package given
+                for (const auto &entry : std::filesystem::directory_iterator(plugins_dir)) {
+                        fs::path path = entry.path();
+                        if (fs::is_directory(path)) {
+                                packages.push_back(path.filename().string());
+                        }
+                }
+        }
+
+        bool no_update = true;
+        for (auto pack : packages) {
+                fs::path pack_dir = plugins_dir / pack;
+                if (!fs::exists(pack_dir)) {
+                        minilog::fatal(1, "Plugin \"", pack, "\" doesn't exists.");
+                }
+
+                if (!fs::exists(pack_dir / "git_repo.json")) {
+                        minilog::out("\033[33m==> Plugin \"", pack, "\" is not installed via git -> ignoring\033[0m");
+                        continue;
+                }
+
+                json repo_info;
+                std::ifstream repo_info_file(pack_dir / "git_repo.json");
+                repo_info_file >> repo_info;
+
+                if (repo_info.contains("url") && repo_info.contains("commit")) {
+                        if (check_git_update(repo_info.at("url"), repo_info.at("commit"))) {
+                                minilog::out("\033[32m==>\033[0m Updating \"", pack, "\"");
+                                install_git(repo_info.at("url"), true);
+                                no_update = false;
+                        } else {
+                                minilog::out("\033[32m==>\033[0m " + pack + " is at newest version");
+                        }
+                } else {
+                        minilog::out("\033[33m==> Can't check updates for plugin \"" + pack + "\".\"" +
+                                     (pack_dir / "git_repo.json").string() + "\" is invalid\033[0m");
+                }
+        }
+}
 
 void remove(const std::string &package, bool force) {
         fs::path pack(get_data_dir() / "plugins" / package);
@@ -360,7 +508,15 @@ void list() {
         for (const auto &entry : std::filesystem::directory_iterator(plugins_dir)) {
                 fs::path path = entry.path();
                 if (fs::is_directory(path)) {
-                        minilog::out(path.filename().string());
+                        std::string source = "(local)";
+                        if (fs::exists(path / "git_repo.json")) {
+                                std::ifstream file = path / "git_repo.json";
+                                json info;
+                                file >> info;
+                                file.close();
+                                source = "(" + info["url"].get<std::string>() + ")";
+                        }
+                        minilog::out("\033[36m" + path.filename().string() + " \033[35m" + source + "\033[0m");
                 }
         }
         std::cout << "\033[0m";

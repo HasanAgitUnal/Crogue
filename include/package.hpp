@@ -16,5 +16,7 @@ void remove(const std::string &package, bool force);
 
 void reset(const std::string &package);
 
+void update(std::vector<std::string> packages);
+
 void list();
 }  // namespace package
