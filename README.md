@@ -32,7 +32,7 @@ Under development.
   - [x] Plugin manager to enable/disable or delete plugins
   - [x] Plugin settings
 
-- [ ] package format & installing packages from cli
+- [x] installing packages from cli
 - [ ] remove getter and setter (replace with sol::property)
 - [ ] game saves system
 - [ ] add ncurses WINDOW management to cr.curses
