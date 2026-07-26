@@ -23,7 +23,7 @@
 #include "tui.hpp"
 
 // clang-format off
-#define SHARED_PROPERTY(self_type, type, member)\
+#define SHARED_PTR(self_type, type, member)\
         #member, sol::property(\
                         [](self_type& self) -> std::shared_ptr<type> { return self.member; },\
                         [](self_type& self, sol::optional<std::shared_ptr<type>> value) {\
@@ -159,8 +159,8 @@ void setup_lua() {
                                 ));
 
         objects.new_usertype<card_slot_t>("card_slot", sol::constructors<card_slot_t>(),
-                        SHARED_PROPERTY(card_slot_t, card_t, back),
-                        SHARED_PROPERTY(card_slot_t, card_t, front),
+                        SHARED_PTR(card_slot_t, card_t, back),
+                        SHARED_PTR(card_slot_t, card_t, front),
                         "_lived", &card_slot_t::_lived);
 
         objects.new_usertype<level_t>("level", sol::constructors<level_t>(),
