@@ -84,6 +84,14 @@ json load_json(const fs::path &path) {
         std::stringstream ss;
         ss << metadata_file.rdbuf();
 
+        // if empty create an empty json
+        if (ss.str().empty()) {
+                std::ofstream file(path);
+                file << "{}";
+                file.close();
+                return json::object();
+        }
+
         return json::parse(ss.str());
 }
 
@@ -185,6 +193,11 @@ std::string check_metadata(const json &metadata) {
                         }
                 }
         }
+
+        return "";
+}
+
+std::string check_settings(const json &settings) {
 
         return "";
 }

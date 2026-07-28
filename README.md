@@ -33,6 +33,9 @@ Under development.
   - [x] Plugin settings
 
 - [x] installing packages from cli
+
+- [ ] fix empty settings json bug
+
 - [ ] remove getter and setter (replace with sol::property)
 - [ ] game saves system
 - [ ] add ncurses WINDOW management to cr.curses

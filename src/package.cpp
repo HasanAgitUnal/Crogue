@@ -132,46 +132,83 @@ fs::path create_temp_dir() {
         return temp_dir;
 }
 
-void check_package(fs::path pack_dir) {
-        minilog::out("\033[32m==>\033[0m Checking init.lua...");
+bool check_package(fs::path pack_dir, bool silent = false) {
+        if (!silent) {
+                minilog::out("\033[32m==>\033[0m Checking init.lua...");
+        }
 
         fs::path init_file = pack_dir / "init.lua";
         if (!fs::exists(init_file) || !fs::is_regular_file(init_file)) {
-                minilog::fatal(1, "init.lua does not exists or not a file");
+                if (!silent) {
+                        minilog::fatal(1, "init.lua does not exists or not a file");
+                }
+                return false;
         }
 
-        minilog::out("\033[32m==>\033[0m Checking metadata.json...");
+        if (!silent) {
+                minilog::out("\033[32m==>\033[0m Checking metadata.json...");
+        }
 
         fs::path metadata_file = pack_dir / "metadata.json";
         if (!fs::exists(metadata_file) || !fs::is_regular_file(metadata_file)) {
-                minilog::fatal(1, "metadata.json does not exists or not a file");
+                if (!silent) {
+                        minilog::fatal(1, "metadata.json does not exists or not a file");
+                }
+                return false;
         }
 
         std::ifstream file(metadata_file);
         if (!file.is_open()) {
-                minilog::fatal(1, "Can't read metadata.json");
+                if (!silent) {
+                        minilog::fatal(1, "Can't read metadata.json");
+                }
+                return false;
         }
 
         json metadata;
         try {
                 file >> metadata;
         } catch (json::exception &e) {
-                minilog::fatal(1, "Invalid JSON: ", e.what());
+                if (!silent) {
+                        minilog::fatal(1, "Invalid JSON: ", e.what());
+                }
+                return false;
         }
 
         file.close();
 
         std::string error = check_metadata(metadata);
         if (error != "") {
-                minilog::fatal(1, "Invalid metadata: ", error);
-        };
+                if (!silent) {
+                        minilog::fatal(1, "Invalid metadata: ", error);
+                }
+                return false;
+        }
 
-        minilog::out("\033[32m==>\033[0m Checking pack_name.txt...");
+        if (!silent) {
+                minilog::out("\033[32m==>\033[0m Checking pack_name.txt...");
+        }
 
         fs::path pack_name_file = pack_dir / "pack_name.txt";
         if (!fs::exists(pack_name_file) || !fs::is_regular_file(pack_name_file)) {
-                minilog::fatal(1, "pack_name.txt does not exists or not a file");
+                if (!silent) {
+                        minilog::fatal(1, "pack_name.txt does not exists or not a file");
+                }
+                return false;
         }
+
+        std::ifstream pnfile(pack_name_file);
+
+        std::string raw_name((std::istreambuf_iterator<char>(pnfile)), std::istreambuf_iterator<char>());
+        std::string name = trim(raw_name);
+        if (name.empty()) {
+                if (!silent) {
+                        minilog::fatal(1, "pack_name.txt is empty");
+                }
+                return false;
+        }
+
+        return true;
 }
 
 bool confirm(const std::string msg) {
@@ -509,6 +546,10 @@ void list() {
                 fs::path path = entry.path();
                 if (fs::is_directory(path)) {
                         std::string source = "(local)";
+
+                        if (!check_package(path, true))
+                                continue;
+
                         if (fs::exists(path / "git_repo.json")) {
                                 std::ifstream file = path / "git_repo.json";
                                 json info;
