@@ -17,12 +17,13 @@ These events does not take any argument and does not return a value.
 
 - `start`: Runned before everything and main menu.
 - `reload`: Runned when plugins are reloaded.
-- `after_refresh`: Always runned after UI refresh.
-- `before_refresh`: Always runned before UI refresh.
-- `end`: Runned when game ends.
-- `die`: Runned when player dies.
 - `draw`: Runned after `cr.draw_cards()`.
 - `level_gen`: Runned after `cr.generate_levels()`
+- `after_refresh`: Always runned after UI refresh.
+- `before_refresh`: Always runned before UI refresh.
+- `game_start`: When a new game starts.
+- `game_end`: When a game ends.
+- `die`: Runned when player dies.
 - `ending`: Runned when player finds Amulet of Yendor.
 
 ### Has a return type or argument

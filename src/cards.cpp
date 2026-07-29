@@ -45,7 +45,7 @@ void reset_game(bool full) {
 
         game::levelid = 0;
 
-        // reset completely (this will fuck game)
+        // reset completely
         if (full) {
                 game::biomes.clear();
                 game::levels.clear();
@@ -57,7 +57,9 @@ void reset_game(bool full) {
                 game::hooks::reload.clear();
                 game::hooks::before_refresh.clear();
                 game::hooks::after_refresh.clear();
-                game::hooks::end.clear();
+                game::hooks::game_start.clear();
+                game::hooks::game_end.clear();
+                game::hooks::game_quit.clear();
                 game::hooks::card_event.clear();
                 game::hooks::item.clear();
                 game::hooks::key.clear();

@@ -231,8 +231,14 @@ void setup_lua() {
                         } else if (event == "start") {
                                 game::hooks::start.push_back(func.as<std::function<void(void)>>());
 
-                        } else if (event == "end") {
-                                game::hooks::end.push_back(func.as<std::function<void(void)>>());
+                        } else if (event == "game_start") {
+                                game::hooks::game_start.push_back(func.as<std::function<void(void)>>());
+
+                        } else if (event == "game_end") {
+                                game::hooks::game_end.push_back(func.as<std::function<void(void)>>());
+
+                        } else if (event == "game_quit") {
+                                game::hooks::game_quit.push_back(func.as<std::function<void(void)>>());
 
                         } else if (event == "reload") {
                                 game::hooks::reload.push_back(func.as<std::function<void(void)>>());
@@ -447,6 +453,8 @@ void setup_lua() {
 
 
         sol::table player = game::lua.create_table();
+
+        player["hp"] = std::ref(game::player::hp);
 
         player["get_hp"] = &get_player_hp;
         player["set_hp"] = &set_player_hp;

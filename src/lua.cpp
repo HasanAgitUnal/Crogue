@@ -108,7 +108,7 @@ json safe_load(const std::string plugin_name, const fs::path path) {
                 game::plugin_errors[plugin_name] = "E: While loading \"" + path.string() +  "\": " + std::string(e.what());
         }
 
-        return json{};
+        return json::object();
 }
 
 // clang-format on
@@ -392,13 +392,29 @@ void generate_default_settings(const std::string &plugin, const fs::path &path) 
 
         minilog::fdebugc("settings", logfile, "Generating default settings.json file for ", plugin);
 
-        for (const auto &setting : game::settings::metadata[plugin]["settings"]) {
-                game::settings::settings[plugin][setting.at("option")] = setting.at("default");
+        // Objenin ilklendirildiğinden emin ol
+        if (!game::settings::settings.contains(plugin) || !game::settings::settings[plugin].is_object()) {
+                game::settings::settings[plugin] = json::object();
+        }
+
+        // metadata içinde "settings" dizisi var mı kontrol et
+        if (game::settings::metadata[plugin].contains("settings") &&
+            game::settings::metadata[plugin]["settings"].is_array()) {
+                for (const auto &setting : game::settings::metadata[plugin]["settings"]) {
+                        if (setting.contains("option") && setting.contains("default")) {
+                                game::settings::settings[plugin][setting.at("option")] = setting.at("default");
+                        }
+                }
         }
 
         std::ofstream file(plugin_settings_path);
         json settings = game::settings::settings[plugin];
-        settings.erase("enabled");
+
+        // Sadece geçerli bir json objesiyse ve "enabled" içeriyorsa sil
+        if (settings.is_object() && settings.contains("enabled")) {
+                settings.erase("enabled");
+        }
+
         file << settings.dump(4);
 }
 

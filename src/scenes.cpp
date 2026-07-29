@@ -130,6 +130,8 @@ void main_menu() {
                                 if (menu[choice] == "~~~ Start ~~~") {
                                         minilog::fdebugc("setup", logfile, "Starting game.");
                                         game();
+                                        game::hooks::trigger(game::hooks::game_end);
+
                                         menu = main;
                                         choice = 0;
                                         seed_changed = false;
@@ -290,6 +292,8 @@ void game() {
         minilog::fdebugc("setup", logfile, "card_set size: ", game::card_set.size());
         draw_slots();
 
+        game::hooks::trigger(game::hooks::game_start);
+
         int key = 0;
         int last_level = -1;
         while (true) {
@@ -378,7 +382,7 @@ void game() {
                                         int key = ask("Realy quit? [y/n]: ");
 
                                         if (key == 'y') {
-                                                game::hooks::trigger(game::hooks::end);
+                                                game::hooks::trigger(game::hooks::game_quit);
                                                 return;
                                         } else if (key == 'n') {
                                                 break;
