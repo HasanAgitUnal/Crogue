@@ -14,6 +14,8 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+#define SOL_ALL_SAFETIES_ON 1
+
 #include <ncurses.h>
 #include <algorithm>
 #include <filesystem>

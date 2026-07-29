@@ -23,7 +23,7 @@ cr.stat.set_levelid(5) -- fuck the game!!
 ### `cr.stat.get_seed()` & `cr.stat.set_seed()`
 
 This is the game seed. Its a string contains numbers. 
-Why its a string? -> Because Lua doesnt support unsigned 64 integers.
+Why its a string? -> Because Lua doesnt support unsigned 64 bit integers.
 You need a helper function to use seed in randomizing.
 
 > [!WARNING]
@@ -51,10 +51,22 @@ cr.log("randomnumber: " .. tostring(randomnumber), cr.log_type.NORMAL)
 ## Containers
 
 > [!INFO]
->
 > **Container methods**
 >
 > To see full list of methods of containers go to [Container Operations](https://sol2.readthedocs.io/en/v2.20.6/containers.html#container-operations) on sol2 documentation
+
+> [!WARNING]
+> **Do not try to erase something with nil**
+>
+> This code block below will not work:
+> ```lua
+> cr.stat.deck[1] = nil -- crash!!
+> ```
+>
+> Use `:erase` method instead of that:
+> ```lua
+> cr.stat.deck:erase(1)
+> ```
 
 ### `cr.stat.deck`
 

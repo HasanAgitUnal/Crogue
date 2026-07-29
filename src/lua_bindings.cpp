@@ -454,8 +454,6 @@ void setup_lua() {
 
         sol::table player = game::lua.create_table();
 
-        player["hp"] = std::ref(game::player::hp);
-
         player["get_hp"] = &get_player_hp;
         player["set_hp"] = &set_player_hp;
 
