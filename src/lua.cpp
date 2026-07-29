@@ -144,7 +144,7 @@ std::string check_metadata(const json &metadata) {
 
                         for (auto key : required_keys) {
                                 if (!s.contains(key) || !s[key].is_string()) {
-                                        return "\"key\" is not found / has invalid type on a setting";
+                                        return "\"" + key + "\" is not found / has invalid type on a setting";
                                 }
                         }
 
@@ -204,33 +204,59 @@ std::string check_metadata(const json &metadata) {
 
 std::string check_settings(const json &settings, const json &metadata) {
         if (!settings.is_object()) {
-                return "not a JSON object";
+                return "settings is not a JSON object";
         }
 
+        // check settings enabled
         if (!metadata.contains("settings") || !metadata["settings"].is_array()) {
                 return "";
         }
 
-        for (auto [key, value] : metadata.items()) {
-                if (!metadata.contains(key)) {
-                        if (metadata[key]["type"].get<std::string>() == "switch") {
-                                if (!value.is_boolean()) {
-                                        return "value of " + key + "is not boolean";
-                                }
+        const auto &meta_settings = metadata["settings"];
 
-                        } else if (metadata[key]["type"].get<std::string>() == "input") {
-                                if (!value.is_string()) {
-                                        return "value of " + key + "is not string";
-                                }
+        for (const auto &s : meta_settings) {
+                if (!s.contains("option") || !s["option"].is_string()) {
+                        continue;
+                }
 
-                        } else if (metadata[key]["type"].get<std::string>() == "choose") {
-                                if (!value.is_string()) {
-                                        return "value of " + key + "is not string";
-                                }
+                std::string option_key = s["option"].get<std::string>();
 
-                                if (!metadata[key]["values"].contains(value)) {
-                                        return "value of " + key + "is not one of the values in metadata.json";
+                if (!settings.contains(option_key)) {
+                        return "missing setting option: \"" + option_key + "\"";
+                }
+
+                const auto &val = settings[option_key];
+                std::string type = s["type"].get<std::string>();
+
+                // check type and value
+                if (type == "switch") {
+                        if (!val.is_boolean()) {
+                                return "value of switch option \"" + option_key + "\" must be boolean";
+                        }
+                } else if (type == "input") {
+                        if (!val.is_string()) {
+                                return "value of input option \"" + option_key + "\" must be string";
+                        }
+                } else if (type == "choose") {
+                        if (!val.is_string()) {
+                                return "value of choose option \"" + option_key + "\" must be string";
+                        }
+
+                        std::string val_str = val.get<std::string>();
+                        bool is_valid_choice = false;
+
+                        if (s.contains("values") && s["values"].is_array()) {
+                                for (const auto &v : s["values"]) {
+                                        if (v == val_str) {
+                                                is_valid_choice = true;
+                                                break;
+                                        }
                                 }
+                        }
+
+                        if (!is_valid_choice) {
+                                return "value \"" + val_str + "\" for choose option \"" + option_key +
+                                       "\" is not in metadata values list";
                         }
                 }
         }
