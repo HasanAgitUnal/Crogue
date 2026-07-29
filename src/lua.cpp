@@ -97,15 +97,15 @@ json load_json(const fs::path &path) {
 }
 
 // clang-format off
-json safe_load(const std::string pluginname, const fs::path path) {
+json safe_load(const std::string plugin_name, const fs::path path) {
         try {
                 return load_json(path);
 
         } catch (json::parse_error &e) {
-                game::plugin_errors[pluginname] = "E: While parsing \"" + path.string() +  "\": " + std::string(e.what());
+                game::plugin_errors[plugin_name] = "E: While parsing \"" + path.string() +  "\": " + std::string(e.what());
 
         } catch (std::exception &e) {
-                game::plugin_errors[pluginname] = "E: While loading \"" + path.string() +  "\": " + std::string(e.what());
+                game::plugin_errors[plugin_name] = "E: While loading \"" + path.string() +  "\": " + std::string(e.what());
         }
 
         return json{};
@@ -146,6 +146,10 @@ std::string check_metadata(const json &metadata) {
                                 if (!s.contains(key) || !s[key].is_string()) {
                                         return "\"key\" is not found / has invalid type on a setting";
                                 }
+                        }
+
+                        if (s["option"] == "enabled") {
+                                return "a settings can't use \"enabled\" as option name";
                         }
 
                         if (!s.contains("default")) {
@@ -200,26 +204,32 @@ std::string check_metadata(const json &metadata) {
 
 std::string check_settings(const json &settings, const json &metadata) {
         if (!settings.is_object()) {
-                for (auto [key, value] : metadata.items()) {
-                        if (!metadata.contains(key)) {
-                                if (metadata[key]["type"].get<std::string>() == "switch") {
-                                        if (!value.is_boolean()) {
-                                                return "value of " + key + "is not boolean";
-                                        }
+                return "not a JSON object";
+        }
 
-                                } else if (metadata[key]["type"].get<std::string>() == "input") {
-                                        if (!value.is_string()) {
-                                                return "value of " + key + "is not string";
-                                        }
+        if (!metadata.contains("settings") || !metadata["settings"].is_array()) {
+                return "";
+        }
 
-                                } else if (metadata[key]["type"].get<std::string>() == "choose") {
-                                        if (!value.is_string()) {
-                                                return "value of " + key + "is not string";
-                                        }
+        for (auto [key, value] : metadata.items()) {
+                if (!metadata.contains(key)) {
+                        if (metadata[key]["type"].get<std::string>() == "switch") {
+                                if (!value.is_boolean()) {
+                                        return "value of " + key + "is not boolean";
+                                }
 
-                                        if (!metadata[key]["values"].contains(value)) {
-                                                return "value of " + key + "is not one of the values in metadata.json";
-                                        }
+                        } else if (metadata[key]["type"].get<std::string>() == "input") {
+                                if (!value.is_string()) {
+                                        return "value of " + key + "is not string";
+                                }
+
+                        } else if (metadata[key]["type"].get<std::string>() == "choose") {
+                                if (!value.is_string()) {
+                                        return "value of " + key + "is not string";
+                                }
+
+                                if (!metadata[key]["values"].contains(value)) {
+                                        return "value of " + key + "is not one of the values in metadata.json";
                                 }
                         }
                 }
@@ -229,11 +239,11 @@ std::string check_settings(const json &settings, const json &metadata) {
 }
 
 void load_plugin(const fs::path &plugindir) {
-        std::string pluginname = plugindir.filename().string();
+        std::string plugin_name = plugindir.filename().string();
 
         // load lua script
         fs::path initfile = plugindir / "init.lua";
-        minilog::fdebugc("lua", logfile, "Loading plugin: ", pluginname);
+        minilog::fdebugc("lua", logfile, "Loading plugin: ", plugin_name);
 
         // update path
         std::string original_path = game::lua["package"]["path"];
@@ -244,8 +254,8 @@ void load_plugin(const fs::path &plugindir) {
         sol::protected_function_result result = game::lua.safe_script_file(initfile, &sol::script_pass_on_error);
         if (!result.valid()) {
                 sol::error err = result;
-                game::plugin_errors[pluginname] = "E: " + std::string(err.what());
-                minilog::fdebugc("lua", logfile, minilog::msg::error, "In plugin: ", pluginname,
+                game::plugin_errors[plugin_name] = "E: " + std::string(err.what());
+                minilog::fdebugc("lua", logfile, minilog::msg::error, "In plugin: ", plugin_name,
                                  " Error: ", err.what());
         }
 
@@ -280,12 +290,8 @@ fs::path create_plugins_dir() {
         return plugins_directory;
 }
 
-fs::path get_settings_path() {
-        return get_data_dir() / "settings.json";
-}
-
 void load_settings() {
-        fs::path settings_path = get_settings_path();
+        fs::path settings_path = get_data_dir() / "settings.json";
 
         if (!fs::exists(settings_path)) {
                 std::ofstream settings_file(settings_path);
@@ -315,7 +321,7 @@ void load_settings() {
 }
 
 void save_settings() {
-        fs::path settings_path = get_settings_path();
+        fs::path settings_path = get_data_dir() / "settings.json";
         std::ofstream settings_file(settings_path);
 
         if (!settings_file.is_open()) {
@@ -333,10 +339,11 @@ void save_settings() {
         settings_file << settings_to_write.dump(4);
 }
 
+// remove invalid/removed plugin's settings
 void cleanup_orphaned_settings(const fs::path &plugins_directory) {
         std::vector<std::string> existing_plugins;
         for (const auto &entry : fs::directory_iterator(plugins_directory)) {
-                if (entry.is_directory() && fs::exists(entry.path() / "init.lua")) {
+                if (package::check_package(entry, true)) {
                         existing_plugins.push_back(entry.path().filename().string());
                 }
         }
@@ -354,28 +361,45 @@ void cleanup_orphaned_settings(const fs::path &plugins_directory) {
         }
 }
 
-void load_plugin_config(const std::string &pluginname, const fs::path &subpath) {
+void generate_default_settings(const std::string &plugin, const fs::path &path) {
+        fs::path plugin_settings_path = path / "settings.json";
+
+        minilog::fdebugc("settings", logfile, "Generating default settings.json file for ", plugin);
+
+        for (const auto &setting : game::settings::metadata[plugin]["settings"]) {
+                game::settings::settings[plugin][setting.at("option")] = setting.at("default");
+        }
+
+        std::ofstream file(plugin_settings_path);
+        json settings = game::settings::settings[plugin];
+        settings.erase("enabled");
+        file << settings.dump(4);
+}
+
+// WARN: must be runned after metadata loaded
+void load_plugin_config(const std::string &plugin_name, const fs::path &subpath) {
         fs::path plugin_settings_path = subpath / "settings.json";
 
         if (fs::exists(plugin_settings_path)) {
-                json plugin_cfg = safe_load(pluginname, plugin_settings_path);
+                json plugin_cfg = safe_load(plugin_name, plugin_settings_path);
+
+                std::string error = check_settings(plugin_cfg, game::settings::metadata[plugin_name]);
+                if (!error.empty()) {
+                        generate_default_settings(plugin_name, subpath);
+                }
+
+                plugin_cfg = safe_load(plugin_name, plugin_settings_path);
+
+                // copy plugin settings to game::settings::settings without overriding enabled key
                 if (plugin_cfg.is_object()) {
                         for (auto &[key, value] : plugin_cfg.items()) {
                                 if (key != "enabled") {
-                                        game::settings::settings[pluginname][key] = value;
+                                        game::settings::settings[plugin_name][key] = value;
                                 }
                         }
                 }
         } else {
-                minilog::fdebugc("settings", logfile, "Generating default settings.json file for ", pluginname);
-                for (const auto &setting : game::settings::metadata[pluginname]["settings"]) {
-                        game::settings::settings[pluginname][setting.at("option")] = setting.at("default");
-                }
-
-                std::ofstream file(plugin_settings_path);
-                json settings = game::settings::settings[pluginname];
-                settings.erase("enabled");
-                file << settings.dump(4);
+                generate_default_settings(plugin_name, subpath);
         }
 }
 
@@ -383,39 +407,42 @@ void process_single_plugin(const fs::path &subpath) {
         if (!fs::is_directory(subpath) || !fs::exists(subpath / "init.lua"))
                 return;
 
-        std::string pluginname = subpath.filename().string();
+        std::string plugin_name = subpath.filename().string();
 
-        // 1. Metadata Validation
-        json metadata = safe_load(pluginname, subpath / "metadata.json");
+        // Metadata Validation
+        json metadata = safe_load(plugin_name, subpath / "metadata.json");
         std::string error = check_metadata(metadata);
         if (!error.empty()) {
-                game::plugin_errors[pluginname] = "E: metadata.json: " + error;
-                game::settings::settings.erase(pluginname);
-                game::settings::metadata.erase(pluginname);
+                game::plugin_errors[plugin_name] = "E: metadata.json: " + error;
+                game::settings::settings.erase(plugin_name);
+                game::settings::metadata.erase(plugin_name);
                 return;
         }
 
-        game::settings::metadata[pluginname] = metadata;
+        game::settings::metadata[plugin_name] = metadata;
 
-        load_plugin_config(pluginname, subpath);
+        // Loading Settings
+        load_plugin_config(plugin_name, subpath);
 
         bool is_enabled = true;
-        if (game::settings::settings.contains(pluginname) && game::settings::settings[pluginname].contains("enabled")) {
-                is_enabled = game::settings::settings[pluginname]["enabled"].get<bool>();
+        if (game::settings::settings.contains(plugin_name) &&
+            game::settings::settings[plugin_name].contains("enabled")) {
+                is_enabled = game::settings::settings[plugin_name]["enabled"].get<bool>();
         }
 
-        if (!game::settings::settings.contains(pluginname) || !game::settings::settings[pluginname].is_object()) {
-                game::settings::settings[pluginname] = json::object();
+        if (!game::settings::settings.contains(plugin_name) || !game::settings::settings[plugin_name].is_object()) {
+                game::settings::settings[plugin_name] = json::object();
         }
 
-        game::settings::settings[pluginname]["enabled"] = is_enabled;
+        game::settings::settings[plugin_name]["enabled"] = is_enabled;
 
+        // Load actual lua code
         if (is_enabled) {
                 load_plugin(subpath);
         }
 }
 
-// --- Main Logic ---
+// Main Logic
 
 void load_plugins() {
         minilog::fdebugc("lua", logfile, "Loading plugins");
