@@ -14,15 +14,6 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-/*
- * crogue install [-f PACKAGENAME.tar.gz | -g GITREPO]
- * crogue remove PACKAGENAME
- * crogue reset PACKAGENAME
- *
- * -g features will be added on future
- *
- */
-
 // clang-format off
 #include <minizip-ng/mz.h>
 #include "minizip-ng/mz_strm.h"
@@ -242,7 +233,7 @@ void clone_git(const std::string &repo_url, const fs::path &target_dir) {
         }
 
         minilog::out("\033[32m==>\033[0m Cloning ", repo_url, "...");
-        std::string cmd = "git clone --depth 1 " + repo_url + " " + target_dir.string() + " > /dev/null 2>&1";
+        std::string cmd = "git clone --depth 1 " + repo_url + " " + target_dir.string();
 
         int status = std::system(cmd.c_str());
         if (status != 0) {

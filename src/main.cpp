@@ -63,29 +63,64 @@ void handle_cli(int argc, char **argv) {
 
         uint64_t custom_seed = 0;
 
+        // options & flags //
         app.add_option("-s,--seed", custom_seed, "Set game seed");
 
         app.add_flag("-m,--skip-menu", game::_skip_main_menu, "Skip Main Menu");
 
-        // subcommands
-        auto *pack_cmd = app.add_subcommand("pack", "Create a plugin package");
-        auto *list_cmd = app.add_subcommand("list", "List installed plugins");
 
+        // plugin management //
+        auto *pack_cmd = app.add_subcommand("pack", "Manage plugins");
+
+        // build
+        auto *build_cmd = pack_cmd->add_subcommand("build", "Create a plugin package at current working directory");
+
+        build_cmd->callback([]() {
+                package::pack();
+                exit(0);
+        });
+
+        // list
+        auto *list_cmd = pack_cmd->add_subcommand("list", "List installed plugins");
+
+        list_cmd->callback([]() {
+                package::list();
+                exit(0);
+        });
+
+        // remove
         bool force = false;
         std::string plugin_name;
-        auto *remove_cmd = app.add_subcommand("remove", "Remove a plugin");
+
+        auto *remove_cmd = pack_cmd->add_subcommand("remove", "Remove a plugin");
         remove_cmd->add_option("PLUGIN", plugin_name, "Plugin name")->required();
         remove_cmd->add_flag("-F,--force", force, "Force to remove");
+        remove_cmd->callback([&]() {
+                package::remove(plugin_name, force);
+                exit(0);
+        });
 
-        auto *reset_cmd = app.add_subcommand("reset", "Reset plugin settings");
+        // reset
+        auto *reset_cmd = pack_cmd->add_subcommand("reset", "Reset plugin settings");
         reset_cmd->add_option("PLUGIN", plugin_name, "Plugin name")->required();
-        reset_cmd->add_flag("-F,--force", force, "Force to reset");
 
+        reset_cmd->callback([&]() {
+                package::reset(plugin_name);
+                exit(0);
+        });
+
+        // update
         std::vector<std::string> update_plugins;
-        auto *update_cmd = app.add_subcommand("update", "Update plugins installed from git");
+        auto *update_cmd = pack_cmd->add_subcommand("update", "Update plugins installed from git");
         update_cmd->add_option("PLUGINS", update_plugins, "Plugin name(s) to update");
 
-        auto *install_cmd = app.add_subcommand("install", "Install one or multiple packages");
+        update_cmd->callback([&]() {
+                package::update(update_plugins);
+                exit(0);
+        });
+
+        // install
+        auto *install_cmd = pack_cmd->add_subcommand("install", "Install one or multiple packages");
 
         install_cmd->add_flag("-F,--force", force, "Force installation");
 
@@ -95,40 +130,7 @@ void handle_cli(int argc, char **argv) {
         std::vector<std::string> pack_repos;
         install_cmd->add_option("-g,--git-repo", pack_repos, "Package git repo(s)");
 
-        //// parse
-
-        try {
-                app.parse(argc, argv);
-        } catch (const CLI::ParseError &e) {
-                exit(app.exit(e));
-        }
-
-        if (*pack_cmd) {
-                package::pack();
-                exit(0);
-        }
-
-        if (*list_cmd) {
-                package::list();
-                exit(0);
-        }
-
-        if (*remove_cmd) {
-                package::remove(plugin_name, force);
-                exit(0);
-        }
-
-        if (*reset_cmd) {
-                package::reset(plugin_name);
-                exit(0);
-        }
-
-        if (*update_cmd) {
-                package::update(update_plugins);
-                exit(0);
-        }
-
-        if (*install_cmd) {
+        install_cmd->callback([&]() {
                 if (pack_files.empty() && pack_repos.empty()) {
                         minilog::fatal(1, "At least one package source (-f or -g) must be specified.");
                 }
@@ -144,6 +146,17 @@ void handle_cli(int argc, char **argv) {
                 }
 
                 exit(0);
+        });
+
+        pack_cmd->require_subcommand(1);
+
+
+        // parse //
+
+        try {
+                app.parse(argc, argv);
+        } catch (const CLI::ParseError &e) {
+                exit(app.exit(e));
         }
 
         // seed
