@@ -16,14 +16,19 @@ ifeq ($(COPY_COMPILE_COMMANDS),yes)
 endif
 
 build:
-	@sleep 0.5
-	@printf -- "-- COPY_COMPILE_COMMANDS  : $(COPY_COMPILE_COMMANDS)\n"
-	@printf -- "-- APPNAME                : $(APPNAME)\n"
-	@printf -- "-- RUNFLAGS               : $(RUNFLAGS)\n"
-	@printf -- "-- CMAKE_FLAGS            : $(CMAKE_FLAGS)\n"
-	@printf -- "-- Running CMake\n"
+	@sleep 0.3
 	@mkdir -p $(BUILD_DIR)
-	@cd $(BUILD_DIR) && cmake $(CMAKE_FLAGS) ..
+	@printf -- "--------------------------------------------------------------\n"
+	@printf -- " APPNAME                : $(APPNAME)\n"
+	@printf -- " RUNFLAGS               : $(RUNFLAGS)\n"
+	@printf -- " COPY_COMPILE_COMMANDS  : $(COPY_COMPILE_COMMANDS)\n"
+	@printf -- " CMAKE_FLAGS            : $(CMAKE_FLAGS)\n"
+	@printf -- "--------------------------------------------------------------\n"
+	@printf -- "-- Starting build\n"
+	@if [ ! -f $(BUILD_DIR)/Makefile ]; then \
+		printf -- "-- Running CMake\n"\
+		cd $(BUILD_DIR) && cmake $(CMAKE_FLAGS) ..; \
+	fi
 	@$(MAKE) -C $(BUILD_DIR)
 
 dbuild: BUILD_TYPE = -DCMAKE_BUILD_TYPE=Debug
