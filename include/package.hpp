@@ -21,5 +21,6 @@ void reset(const std::string &package);
 
 void update(std::vector<std::string> packages);
 
-void list();
+void list(json *output = nullptr);
+
 }  // namespace package

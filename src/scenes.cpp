@@ -23,6 +23,7 @@
 #include "cards.hpp"
 #include "lua.hpp"
 #include "minilog.hpp"
+#include "saves.hpp"
 #include "scenes.hpp"
 #include "settings.hpp"
 #include "tui.hpp"
@@ -83,8 +84,8 @@ void main_menu() {
 
         bool seed_changed = true;
 
-        std::vector<std::string> main = {"Play", "Plugin Manager", "Reload All Plugins", "Quit"};
-        std::vector<std::string> play = {"~~~ Start ~~~", "Seed:", "Random Seed", "Back"};
+        std::vector<std::string> main = {"New Game", "Continue", "Plugin Manager", "Reload All Plugins", "Quit"};
+        std::vector<std::string> new_game = {"Play", "Seed:", "Random Seed", "Back"};
 
         std::vector<std::string> menu = main;
         int choice = 0;
@@ -127,7 +128,8 @@ void main_menu() {
                         case 10:
                         case 'l':
                         case KEY_ENTER:
-                                if (menu[choice] == "~~~ Start ~~~") {
+                                if (menu[choice] == "Play") {
+                                        game::_curr_save_loaded = "";
                                         minilog::fdebugc("setup", logfile, "Starting game.");
                                         game();
                                         game::hooks::trigger(game::hooks::game_end);
@@ -136,8 +138,18 @@ void main_menu() {
                                         choice = 0;
                                         seed_changed = false;
 
-                                } else if (menu[choice] == "Play") {
-                                        menu = play;
+                                } else if (menu[choice] == "Continue") {
+                                        saves::saves_tui();
+
+                                        if (!game::_curr_save_loaded.empty()) {
+                                                minilog::fdebugc("setup", logfile, "Starting game.");
+                                                game(true);
+                                                game::hooks::trigger(game::hooks::game_end);
+                                                game::_curr_save_loaded = "";
+                                        }
+
+                                } else if (menu[choice] == "New Game") {
+                                        menu = new_game;
                                         choice = 0;
 
                                 } else if (menu[choice] == "Seed:") {
@@ -233,8 +245,45 @@ bool on_level_complete(int curr_level) {
                  game::levels[curr_level - 1]->name.c_str(), game::levels[curr_level]->name.c_str());
 
         attroff(COLOR_PAIR(3));
+        mvprintw(2, 0, "[q] Quit, [s] Save, [ENTER] Continue to next level");
 
-        press_enter_to_continue();
+        int key = 0;
+        while (true) {
+                key = getch();
+
+                switch (key) {
+                        case 'q':
+                                goto QUIT;
+                                break;
+
+                        case 's':
+                                // remove old save
+                                if (!game::_curr_save_loaded.empty()) {
+                                        fs::remove(game::_curr_save_loaded);
+                                }
+
+                                // set new save path
+                                game::_curr_save_loaded = saves::save_curr();
+
+                                mvprintw(4, 0, "Saved!");
+                                refresh();
+                                press_enter_to_continue();
+                                mvprintw(4, 0, "      ");
+                                refresh();
+                                break;
+
+                        case KEY_ENTER:
+                        case 10:
+                        case 13:
+                                goto CONTINUE;
+                                break;
+                }
+        }
+
+QUIT:
+        return true;
+
+CONTINUE:
 
         // clear logs
         game::logs.clear();
@@ -260,7 +309,7 @@ bool on_level_complete(int curr_level) {
         return false;
 }
 
-void game() {
+void game(bool save_loaded) {
         if (game::settings::metadata.empty()) {
                 // return if no plugin loaded
                 int max_y, max_x;
@@ -270,7 +319,9 @@ void game() {
                 return;
         }
 
-        reset_game(false);
+        if (!save_loaded) {
+                reset_game(false);
+        }
 
         minilog::fdebugc("setup", logfile, "Generating levels");
         generate_levels();
@@ -392,7 +443,7 @@ void game() {
 
                 // check if level changed
                 if (last_level != game::player::level && last_level != -1) {
-                        // return if amulet of yendor found
+                        // return if exited
                         if (on_level_complete(game::player::level)) {
                                 return;
                         }

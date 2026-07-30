@@ -62,7 +62,7 @@ struct biome_t {
 };
 
 struct buff_t {
-        std::string name = 0;
+        std::string name = "";
         std::function<void(std::shared_ptr<buff_t>)> event = nullptr;
         int level = 0;
 };
@@ -70,6 +70,8 @@ struct buff_t {
 namespace game {
 
 inline bool _skip_main_menu = false;
+inline bool _plugins_changed = false;  // used to store is current save's plugins are changed (save is broken)
+inline std::string _curr_save_loaded = "";
 
 inline std::vector<std::shared_ptr<biome_t>> biomes;  // unordered levels
 inline std::vector<std::shared_ptr<level_t>> levels;  // ordered levels
@@ -160,7 +162,7 @@ struct scene_t {
         int exit_key = 'q';
 
         void run() {
-                int key;
+                int key = 0;
                 while (key != this->exit_key) {
                         this->ui_refresh();
 

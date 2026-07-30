@@ -33,9 +33,14 @@ Under development.
   - [x] Plugin settings
 
 - [x] installing packages from cli
-- [ ] game saves system
+- [x] saves system
+- [ ] custom data dir/plugins dir/saves dir from cli
 - [ ] add ncurses WINDOW management to cr.curses
-- [ ] allow plugins to save values (like cr.data.save("plugin_name", "scores.txt", data)).
 - [ ] code quality
 - [ ] optimizations
 - [ ] create vanilla plugins to make a playable game
+
+### BUGS LIST
+
+- [ ] no on_level_complete() if exit gate is at front and used at start of the game
+- [ ] saves ui is completely a bug

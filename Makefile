@@ -24,7 +24,6 @@ build:
 	@printf -- " COPY_COMPILE_COMMANDS  : $(COPY_COMPILE_COMMANDS)\n"
 	@printf -- " CMAKE_FLAGS            : $(CMAKE_FLAGS)\n"
 	@printf -- "--------------------------------------------------------------\n"
-	@printf -- "-- Starting build\n"
 	@if [ ! -f $(BUILD_DIR)/Makefile ]; then \
 		printf -- "-- Running CMake\n"\
 		cd $(BUILD_DIR) && cmake $(CMAKE_FLAGS) ..; \

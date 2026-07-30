@@ -530,13 +530,13 @@ void reset(const std::string &package) {
         fs::remove(settings);
 }
 
-void list() {
+void list(json *output = nullptr) {
         fs::path plugins_dir(get_data_dir() / "plugins");
         std::cout << "\033[35m";
         for (const auto &entry : std::filesystem::directory_iterator(plugins_dir)) {
                 fs::path path = entry.path();
                 if (fs::is_directory(path)) {
-                        std::string source = "(local)";
+                        std::string source = "local";
 
                         if (!check_package(path, true))
                                 continue;
@@ -546,9 +546,15 @@ void list() {
                                 json info;
                                 file >> info;
                                 file.close();
-                                source = "(" + info["url"].get<std::string>() + ")";
+                                source = info["url"].get<std::string>();
                         }
-                        minilog::out("\033[36m" + path.filename().string() + " \033[35m" + source + "\033[0m");
+
+                        if (output) {
+                                (*output)[path.filename().string()] = source;
+                        } else {
+                                minilog::out("\033[36m" + path.filename().string() + " \033[35m(" + source +
+                                             ")\033[0m");
+                        }
                 }
         }
         std::cout << "\033[0m";

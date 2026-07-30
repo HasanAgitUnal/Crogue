@@ -70,7 +70,7 @@ void handle_cli(int argc, char **argv) {
 
 
         // plugin management //
-        auto *pack_cmd = app.add_subcommand("pack", "Manage plugins");
+        auto *pack_cmd = app.add_subcommand("pm", "Manage plugins");
 
         // build
         auto *build_cmd = pack_cmd->add_subcommand("build", "Create a plugin package at current working directory");
@@ -196,6 +196,7 @@ int main(int argc, char **argv) {
         minilog::categories["lua"] = "38;5;21m";
         minilog::categories["settings"] = "38;5;49m";
         minilog::categories["cli"] = "38;5;178m";
+        minilog::categories["saves"] = "38;5;101m";
 
         handle_cli(argc, argv);
 
