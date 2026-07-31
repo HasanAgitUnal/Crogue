@@ -1,9 +1,9 @@
 COPY_COMPILE_COMMANDS ?= no
 LOG_ENABLED ?= 1
-APPNAME := $(shell grep 'set(APPNAME' CMakeLists.txt | cut -d' ' -f2 | tr -d ')')
+APPNAME ?= $(shell grep 'set(APPNAME' CMakeLists.txt | cut -d' ' -f2 | tr -d ')')
 RUNFLAGS ?=
-LOGFILE := build/debug.log
-BUILD_DIR := build
+LOGFILE ?= build/debug.log
+BUILD_DIR ?= build
 BUILD_TYPE = -DCMAKE_BUILD_TYPE=Release
 CMAKE_TARGET_FLAGS = $(BUILD_TYPE)
 CMAKE_FLAGS = $(CMAKE_TARGET_FLAGS) -Wno-dev

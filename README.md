@@ -34,7 +34,7 @@ Under development.
 
 - [x] installing packages from cli
 - [x] saves system
-- [ ] custom data dir/plugins dir/saves dir from cli
+- [x] custom data dir/plugins dir/saves dir from cli
 - [ ] add ncurses WINDOW management to cr.curses
 - [ ] code quality
 - [ ] optimizations
@@ -42,5 +42,4 @@ Under development.
 
 ### BUGS LIST
 
-- [ ] no on_level_complete() if exit gate is at front and used at start of the game
 - [ ] saves ui is completely a bug

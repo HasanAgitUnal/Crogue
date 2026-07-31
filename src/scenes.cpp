@@ -442,7 +442,7 @@ void game(bool save_loaded) {
                 }
 
                 // check if level changed
-                if (last_level != game::player::level && last_level != -1) {
+                if (last_level != game::player::level) {
                         // return if exited
                         if (on_level_complete(game::player::level)) {
                                 return;
