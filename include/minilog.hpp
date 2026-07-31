@@ -37,7 +37,6 @@ inline const std::string success = "\033[32mSUCCES:\033[0m ";
 
 inline std::unordered_map<std::string, std::string> categories;
 
-// Helper to get formatted category string
 inline std::string format_cat(const std::string &cat) {
         if (categories.find(cat) != categories.end()) {
                 return "[" + std::string("\033[") + categories[cat] + cat + "\033[0m" + "] ";

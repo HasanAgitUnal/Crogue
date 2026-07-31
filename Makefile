@@ -1,7 +1,7 @@
 COPY_COMPILE_COMMANDS ?= no
 LOG_ENABLED ?= 1
 APPNAME := $(shell grep 'set(APPNAME' CMakeLists.txt | cut -d' ' -f2 | tr -d ')')
-RUNFLAGS :=
+RUNFLAGS ?=
 LOGFILE := build/debug.log
 BUILD_DIR := build
 BUILD_TYPE = -DCMAKE_BUILD_TYPE=Release

@@ -19,6 +19,7 @@
 #include <ncurses.h>
 #include <cstdint>
 #include <deque>
+#include <filesystem>
 #include <functional>
 #include <map>
 #include <memory>
@@ -26,6 +27,7 @@
 #include <sol/sol.hpp>
 #include <string>
 
+namespace fs = std::filesystem;
 using json = nlohmann::json;
 
 const std::string logfile = "./build/debug.log";
@@ -72,6 +74,7 @@ namespace game {
 inline bool _skip_main_menu = false;
 inline bool _plugins_changed = false;  // used to store is current save's plugins are changed (save is broken)
 inline std::string _curr_save_loaded = "";
+inline fs::path _data_directory = "";
 
 inline std::vector<std::shared_ptr<biome_t>> biomes;  // unordered levels
 inline std::vector<std::shared_ptr<level_t>> levels;  // ordered levels

@@ -381,7 +381,7 @@ void plugin_settings(std::string pluginname) {
         }
 
         // save settings
-        fs::path file_path = get_data_dir() / "plugins" / pluginname / "settings.json";
+        fs::path file_path = game::_data_directory / "plugins" / pluginname / "settings.json";
         std::ofstream file(file_path);
 
         json settings = game::settings::settings[pluginname];
@@ -489,7 +489,7 @@ void plugin_manager() {
                                         if (key == 'Y' || key == 'y') {
                                                 minilog::fdebugc("settings", logfile, "Deleting plugin: ", plugin);
 
-                                                fs::path plugin_path = get_data_dir() / "plugins" / plugin;
+                                                fs::path plugin_path = game::_data_directory / "plugins" / plugin;
                                                 std::error_code e;
                                                 fs::remove_all(plugin_path, e);
                                                 if (e) {
@@ -559,7 +559,7 @@ void settings() {
                 game_settings[key] = value["enabled"].get<bool>();
         }
 
-        fs::path settings_path = get_data_dir() / "settings.json";
+        fs::path settings_path = game::_data_directory / "settings.json";
         minilog::fdebugc("settings", logfile, "Saving game settings to ", settings_path.string());
         std::ofstream settings_file(settings_path.string());
         if (!settings_file.is_open()) {

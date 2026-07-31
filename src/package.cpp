@@ -28,6 +28,7 @@
 #include <random>
 #include <string>
 
+#include "game.hpp"
 #include "lua.hpp"
 #include "minilog.hpp"
 
@@ -361,7 +362,7 @@ void pack() {
 }
 
 void install(const fs::path &directory, const std::string &plugin_name, bool force) {
-        fs::path plugins_dir = get_data_dir() / "plugins";
+        fs::path plugins_dir = game::_data_directory / "plugins";
 
         try {
                 fs::create_directories(plugins_dir);
@@ -461,7 +462,7 @@ void install_git(const std::string &repo_url, bool force) {
 };
 
 void update(std::vector<std::string> packages) {
-        fs::path plugins_dir(get_data_dir() / "plugins");
+        fs::path plugins_dir(game::_data_directory / "plugins");
         if (packages.empty()) {
                 // update all if no package given
                 for (const auto &entry : std::filesystem::directory_iterator(plugins_dir)) {
@@ -504,7 +505,7 @@ void update(std::vector<std::string> packages) {
 }
 
 void remove(const std::string &package, bool force) {
-        fs::path pack(get_data_dir() / "plugins" / package);
+        fs::path pack(game::_data_directory / "plugins" / package);
 
         if (force) {
                 goto remove;
@@ -524,14 +525,14 @@ remove:
 }
 
 void reset(const std::string &package) {
-        fs::path settings(get_data_dir() / "plugins" / package / "settings.json");
+        fs::path settings(game::_data_directory / "plugins" / package / "settings.json");
 
         // do not matter exists or not
         fs::remove(settings);
 }
 
 void list(json *output = nullptr) {
-        fs::path plugins_dir(get_data_dir() / "plugins");
+        fs::path plugins_dir(game::_data_directory / "plugins");
         std::cout << "\033[35m";
         for (const auto &entry : std::filesystem::directory_iterator(plugins_dir)) {
                 fs::path path = entry.path();

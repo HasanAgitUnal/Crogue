@@ -295,7 +295,7 @@ fs::path create_plugins_dir() {
         fs::path plugins_directory;
 
         try {
-                plugins_directory = get_data_dir() / "plugins";
+                plugins_directory = game::_data_directory / "plugins";
 
                 if (!fs::exists(plugins_directory)) {
                         minilog::fdebugc("lua", logfile, "Creating plugins directory: ", plugins_directory);
@@ -319,7 +319,7 @@ fs::path create_plugins_dir() {
 }
 
 void load_settings() {
-        fs::path settings_path = get_data_dir() / "settings.json";
+        fs::path settings_path = game::_data_directory / "settings.json";
 
         if (!fs::exists(settings_path)) {
                 std::ofstream settings_file(settings_path);
@@ -349,7 +349,7 @@ void load_settings() {
 }
 
 void save_settings() {
-        fs::path settings_path = get_data_dir() / "settings.json";
+        fs::path settings_path = game::_data_directory / "settings.json";
         std::ofstream settings_file(settings_path);
 
         if (!settings_file.is_open()) {

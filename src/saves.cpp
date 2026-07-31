@@ -84,12 +84,12 @@ std::string check_save_data(const json &save) {
 
 std::string save(json save_data) {
         minilog::fdebugc("save", logfile, "Saving a save with seed: ", save_data["seed"].get<uint64_t>());
-        fs::create_directories(get_data_dir() / "saves");
+        fs::create_directories(game::_data_directory / "saves");
 
         std::string file_name = std::to_string(save_data["seed"].get<uint64_t>()) + "_" +
                                 std::to_string(save_data["last_played"].get<uint64_t>()) + ".json";
 
-        fs::path save_path = get_data_dir() / "saves" / file_name;
+        fs::path save_path = game::_data_directory / "saves" / file_name;
         std::ofstream file(save_path);
         file << save_data.dump(4);
         file.close();
@@ -172,7 +172,7 @@ void sync_with_plugins(json &saves) {
 }
 
 json get_saves() {
-        fs::path saves_dir = get_data_dir() / "saves";
+        fs::path saves_dir = game::_data_directory / "saves";
         json saves = json::array();
 
         if (!fs::exists(saves_dir)) {

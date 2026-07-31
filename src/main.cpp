@@ -31,6 +31,16 @@
 #include "scenes.hpp"
 #include "tui.hpp"
 
+
+#ifdef DEBUG
+#define DEBUG_TAG "-debug"
+#else
+#define DEBUG_TAG ""
+#endif
+
+#define CROGUE_VERSION "0.1" DEBUG_TAG
+
+
 bool game_running = false;
 
 #ifdef DEBUG
@@ -61,10 +71,18 @@ void interrupt_handler(int sig) {
 void handle_cli(int argc, char **argv) {
         CLI::App app{"crogue - Card Based Roguelike Game"};
 
-        uint64_t custom_seed = 0;
-
         // options & flags //
+        bool version = false;
+        app.add_flag("-v,--version", version, "Print version");
+
+        uint64_t custom_seed = 0;
         app.add_option("-s,--seed", custom_seed, "Set game seed");
+
+        std::string custom_data_dir = "";
+        app.add_option("-d,--data", custom_data_dir, "Custom data directory location");
+
+        bool default_data = false;
+        app.add_flag("-w,--where-is-my-data", default_data, "Default data directory location for your system");
 
         app.add_flag("-m,--skip-menu", game::_skip_main_menu, "Skip Main Menu");
 
@@ -159,6 +177,11 @@ void handle_cli(int argc, char **argv) {
                 exit(app.exit(e));
         }
 
+        if (version) {
+                minilog::out("CROGUE " CROGUE_VERSION "\nCard Based Roguelike Game");
+                exit(0);
+        }
+
         // seed
         if (custom_seed) {
                 game::seed = custom_seed;
@@ -169,6 +192,23 @@ void handle_cli(int argc, char **argv) {
                 std::mt19937_64 seed_gen(rd());
                 game::seed = seed_gen();
                 minilog::fdebugc("seed", logfile, "using random seed: ", game::seed);
+        }
+
+        // defult data dir
+        if (default_data) {
+                minilog::out(get_data_dir().string());
+                exit(0);
+        }
+
+        // data dir
+        if (custom_data_dir.empty()) {
+                game::_data_directory = get_data_dir();
+        } else {
+                fs::path dir(custom_data_dir);
+                if (!fs::exists(dir) || !fs::is_directory(dir)) {
+                        minilog::fatal(1, dir, " doesn't exists or not a directory");
+                }
+                game::_data_directory = custom_data_dir;
         }
 }
 
@@ -181,7 +221,8 @@ int main(int argc, char **argv) {
         signal(SIGTERM, interrupt_handler);
         signal(SIGINT, interrupt_handler);
 
-        // setup minilog categories
+        // debug logs
+#ifdef DEBUG
         minilog::categories["seed"] = "3;96m";
         minilog::categories["setup"] = "32m";
         minilog::categories["event"] = "36m";
@@ -197,8 +238,11 @@ int main(int argc, char **argv) {
         minilog::categories["settings"] = "38;5;49m";
         minilog::categories["cli"] = "38;5;178m";
         minilog::categories["saves"] = "38;5;101m";
+#endif
 
         handle_cli(argc, argv);
+
+        minilog::fdebugc("game", logfile, "Data directory: ", game::_data_directory.string());
 
         // ncurses things
         setlocale(LC_ALL, "");
