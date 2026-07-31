@@ -25,7 +25,7 @@ build:
 	@printf -- " CMAKE_FLAGS            : $(CMAKE_FLAGS)\n"
 	@printf -- "--------------------------------------------------------------\n"
 	@if [ ! -f $(BUILD_DIR)/Makefile ]; then \
-		printf -- "-- Running CMake\n"\
+		printf -- "-- Running CMake\n";\
 		cd $(BUILD_DIR) && cmake $(CMAKE_FLAGS) ..; \
 	fi
 	@$(MAKE) -C $(BUILD_DIR)
