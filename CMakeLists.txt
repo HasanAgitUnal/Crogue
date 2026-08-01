@@ -23,6 +23,10 @@ set(TESTBIN ${APPNAME}-test)
 
 option(TEST_ENABLED "Enable Tests" OFF)
 
+set(CMAKE_CXX_FLAGS_RELEASE "-O2 -DNDEBUG")
+set(CMAKE_CXX_FLAGS_DEBUG "-g -O0")
+
+# check for CCache
 find_program(CCACHE_PROGRAM ccache)
 if(CCACHE_PROGRAM)
         message(STATUS "CCache found and using it")
@@ -37,6 +41,7 @@ else()
         message(STATUS "CCache not found")
 endif()
 
+# check for LLD
 find_program(LLD_PROGRAM ld.lld)
 if(LLD_PROGRAM)
         message(STATUS "LLD found and using it")
@@ -44,6 +49,13 @@ if(LLD_PROGRAM)
         set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -fuse-ld=lld")
 else()
         message(STATUS "LLD not found")
+endif()
+
+# enable LTO
+include(CheckIPOSupported)
+check_ipo_supported(RESULT ipo_supported)
+if(ipo_supported)
+    set(CMAKE_INTERPROCEDURAL_OPTIMIZATION TRUE)
 endif()
 
 #
