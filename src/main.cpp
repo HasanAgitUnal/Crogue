@@ -86,6 +86,41 @@ void handle_cli(int argc, char **argv) {
 
         app.add_flag("-m,--skip-menu", game::_skip_main_menu, "Skip Main Menu");
 
+        // parse options before subcommands //
+        app.parse_complete_callback([&]() {
+                if (version) {
+                        minilog::out("CROGUE " CROGUE_VERSION "\nCard Based Roguelike Game");
+                        exit(0);
+                }
+
+                if (default_data) {
+                        minilog::out(get_data_dir().string());
+                        exit(0);
+                }
+
+                // data dir
+                if (custom_data_dir.empty()) {
+                        game::_data_directory = get_data_dir();
+                } else {
+                        fs::path dir(custom_data_dir);
+                        if (!fs::exists(dir) || !fs::is_directory(dir)) {
+                                minilog::fatal(1, dir, " doesn't exists or not a directory");
+                        }
+                        game::_data_directory = custom_data_dir;
+                }
+
+                // seed
+                if (custom_seed) {
+                        game::seed = custom_seed;
+                        minilog::fdebugc("seed", logfile, "using custom seed: ", game::seed);
+                } else {
+                        std::random_device rd;
+                        std::mt19937_64 seed_gen(rd());
+                        game::seed = seed_gen();
+                        minilog::fdebugc("seed", logfile, "using random seed: ", game::seed);
+                }
+        });
+
 
         // plugin management //
         auto *pack_cmd = app.add_subcommand("pm", "Manage plugins");
@@ -175,40 +210,6 @@ void handle_cli(int argc, char **argv) {
                 app.parse(argc, argv);
         } catch (const CLI::ParseError &e) {
                 exit(app.exit(e));
-        }
-
-        if (version) {
-                minilog::out("CROGUE " CROGUE_VERSION "\nCard Based Roguelike Game");
-                exit(0);
-        }
-
-        // seed
-        if (custom_seed) {
-                game::seed = custom_seed;
-                minilog::fdebugc("seed", logfile, "using custom seed: ", game::seed);
-
-        } else {
-                std::random_device rd;
-                std::mt19937_64 seed_gen(rd());
-                game::seed = seed_gen();
-                minilog::fdebugc("seed", logfile, "using random seed: ", game::seed);
-        }
-
-        // defult data dir
-        if (default_data) {
-                minilog::out(get_data_dir().string());
-                exit(0);
-        }
-
-        // data dir
-        if (custom_data_dir.empty()) {
-                game::_data_directory = get_data_dir();
-        } else {
-                fs::path dir(custom_data_dir);
-                if (!fs::exists(dir) || !fs::is_directory(dir)) {
-                        minilog::fatal(1, dir, " doesn't exists or not a directory");
-                }
-                game::_data_directory = custom_data_dir;
         }
 }
 
