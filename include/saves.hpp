@@ -9,7 +9,7 @@ std::string save_curr();
 json load(const fs::path path);
 void apply_save(const json save);
 json get_saves();
-void saves_tui();
+bool saves_tui();
 void sync_with_plugins(json &saves);
 
 // may other files need that helper

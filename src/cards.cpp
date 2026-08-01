@@ -28,12 +28,15 @@
 void reset_game(bool full) {
         minilog::fdebugc("setup", logfile, "Resetting game state");
 
+        minilog::fdebugc("setup", logfile, "Full reset: ", full);
+
         game::player::hp = 100;
         game::player::level = 0;
         game::player::inventory.clear();
 
         game::card_set.clear();
         game::logs.clear();
+        game::levels.clear();
 
         for (auto buff : game::buffs) {
                 buff->level = 0;
@@ -48,7 +51,6 @@ void reset_game(bool full) {
         // reset completely
         if (full) {
                 game::biomes.clear();
-                game::levels.clear();
                 game::deck.clear();
                 game::buffs.clear();
                 game::plugin_errors.clear();
@@ -340,13 +342,13 @@ void draw_cards() {
 }
 
 void basic_card_event(const std::shared_ptr<card_t> card, const int extra) {
-        if (!card->logmsg.empty()) {
-                log(card->logmsg, NORMAL);
-        }
-
         bool cancel = game::hooks::trigger_bool(game::hooks::card_event, card, extra);
         if (cancel) {
                 return;
+        }
+
+        if (!card->logmsg.empty()) {
+                log(card->logmsg, NORMAL);
         }
 
         minilog::fdebugc("event", logfile, "Calling event for card: ", card->name);
@@ -355,19 +357,6 @@ void basic_card_event(const std::shared_ptr<card_t> card, const int extra) {
 
         minilog::fdebugc("event", logfile, "card event result=", result);
         minilog::fdebugc("event", logfile, "game::player::hp=", game::player::hp);
-}
-
-template <typename... Args>
-std::string format(const std::string &fmt, Args... args) {
-        size_t size = snprintf(nullptr, 0, fmt.c_str(), args...) + 1;
-        if (size <= 0)
-                return "";
-
-        std::unique_ptr<char[]> buf(new char[size]);
-
-        snprintf(buf.get(), size, fmt.c_str(), args...);
-
-        return std::string(buf.get(), buf.get() + size - 1);
 }
 
 // calls card event
@@ -392,7 +381,7 @@ void card_event(const std::shared_ptr<card_t> card, const int extra) {
                         break;
                 case ITEM: {
                         minilog::fdebugc("event", logfile, "card type: ITEM");
-                        log(format("You found item: %s", card->name.c_str()), NORMAL);
+                        log("You found item: " + card->name, NORMAL);
 
                         bool added = false;
 

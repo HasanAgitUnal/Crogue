@@ -52,8 +52,13 @@ void cleanup_lua() {
 
         // Cleaanup package.laoded
         game::lua.script(
+            "local std_libs = { "
+            "  ['_G'] = true, ['package'] = true, ['coroutine'] = true, ['string'] = true, "
+            "  ['os'] = true, ['math'] = true, ['table'] = true, ['debug'] = true, "
+            "  ['bit32'] = true, ['io'] = true, ['ffi'] = true, ['utf8'] = true "
+            "} "
             "for k in pairs(package.loaded) do "
-            "  if k ~= '_G' and k ~= 'package' and k ~= 'table' and k ~= 'string' and k ~= 'math' then "
+            "  if not std_libs[k] then "
             "    package.loaded[k] = nil "
             "  end "
             "end");
@@ -275,8 +280,17 @@ void load_plugin(const fs::path &plugindir) {
 
         // update path
         std::string original_path = game::lua["package"]["path"];
+        std::string original_cpath = game::lua["package"]["cpath"];
         std::string plugin_path = plugindir.string() + "/?.lua;" + original_path;
+
+#ifdef _WIN32
+        std::string plugin_cpath = plugindir.string() + "/?.dll;" + plugindir.string() + "/lib?.dll;" + original_cpath;
+#else
+        std::string plugin_cpath = plugindir.string() + "/?.so;" + plugindir.string() + "/lib?.so;" + original_cpath;
+#endif
+
         game::lua["package"]["path"] = plugin_path;
+        game::lua["package"]["cpath"] = plugin_cpath;
 
         // call the init.lua and handle errors
         sol::protected_function_result result = game::lua.safe_script_file(initfile, &sol::script_pass_on_error);
@@ -289,6 +303,7 @@ void load_plugin(const fs::path &plugindir) {
 
         // reload original_path
         game::lua["package"]["path"] = original_path;
+        game::lua["package"]["cpath"] = original_cpath;
 }
 
 fs::path create_plugins_dir() {

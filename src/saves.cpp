@@ -310,14 +310,14 @@ void draw_layout_decorations(int max_y, int max_x) {
         wnoutrefresh(stdscr);
 }
 
-void saves_tui() {
+bool saves_tui() {
         json saves_list = get_saves();
         if (saves_list.empty()) {
                 clear();
                 mvprintw(0, 0, "No save found");
                 refresh();
                 press_enter_to_continue();
-                return;
+                return false;
         }
 
         int max_y, max_x;
@@ -421,10 +421,12 @@ void saves_tui() {
                 }
         }
 
-END:
+        return false;
 
+END:
         delwin(pad);
         delwin(details_win);
+        return true;
 }
 
 }  // namespace saves

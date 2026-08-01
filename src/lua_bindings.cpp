@@ -115,8 +115,21 @@ sol::table get_settings(const std::string plugin) {
 }
 
 void setup_lua() {
-        game::lua.open_libraries(sol::lib::base, sol::lib::table, sol::lib::package, sol::lib::string, sol::lib::math);
         // clang-format off
+        game::lua.open_libraries(
+            sol::lib::base,
+            sol::lib::package,
+            sol::lib::coroutine,
+            sol::lib::string,
+            sol::lib::os,
+            sol::lib::math,
+            sol::lib::table,
+            sol::lib::debug,
+            sol::lib::bit32,
+            sol::lib::io,
+            sol::lib::ffi,
+            sol::lib::utf8
+        );
 
         // main table
         sol::table crogue = game::lua.create_table();
@@ -219,6 +232,8 @@ void setup_lua() {
         crogue["card_event"] = &card_event;
 
         crogue["settings"] = &get_settings;
+
+        crogue["is_game_running"] = [&]() -> bool { return game::game_is_running; };
 
         crogue["hook"] = [](std::string event, sol::function func) {
                 try {
@@ -450,7 +465,6 @@ void setup_lua() {
         stat["set_seed"] = &set_seed;
 
         crogue["stat"] = stat;
-
 
         sol::table player = game::lua.create_table();
 

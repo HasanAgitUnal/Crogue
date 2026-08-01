@@ -18,5 +18,5 @@
 
 namespace scene {
 void main_menu();
-void game(bool save_loaded = false);
+void game();
 }  // namespace scene

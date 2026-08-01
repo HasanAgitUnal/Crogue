@@ -92,12 +92,13 @@ void main_menu() {
         int key = 0;
 
         while (key != 'q') {
+
                 init_pair(500, -1, 236);
                 init_pair(501, -1, 234);
                 print_menu(menu, choice);
 
                 // on play menu show a warning if user does not changes seed.
-                if (menu[0] != "Play" && !seed_changed) {
+                if (menu[0] == "Play" && !seed_changed) {
                         int max_y, max_x;
                         getmaxyx(stdscr, max_y, max_x);
                         attron(COLOR_PAIR(4));
@@ -111,6 +112,15 @@ void main_menu() {
                 key = getch();
 
                 switch (key) {
+                        case 'q':
+                                // q means go back if on submenus
+                                if (menu[0] == "Play") {
+                                        menu = main;
+                                        choice = 0;
+                                        key = 0;
+                                }
+                                break;
+
                         case 'k':
                         case KEY_UP:
                                 if (choice > 0)
@@ -131,19 +141,23 @@ void main_menu() {
                                 if (menu[choice] == "Play") {
                                         game::_curr_save_loaded = "";
                                         minilog::fdebugc("setup", logfile, "Starting game.");
+                                        reset_game(false);
                                         game();
                                         game::hooks::trigger(game::hooks::game_end);
+                                        game::_curr_save_loaded = "";
+                                        reset_game(false);
 
                                         menu = main;
                                         choice = 0;
                                         seed_changed = false;
 
                                 } else if (menu[choice] == "Continue") {
-                                        saves::saves_tui();
+                                        bool selected = saves::saves_tui();
 
-                                        if (!game::_curr_save_loaded.empty()) {
+                                        if (selected) {
                                                 minilog::fdebugc("setup", logfile, "Starting game.");
-                                                game(true);
+                                                game();
+                                                reset_game(false);
                                                 game::hooks::trigger(game::hooks::game_end);
                                                 game::_curr_save_loaded = "";
                                         }
@@ -309,18 +323,15 @@ CONTINUE:
         return false;
 }
 
-void game(bool save_loaded) {
+void game() {
         if (game::settings::metadata.empty()) {
                 // return if no plugin loaded
                 int max_y, max_x;
                 getmaxyx(stdscr, max_y, max_x);
-                mvprintw(max_y - 1, 0, "No plugin loaded!");
+                clear();
+                mvprintw(0, 0, "No plugin loaded!");
                 getch();
                 return;
-        }
-
-        if (!save_loaded) {
-                reset_game(false);
         }
 
         minilog::fdebugc("setup", logfile, "Generating levels");
@@ -329,7 +340,8 @@ void game(bool save_loaded) {
         if (game::levels.empty()) {
                 int max_y, max_x;
                 getmaxyx(stdscr, max_y, max_x);
-                mvprintw(max_y - 1, 0, "No level created!");
+                clear();
+                mvprintw(0, 0, "No level created!");
                 getch();
                 return;
         }
@@ -345,8 +357,10 @@ void game(bool save_loaded) {
 
         game::hooks::trigger(game::hooks::game_start);
 
+        game::game_is_running = true;
+
         int key = 0;
-        int last_level = -1;
+        int last_level = 0;
         while (true) {
                 handle_buffs();
 
@@ -445,6 +459,7 @@ void game(bool save_loaded) {
                 if (last_level != game::player::level) {
                         // return if exited
                         if (on_level_complete(game::player::level)) {
+                                game::game_is_running = false;
                                 return;
                         }
 
@@ -476,7 +491,7 @@ void game(bool save_loaded) {
                 }
 
                 // check again
-                if (last_level != game::player::level && last_level != -1) {
+                if (last_level != game::player::level) {
                         if (on_level_complete(game::player::level)) {
                                 return;
                         }

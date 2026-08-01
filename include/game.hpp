@@ -76,6 +76,9 @@ inline bool _plugins_changed = false;  // used to store is current save's plugin
 inline std::string _curr_save_loaded = "";
 inline fs::path _data_directory = "";
 
+// usefull for plugins
+inline bool game_is_running = false;
+
 inline std::vector<std::shared_ptr<biome_t>> biomes;  // unordered levels
 inline std::vector<std::shared_ptr<level_t>> levels;  // ordered levels
 inline int levelid;
