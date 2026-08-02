@@ -360,7 +360,7 @@ void game() {
         game::game_is_running = true;
 
         int key = 0;
-        int last_level = 0;
+        int last_level = game::player::level;
         while (true) {
                 handle_buffs();
 
