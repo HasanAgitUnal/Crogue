@@ -296,15 +296,28 @@ void update_details(WINDOW *win, json &item) {
 }
 
 void draw_layout_decorations(int max_y, int max_x) {
-        mvprintw(0, 0, "Saves");
+
+
+        mvprintw(0, 0, " Select Save                            │ Details");
+        attron(COLOR_PAIR(9));
+        mvprintw(0, 40, "│");
+        attroff(COLOR_PAIR(9));
 
         print_line(1);
-        mvprintw(1, 31, "┬");
 
-        mvprintw(2, 0, " Select Save                   │ Details");
-        mvprintw(3, 0, "───────────────────────────────┼");
-        for (int x = 31; x < max_x; ++x)
-                addstr("─");
+        attron(COLOR_PAIR(9));
+        mvprintw(1, 40, "┼");
+
+        for (int line = 2; line < max_y - 2; line++) {
+                mvprintw(line, 40, "│");
+        }
+        attroff(COLOR_PAIR(9));
+
+        print_line(max_y - 2);
+
+        attron(COLOR_PAIR(9));
+        mvprintw(max_y - 2, 40, "┴");
+        attroff(COLOR_PAIR(9));
 
         mvprintw(max_y - 1, 0, " [ENTER] Load, [d] Delete, [q] Back, [r] Recover");
         wnoutrefresh(stdscr);
@@ -326,12 +339,12 @@ bool saves_tui() {
         int selected_idx = 0;
         int pad_top = 0;
 
-        int pad_height = std::max((int)saves_list.size(), 1);
-        WINDOW *pad = newpad(pad_height, 31);
+        int pad_height = saves_list.size();
+        WINDOW *pad = newpad(pad_height, 38);
 
-        int details_height = std::max(max_y - 5, 1);
-        int details_width = std::max(max_x - 31, 1);
-        WINDOW *details_win = newwin(details_height, details_width, 4, 31);
+        int details_height = max_y - 4;
+        int details_width = max_x - 42;
+        WINDOW *details_win = newwin(details_height, details_width, 2, 42);
 
         keypad(stdscr, TRUE);
         curs_set(0);
@@ -341,7 +354,7 @@ bool saves_tui() {
         int key = 0;
         while (key != 'q') {
                 getmaxyx(stdscr, max_y, max_x);
-                int viewport_height = max_y - 5;
+                int viewport_height = max_y - 3;
 
                 if (viewport_height < 1)
                         viewport_height = 1;
@@ -365,15 +378,13 @@ bool saves_tui() {
                         pad_top = selected_idx - viewport_height + 1;
                 }
 
-                // details window
                 update_details(details_win, saves_list[selected_idx]);
 
                 // refresh windows
-                pnoutrefresh(pad, pad_top, 0, 4, 0, 4 + viewport_height - 1, 29);
+                pnoutrefresh(pad, pad_top, 0, 3, 0, 4 + viewport_height - 2, 41);
                 wnoutrefresh(details_win);
                 doupdate();
 
-                // keyboard handling
                 key = getch();
                 switch (key) {
                         case KEY_UP:
@@ -395,38 +406,33 @@ bool saves_tui() {
                                 break;
 
                         case 'r':
-                                // TODO: add save recover
+                                // TODO: add save recovery mode
                                 break;
 
                         case 10:
                         case KEY_ENTER:
                                 apply_save(saves_list[selected_idx]);
-                                goto END;
+                                delwin(pad);
+                                delwin(details_win);
+                                return true;
                                 break;
 
                         case KEY_RESIZE:
-                                delwin(details_win);
-                                delwin(pad);
-
                                 getmaxyx(stdscr, max_y, max_x);
 
-                                details_height = std::max(max_y - 5, 1);
-                                details_width = std::max(max_x - 31, 1);
+                                details_height = max_y - 3;
+                                details_width = max_x - 42;
 
-                                pad = newpad(pad_height, 30);
-                                details_win = newwin(details_height, details_width, 4, 31);
+                                wresize(details_win, details_height, details_width);
 
                                 redraw_all = true;
                                 break;
                 }
         }
 
-        return false;
-
-END:
         delwin(pad);
         delwin(details_win);
-        return true;
+        return false;
 }
 
 }  // namespace saves

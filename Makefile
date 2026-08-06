@@ -6,7 +6,7 @@ LOGFILE ?= build/debug.log
 BUILD_DIR ?= build
 BUILD_TYPE = -DCMAKE_BUILD_TYPE=Release
 CMAKE_TARGET_FLAGS = $(BUILD_TYPE)
-CMAKE_FLAGS = $(CMAKE_TARGET_FLAGS) -Wno-dev
+CMAKE_FLAGS = $(CMAKE_TARGET_FLAGS) -Wno-author
 
 all: clean build compile_commands
 
