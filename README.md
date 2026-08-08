@@ -32,9 +32,12 @@ Under development.
   - [x] Plugin manager to enable/disable or delete plugins
   - [x] Plugin settings
 
+### other features && improvements
+
 - [x] installing packages from cli
 - [x] saves system
 - [x] custom data dir/plugins dir/saves dir from cli
+- [ ] recovery mode to load broken saves
 - [ ] add ncurses WINDOW management to cr.curses
 - [ ] code quality
 - [ ] optimizations
@@ -42,4 +45,5 @@ Under development.
 
 ### BUGS LIST
 
-- [ ] saves ui is completely a bug
+* [ ] broken saves thing is not working
+

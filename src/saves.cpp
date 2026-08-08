@@ -42,7 +42,8 @@ std::string check_save_data(const json &save) {
                 return "not an object";
         }
 
-        std::vector<std::string> required = {"seed", "hp", "level", "last_played", "last_plugins", "plugins_changed"};
+        std::vector<std::string> required = {"seed",           "hp", "level", "last_played", "created_with_plugins",
+                                             "plugins_changed"};
         for (auto key : required) {
                 if (!save.contains(key)) {
                         return "\"" + key + "\" key not found";
@@ -69,11 +70,11 @@ std::string check_save_data(const json &save) {
                 return "\"plugins_changed\" is not a bool";
         }
 
-        if (!save["last_plugins"].is_object()) {
-                return "\"last_plugins\" is not an object";
+        if (!save["created_with_plugins"].is_object()) {
+                return "\"created_with_plugins\" is not an object";
         }
 
-        for (auto &[plugin, source] : save["last_plugins"].items()) {
+        for (auto &[plugin, source] : save["created_with_plugins"].items()) {
                 if (!source.is_string()) {
                         return "source of the \"" + plugin + "\" is not a string";
                 }
@@ -83,7 +84,7 @@ std::string check_save_data(const json &save) {
 }
 
 std::string save(json save_data) {
-        minilog::fdebugc("save", logfile, "Saving a save with seed: ", save_data["seed"].get<uint64_t>());
+        minilog::fdebugc("save", logfile, "Saving a save with name: ", save_data["name"].get<std::string>());
         fs::create_directories(game::_data_directory / "saves");
 
         std::string file_name = std::to_string(save_data["seed"].get<uint64_t>()) + "_" +
@@ -99,15 +100,26 @@ std::string save(json save_data) {
 
 std::string save_curr() {
         json plugins = json::object();
-        package::list(&plugins);
+        if (game::_curr_save_created_with_plugins.empty()) {
+                plugins = game::_curr_save_created_with_plugins;
+        } else {
+                package::list(&plugins);
+                game::_curr_save_created_with_plugins = plugins;
+        }
 
         json save_data = json::object();
+
+        if (game::_curr_save_name.empty()) {
+                game::_curr_save_name = "No name";
+        }
+
+        save_data["name"] = game::_curr_save_name;
         save_data["seed"] = game::seed;
         save_data["hp"] = game::player::hp;
         save_data["level"] = game::player::level;
         auto timestamp = get_unix_timestamp();
         save_data["last_played"] = timestamp;
-        save_data["last_plugins"] = plugins;
+        save_data["created_with_plugins"] = plugins;
         save_data["plugins_changed"] = game::_plugins_changed;
 
         return save(save_data);
@@ -142,12 +154,14 @@ json load(const fs::path path) {
 }
 
 void apply_save(const json save) {
-        minilog::fdebugc("save", logfile, "applying a save with seed: ", save["seed"].get<uint64_t>());
-        game::seed = save["seed"];
-        game::player::hp = save["hp"];
-        game::player::level = save["level"];
-        game::_plugins_changed = save["plugins_changed"];
-        game::_curr_save_loaded = save["_filepath"];
+        minilog::fdebugc("save", logfile, "applying a save with name: ", save["name"].get<std::string>());
+        game::seed = save["seed"].get<uint64_t>();
+        game::player::hp = save["hp"].get<int>();
+        game::player::level = save["level"].get<int>();
+        game::_plugins_changed = save["plugins_changed"].get<bool>();
+        game::_curr_save_created_with_plugins = save["created_with_plugins"];
+        game::_curr_save_loaded = save["_filepath"].get<std::string>();
+        game::_curr_save_name = save["name"].get<std::string>();
 }
 
 void sync_with_plugins(json &saves) {
@@ -156,7 +170,7 @@ void sync_with_plugins(json &saves) {
 
         for (auto &s : saves) {
                 bool old_state = s.value("plugins_changed", false);
-                bool new_state = (plugins != s["last_plugins"]);
+                bool new_state = (plugins != s["created_with_plugins"]);
 
                 // write if changed
                 if (old_state != new_state) {
@@ -277,20 +291,22 @@ void print_item(WINDOW *win, int line, json &item, bool hover) {
                 wattr_set(win, A_UNDERLINE, (int)314, NULL);
         }
 
-        mvwprintw(win, line, 1, "%s", get_formatted_date(item["last_played"].get<uint64_t>()).c_str());
+        mvwprintw(win, line, 1, "%s", item["name"].get<std::string>().c_str());
 
         wattr_set(win, A_NORMAL, 0, NULL);
 }
 
 void update_details(WINDOW *win, json &item) {
         werase(win);
-        mvwprintw(win, 0, 0, "HP     : %d", item["hp"].get<int>());
-        mvwprintw(win, 1, 0, "Level  : %d", item["level"].get<int>());
-        mvwprintw(win, 2, 0, "Seed   : %" PRIu64, item["seed"].get<uint64_t>());
+        mvwprintw(win, 0, 0, "Save Name         : %s", item["name"].get<std::string>().c_str());
+        mvwprintw(win, 1, 0, "Last Played       : %s", get_formatted_date(item["last_played"].get<uint64_t>()).c_str());
+        mvwprintw(win, 2, 0, "HP                : %d", item["hp"].get<int>());
+        mvwprintw(win, 3, 0, "Level             : %s", to_roman(item["level"].get<int>()).c_str());
+        mvwprintw(win, 4, 0, "Seed              : %" PRIu64, item["seed"].get<uint64_t>());
 
         if (item["plugins_changed"].get<bool>()) {
                 wattron(win, COLOR_PAIR(4));
-                mvwprintw(win, 4, 0, "Warning: Plugins are changed after this save created");
+                mvwprintw(win, 6, 0, "Warning: Plugins are changed after this save created");
                 wattroff(win, COLOR_PAIR(4));
         }
 }

@@ -71,16 +71,37 @@ struct buff_t {
 
 namespace game {
 
-inline bool _skip_main_menu = false;
-inline bool _plugins_changed = false;  // used to store is current save's plugins are changed (save is broken)
-inline std::string _curr_save_loaded = "";
+// flags & other shit //
+
+// data directory for plugins and saves
 inline fs::path _data_directory = "";
 
-// usefull for plugins
+// for --skip-menu CLI flag
+inline bool _skip_main_menu = false;
+
+// is currently loaded save is broken?
+inline bool _plugins_changed = false;
+
+// currently loaded save path
+inline std::string _curr_save_loaded = "";
+
+// currently loaded save name
+inline std::string _curr_save_name = "";
+
+// currently loaded
+inline json _curr_save_created_with_plugins = json::object();
+
+// game running status, only exists for plugins. accessed with cr.is_game_running() on lua
 inline bool game_is_running = false;
 
+
+/// status ///
+
+// cr.stat.biomes
 inline std::vector<std::shared_ptr<biome_t>> biomes;  // unordered levels
+// cr.stat.levels
 inline std::vector<std::shared_ptr<level_t>> levels;  // ordered levels
+// cr.stat.get_levelid() && cr.stat.set_levelid();
 inline int levelid;
 
 inline std::vector<std::shared_ptr<card_t>> deck;
@@ -109,6 +130,8 @@ inline int level = 0;
 inline std::vector<std::shared_ptr<card_t>> inventory;
 
 }  // namespace player
+
+/// hooks ///
 
 namespace hooks {
 
@@ -153,6 +176,8 @@ inline bool trigger_bool(std::vector<std::function<bool(Args...)>> &hooks, Args.
 
 }  // namespace hooks
 
+/// settings ///
+
 namespace settings {
 
 inline json settings = json::object();
@@ -161,6 +186,8 @@ inline json metadata = json::object();
 }  // namespace settings
 
 }  // namespace game
+
+/// custom scenes ///
 
 struct scene_t {
         std::function<void(void)> ui_refresh;

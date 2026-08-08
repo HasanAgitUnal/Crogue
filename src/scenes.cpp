@@ -271,6 +271,16 @@ bool on_level_complete(int curr_level) {
                                 break;
 
                         case 's':
+                                if (game::_curr_save_name.empty()) {
+                                        mvprintw(4, 1, "Save name [default: No name]: ");
+                                        game::_curr_save_name = handle_input(stdscr, 4, 31, 25, "", "", &refresh);
+
+                                        // clear line
+                                        for (int x = 1; x < 60; x++) {
+                                                mvprintw(4, x, " ");
+                                        }
+                                }
+
                                 // remove old save
                                 if (!game::_curr_save_loaded.empty()) {
                                         fs::remove(game::_curr_save_loaded);
@@ -283,6 +293,9 @@ bool on_level_complete(int curr_level) {
                                 refresh();
                                 press_enter_to_continue();
                                 mvprintw(4, 0, "      ");
+                                int max_y, max_x;
+                                getmaxyx(stdscr, max_y, max_x);
+                                mvprintw(max_y - 1, 0, "                                   ");
                                 refresh();
                                 break;
 
