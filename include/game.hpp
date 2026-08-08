@@ -37,6 +37,7 @@ enum card_type { BASIC, ITEM, ENEMY, EXIT };
 enum log_type { NORMAL, WARN, IMPORTANT };
 
 struct card_t {
+        std::string id = "";
         int count = 0;
         std::string name = "";
         card_type type = BASIC;
@@ -120,7 +121,7 @@ inline uint64_t seed;
 inline sol::state lua;
 inline std::map<std::string, std::string> plugin_errors;
 
-inline int current_scene_id;
+inline std::vector<std::string> used_card_ids;
 
 namespace player {
 

@@ -259,6 +259,7 @@ void handle_buffs() {
 
 // clang-format off
 std::shared_ptr<card_t> create_card(const int count,
+                const std::string &id,
                 const std::string &name,
                 const card_type &type,
                 const std::vector<int> levelids,
@@ -267,8 +268,12 @@ std::shared_ptr<card_t> create_card(const int count,
                 int power,
                 std::function<int()> event) {
 
+        if (std::find(game::used_card_ids.begin(), game::used_card_ids.end(), id) != game::used_card_ids.end()) {
+                throw sol::error::runtime_error("This card id is used");
+        }
 
         auto card = std::make_shared<card_t>(card_t{
+                    id,
                     count,
                     name,
                     type,
@@ -289,6 +294,7 @@ std::shared_ptr<card_t> create_card(sol::table table) {
         try {
                 return create_card(
                                 table.get<int>("count"),
+                                table.get<std::string>("id"),
                                 table.get<std::string>("name"),
                                 table.get<card_type>("type"),
                                 table.get<std::vector<int>>("level_ids"),

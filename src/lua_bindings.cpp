@@ -158,6 +158,7 @@ void setup_lua() {
         objects.new_usertype<card_t>("card", sol::constructors<card_t>(),
                         "count", &card_t::count,
                         "name", &card_t::name,
+                        "id", &card_t::id,
                         "type", &card_t::type,
                         "level_ids", &card_t::level_ids,
                         "logmsg", &card_t::logmsg,
@@ -473,6 +474,8 @@ void setup_lua() {
 
         player["get_level"] = &get_player_level;
         player["set_level"] = &set_player_level;
+
+        player["inventory"] = std::ref(game::player::inventory);
 
         crogue["player"] = player;
 
