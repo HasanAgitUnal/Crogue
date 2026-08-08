@@ -101,10 +101,10 @@ std::string save(json save_data) {
 std::string save_curr() {
         json plugins = json::object();
         if (game::_curr_save_created_with_plugins.empty()) {
-                plugins = game::_curr_save_created_with_plugins;
-        } else {
                 package::list(&plugins);
                 game::_curr_save_created_with_plugins = plugins;
+        } else {
+                plugins = game::_curr_save_created_with_plugins;
         }
 
         json save_data = json::object();

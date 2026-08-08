@@ -45,5 +45,3 @@ Under development.
 
 ### BUGS LIST
 
-* [ ] broken saves thing is not working
-

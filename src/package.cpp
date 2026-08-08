@@ -543,7 +543,7 @@ void list(json *output = nullptr) {
                                 continue;
 
                         if (fs::exists(path / "git_repo.json")) {
-                                std::ifstream file = path / "git_repo.json";
+                                std::ifstream file(path / "git_repo.json");
                                 json info;
                                 file >> info;
                                 file.close();
