@@ -50,16 +50,17 @@ Always use `cr.create_` functions.
 
 `cr.obj.card` is the main variable type. It has this fields:
 
-| Field       | Type                | Description                                                                                               |
-| :-:         | :-:                 | ---                                                                                                       |
-| `count`     | integer             | Count of the card in deck                                                                                 |
-| `name`      | string              | Card name                                                                                                 |
-| `type`      | `cr.card_type`      | Card type                                                                                                 |
-| `level_ids` | table with integers | A table contains level ids will card show up. If empty, card will show up in every level.                 |
-| `logmsg`    | string              | The log will appear after card used. Leave empty to disable.                                              |
-| `ttl`       | integer             | Time-to-live for card. See below to understand. 0 to disable.                                             |
-| `power`     | integer             | Power of the card. Not damage!!. No limit for its value but be carefull with it (1 = weak, 5 = powerfull, 10 = boss)    |
-| `event`     | function            | Card event to call. See below for details                                                                 |
+| Field       | Type                | Description                                                                                                           |
+| :-:         | :-:                 | ---                                                                                                                   |
+| `count`     | integer             | Count of the card in deck                                                                                             |
+| `name`      | string              | Card name                                                                                                             |
+| `id`        | string              | The card id to store in saves. **Recommended to use `plugin_name:something` syntax (example: `my_plugin:zombie`)**        |
+| `type`      | `cr.card_type`      | Card type                                                                                                             |
+| `level_ids` | table with integers | A table contains level ids will card show up. If empty, card will show up in every level.                             |
+| `logmsg`    | string              | The log will appear after card used. Leave empty to disable.                                                          |
+| `ttl`       | integer             | Time-to-live for card. See below to understand. 0 to disable.                                                         |
+| `power`     | integer             | Power of the card. Not damage!!. No limit for its value but be carefull with it (1 = weak, 5 = powerfull, 10 = boss)  |
+| `event`     | function            | Card event to call. See below for details                                                                             |
 
 
 ###### Time-to-live
@@ -81,6 +82,7 @@ local zombie = cr.obj.card.new()
 
 zombie.count = 5
 zombie.name = "Zombie"
+zombie.id = "my_plugin:zombie"
 zombie.type = cr.card_type.ENEMY
 zombie.level_ids = {}  -- Zombie will appear on all levels!
 zombie.logmsg = "You killed a zombie"
@@ -90,30 +92,21 @@ zombie.event = function()
     return -1;  -- Hit for 1 hp
 end
 ```
-You can also use `.new()` for other types but `cr.create_` functions are better.
 
-
-Example with `cr.create_card`:
+But this method is bad practice. It doesn't adds automaticaly to deck and its too long:
 ```lua
--- cr.create_ functions are:
--- safe (automatically returns cr.shared.card),
--- readable,
--- and automatically adds to cr.stat.deck
-local zombie = cr.create_card({
-    count = 5,
-    name = "Zombie",
-    type = cr.card_type.ENEMY,
-    level_ids = {},
-    logmsg = "You killed a zombie",
-    power = 1,
-    ttl = 3,
-    event = function()
-        return -1;
-    end
-})
+-- Manualy adding to deck
+local zombie = cr.obj.new()
+...
+
+cr.stat.deck:add(zombie)
 ```
 
-Also read [Safe Creting With `cr.create_` Functions](./create_functions.md).
+You will see `cr.create_*` functions instead of the `.new()` method, but thats almost same thing and adds automaticaly to deck. Read [Shared Types](./Shared-Types) and [Create Functions](./Create-Functions) for more info.
+
+> [!WARNING]
+> **Always generate cards first**
+> Do not create cards on card events or [hooks](./Hooks). This may cause game saves to be broken. For example if you create an item when a boss dies and player gets this item and saves game then quits and loads the save this item will does not exists because event of the boss is not runned before save load.
 
 
 ### Buffs (`cr.obj.buff`)
@@ -158,6 +151,7 @@ local zombie_buff = cr.create_buff({
 local zombie = cr.create_card({
     count = 5,
     name = "Zombie",
+    id = "my_plugin:zombie",
     type = cr.card_type.ENEMY,
     level_ids = {},
     logmsg = "You killed a zombie",
@@ -210,6 +204,7 @@ local mine1 = cr.create_level("Mine I")
 local zombie = cr.create_card({
     count = 5,
     name = "Zombie",
+    id = "my_plugin:zombie",
     type = cr.card_type.ENEMY,
     level_ids = {mine1.id},
     logmsg = "You killed a zombie",

@@ -1,4 +1,4 @@
-You can update TUI from plugins.
+You can update TUI from plugins using `cr.tui`.
 
 ### `cr.tui.print_ansi(str)`
 

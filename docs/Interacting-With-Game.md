@@ -22,7 +22,7 @@ cr.log("You cant fight with a god!", cr.log_type.IMPORTANT)
 
 ### `cr.ask` & `cr.ask_string`
 
-Used to get string or key from user.
+Used to get string or key (as integer) from user.
 `cr.ask` gets one key including ESC key, `cr.ask_string` gets a full string.
 
 Example for confirmation dialog:
@@ -36,6 +36,7 @@ Example card uses `cr.ask_string` function:
 cr.create_card({
     count = 2,
     name = "wishing well",
+    id = "my_plugin:wishing_well",
     type = cr.card_type.BASIC,
     level_ids = {},
     logmsg = "You found a wishing well",

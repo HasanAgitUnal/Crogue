@@ -9,11 +9,14 @@ Example:
 ```lua
 -- You created zombie with cr.create_card function which returns shared card object
 -- cr.create_card automaticaly added zombie to the cr.stat.deck container
-local zombie = cr.create_card(...)
+local zombie = cr.obj.card.new()
+-- some initialization...
+
+local shared_zombie = cr.shared.card(...)
 
 -- You changed name and ttl
-zombie.name = "New Zombie"
-zombie.ttl = 10
+shared_zombie.name = "New Zombie"
+shared_zombie.ttl = 10
 -- Now your changes applied automaticaly to cr.stat.deck !!
 ```
 
@@ -57,25 +60,7 @@ shared_zombie.event = function()
 end
 ```
 
-### Auto-Synced and Readable Method
+### Better way
 
 I know you dont want to use that long syntax and add object to containers manualy.
-There is shortcuts and recommended ways for them:
-
-```lua
-local zombie = cr.create_card({
-    count = 5,
-    name = "Zombie",
-    type = cr.card_type.ENEMY,
-    level_ids = {},
-    logmsg = "You killed a zombie",
-    ttl = 3,
-    power = 1,
-    event = function()
-        return -1;
-    end
-})
-```
-
-Simple and works read [Create Functions](./Create-Functions) to see full function list.
-
+Read [Create Functions](./Create-Functions) to see better way.

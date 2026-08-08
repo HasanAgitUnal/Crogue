@@ -64,6 +64,7 @@ Then write put some code inside `init.lua`:
 cr.create_card({
         count = 5,
         name = "Skeleton",
+        id = "my_plugin:skeleton",
         type = cr.card_type.ENEMY,
         level_ids = {},    -- appears on every level
         logmsg = "Last words of the Skeleton was \"AAA!\"",
