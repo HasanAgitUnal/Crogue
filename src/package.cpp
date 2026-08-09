@@ -553,8 +553,8 @@ void list(json *output = nullptr) {
                         if (output) {
                                 (*output)[path.filename().string()] = source;
                         } else {
-                                minilog::out("\033[36m" + path.filename().string() + " \033[35m(" + source +
-                                             ")\033[0m");
+                                minilog::out("\033[36m" + path.filename().string());
+                                minilog::out(" \033[90m-> \033[35m", source, "\033[0m");
                         }
                 }
         }

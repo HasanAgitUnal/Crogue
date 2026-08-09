@@ -375,8 +375,6 @@ void game() {
         int key = 0;
         int last_level = game::player::level;
         while (true) {
-                handle_buffs();
-
                 if (check_die()) {
                         break;
                 }
@@ -482,8 +480,8 @@ void game() {
 
                 last_level = game::player::level;
 
-                // time-to-live
                 if (turn_taken) {
+                        // time-to-live
                         for (card_slot_t *slot : {&game::slot1, &game::slot2, &game::slot3}) {
                                 if (!slot->front || slot == acted_slot) {
                                         continue;
@@ -501,6 +499,9 @@ void game() {
                                         slot->_lived = 0;
                                 }
                         }
+
+                        // buffs
+                        handle_buffs();
                 }
 
                 // check again

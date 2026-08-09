@@ -412,6 +412,11 @@ void update_details(WINDOW *win, json &item) {
                 line++;
         }
 
+        if (line == 9) {
+                mvwprintw(win, 9, 0, "Empty inventory");
+                line++;
+        }
+
         if (item["plugins_changed"].get<bool>()) {
                 wattron(win, COLOR_PAIR(4));
                 mvwprintw(win, line + 1, 0, "Warning: Plugins are changed after this save created");
@@ -477,6 +482,8 @@ bool saves_tui() {
 
         int key = 0;
         while (key != 'q') {
+                minilog::fdebug("saves", logfile, "test: ", saves_list.dump());
+
                 getmaxyx(stdscr, max_y, max_x);
                 int viewport_height = max_y - 3;
 
@@ -526,7 +533,17 @@ bool saves_tui() {
                                 break;
 
                         case 'd':
-                                // TODO: add save delete
+                                fs::remove(saves_list[selected_idx]["_filepath"].get<std::string>());
+                                saves_list.erase(selected_idx);
+                                redraw_all = true;
+                                selected_idx = 0;
+                                if (saves_list.empty()) {
+                                        clear();
+                                        mvprintw(0, 0, "No save remain");
+                                        refresh();
+                                        press_enter_to_continue();
+                                        return false;
+                                }
                                 break;
 
                         case 'r':
