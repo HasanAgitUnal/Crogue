@@ -75,10 +75,36 @@ void main_menu() {
         plugin_errors();
         game::hooks::trigger(game::hooks::start);
 
-        if (game::_skip_main_menu) {
-                // play game for once and exit sliently
-                minilog::fdebugc("cli", logfile, "Skipping main menu");
+        if (!game::_launched_save_file.empty()) {
+                if (!fs::exists(game::_launched_save_file) || !fs::is_regular_file(game::_launched_save_file)) {
+                        end_program();
+                        minilog::fatal(1, "Save path doesn't exists or not a file");
+                }
+                reset_game(false);
+                try {
+                        json save = saves::load(game::_launched_save_file);
+                        save["_filepath"] = game::_launched_save_file;
+                        saves::apply_save(save);
+                } catch (std::exception &e) {
+                        end_program();
+                        minilog::fatal(1, "While loading save: ", e.what());
+                }
+
                 game();
+                game::hooks::trigger(game::hooks::game_end);
+                game::_curr_save_loaded = "";
+                reset_game(false);
+                return;
+        }
+
+        if (game::_skip_main_menu) {
+                minilog::fdebugc("cli", logfile, "Skipping main menu");
+                game::_curr_save_loaded = "";
+                reset_game(false);
+                game();
+                game::hooks::trigger(game::hooks::game_end);
+                game::_curr_save_loaded = "";
+                reset_game(false);
                 return;
         }
 

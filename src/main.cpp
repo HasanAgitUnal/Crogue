@@ -81,6 +81,9 @@ void handle_cli(int argc, char **argv) {
         std::string custom_data_dir = "";
         app.add_option("-d,--data", custom_data_dir, "Custom data directory location");
 
+        app.add_option("-l,--load-save", game::_launched_save_file,
+                       "Load game with save file given and exit after game finished");
+
         bool default_data = false;
         app.add_flag("-w,--where-is-my-data", default_data, "Default data directory location for your system");
 

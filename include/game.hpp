@@ -80,6 +80,9 @@ inline fs::path _data_directory = "";
 // for --skip-menu CLI flag
 inline bool _skip_main_menu = false;
 
+// for --load-save CLI option
+inline std::string _launched_save_file = "";
+
 // is currently loaded save is broken?
 inline bool _plugins_changed = false;
 
