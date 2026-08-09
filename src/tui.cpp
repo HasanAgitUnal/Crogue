@@ -43,13 +43,15 @@ void setup_colors() {
         init_extended_pair(314, COLOR_WHITE, 236);
 }
 
-void print_line(int line) {
-        move(line, 0);
-        attron(COLOR_PAIR(9));
-        for (int i = 0; i < COLS; ++i) {
-                addstr("─");
+void print_line(int line, WINDOW *win) {
+        wmove(win, line, 0);
+        wattron(win, COLOR_PAIR(9));
+        int max_y, max_x;
+        getmaxyx(win, max_y, max_x);
+        for (int i = 0; i < max_x - 1; ++i) {
+                waddstr(win, "─");
         }
-        attroff(COLOR_PAIR(9));
+        wattroff(win, COLOR_PAIR(9));
 }
 
 std::vector<std::string_view> split(std::string_view str, std::string_view delim) {

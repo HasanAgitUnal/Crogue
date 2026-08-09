@@ -43,7 +43,7 @@ attr_t parse_ansi_color(std::string params);
 void print_ansi(const std::string &str);
 int get_real_size(const std::string &line);
 std::string to_roman(int n);
-void print_line(int line);
+void print_line(int line, WINDOW *win = stdscr);
 std::string handle_input(WINDOW *win, int y, int start_x, int box_size, std::string value, std::string allowed_chars,
                          std::function<void(void)> refresher);
 

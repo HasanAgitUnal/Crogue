@@ -42,8 +42,9 @@ std::string check_save_data(const json &save) {
                 return "not an object";
         }
 
-        std::vector<std::string> required = {"seed",           "hp", "level", "last_played", "created_with_plugins",
-                                             "plugins_changed"};
+        std::vector<std::string> required = {
+            "seed", "hp", "level", "last_played", "created_with_plugins", "plugins_changed", "inventory"};
+
         for (auto key : required) {
                 if (!save.contains(key)) {
                         return "\"" + key + "\" key not found";
@@ -80,11 +81,25 @@ std::string check_save_data(const json &save) {
                 }
         }
 
+        if (!save["inventory"].is_array()) {
+                return "\"inventory\" is not an object";
+        }
+
+        if (save["inventory"].size() != 10) {
+                return "\"inventory\" size is not 10";
+        }
+
+        for (const json &item : save["inventory"]) {
+                if (!item.is_string() && !item.is_null()) {
+                        return "An inventory item is not a string or null";
+                }
+        }
+
         return "";
 }
 
 std::string save(json save_data) {
-        minilog::fdebugc("save", logfile, "Saving a save with name: ", save_data["name"].get<std::string>());
+        minilog::fdebugc("saves", logfile, "Saving a save with name: ", save_data["name"].get<std::string>());
         fs::create_directories(game::_data_directory / "saves");
 
         std::string file_name = std::to_string(save_data["seed"].get<uint64_t>()) + "_" +
@@ -96,6 +111,23 @@ std::string save(json save_data) {
         file.close();
 
         return save_path.string();
+}
+
+// returns array contains inventory data. example return:
+// [ vanilla:apple, vanilla:teleporter, null, vanilla:apple, null, null, null, null, null, null ]
+json get_inventory() {
+        json inventory = json::array();
+
+        for (int i = 0; i < 10; i++) {
+                auto item = game::player::inventory[i];
+                if (item == nullptr) {
+                        inventory.push_back(nullptr);
+                } else {
+                        inventory.push_back(item->id);
+                }
+        }
+
+        return inventory;
 }
 
 std::string save_curr() {
@@ -121,15 +153,16 @@ std::string save_curr() {
         save_data["last_played"] = timestamp;
         save_data["created_with_plugins"] = plugins;
         save_data["plugins_changed"] = game::_plugins_changed;
+        save_data["inventory"] = get_inventory();
 
         return save(save_data);
 }
 
 json load(const fs::path path) {
-        minilog::fdebugc("save", logfile, "loading save: ", path.string());
+        minilog::fdebugc("saves", logfile, "loading save: ", path.string());
         std::ifstream file(path);
         if (!file.is_open()) {
-                minilog::fdebugc("save", logfile, "can't open save file");
+                minilog::fdebugc("saves", logfile, "can't open save file");
                 throw std::runtime_error("Failed to open save file: " + path.string());
         }
 
@@ -139,25 +172,55 @@ json load(const fs::path path) {
                 file >> save_data;
         } catch (json::parse_error &e) {
                 file.close();
-                minilog::fdebugc("save", logfile, "save has invalid JSON format");
+                minilog::fdebugc("saves", logfile, "save has invalid JSON format");
                 throw std::runtime_error("Invalid JSON: " + std::string(e.what()));
         }
         file.close();
 
         std::string result = check_save_data(save_data);
         if (!result.empty()) {
-                minilog::fdebugc("save", logfile, "save is invalid");
+                minilog::fdebugc("saves", logfile, "save is invalid: ", result);
                 throw std::runtime_error("Save is invalid: " + result);
         }
 
         return save_data;
 }
 
+std::shared_ptr<card_t> find_item(const std::string &id) {
+        for (auto &card : game::deck) {
+                if (card->id == id) {
+                        if (card->type != ITEM) {
+                                break;
+                        }
+
+                        return card;
+                }
+        }
+
+        return nullptr;
+}
+
 void apply_save(const json save) {
-        minilog::fdebugc("save", logfile, "applying a save with name: ", save["name"].get<std::string>());
+        minilog::fdebugc("saves", logfile, "applying a save with name: ", save["name"].get<std::string>());
         game::seed = save["seed"].get<uint64_t>();
         game::player::hp = save["hp"].get<int>();
         game::player::level = save["level"].get<int>();
+
+        game::player::inventory.clear();
+        game::player::inventory.resize(10, nullptr);
+
+        for (int i = 0; i < 10; i++) {
+                const json &item = save["inventory"][i];
+                if (!item.is_null()) {
+                        auto card = find_item(item.get<std::string>());
+                        if (card == nullptr) {
+                                throw std::runtime_error("Can't apply save: inventory contains invalid items");
+                        }
+
+                        game::player::inventory[i] = card;
+                }
+        }
+
         game::_plugins_changed = save["plugins_changed"].get<bool>();
         game::_curr_save_created_with_plugins = save["created_with_plugins"];
         game::_curr_save_loaded = save["_filepath"].get<std::string>();
@@ -177,7 +240,7 @@ void sync_with_plugins(json &saves) {
                         s["plugins_changed"] = new_state;
 #ifdef DEBUG
                         if (new_state) {
-                                minilog::fdebugc("save", logfile, "found a broken save");
+                                minilog::fdebugc("saves", logfile, "found a broken save");
                         }
 #endif
                         save(s);
@@ -296,17 +359,62 @@ void print_item(WINDOW *win, int line, json &item, bool hover) {
         wattr_set(win, A_NORMAL, 0, NULL);
 }
 
+std::shared_ptr<card_t> find_card(const std::string &id) {
+        for (auto &card : game::deck) {
+                if (card->id == id) {
+                        return card;
+                }
+        }
+
+        return nullptr;
+}
+
 void update_details(WINDOW *win, json &item) {
         werase(win);
         mvwprintw(win, 0, 0, "Save Name         : %s", item["name"].get<std::string>().c_str());
         mvwprintw(win, 1, 0, "Last Played       : %s", get_formatted_date(item["last_played"].get<uint64_t>()).c_str());
-        mvwprintw(win, 2, 0, "HP                : %d", item["hp"].get<int>());
-        mvwprintw(win, 3, 0, "Level             : %s", to_roman(item["level"].get<int>()).c_str());
-        mvwprintw(win, 4, 0, "Seed              : %" PRIu64, item["seed"].get<uint64_t>());
+        mvwchgat(win, 0, 0, 9, A_NORMAL, 7, NULL);
+        mvwchgat(win, 1, 0, 11, A_NORMAL, 7, NULL);
+
+        mvwprintw(win, 3, 0, "HP                : %d", item["hp"].get<int>());
+        mvwprintw(win, 4, 0, "Level             : %s", to_roman(item["level"].get<int>()).c_str());
+        mvwprintw(win, 5, 0, "Seed              : %" PRIu64, item["seed"].get<uint64_t>());
+        mvwchgat(win, 3, 0, 2, A_NORMAL, 7, NULL);
+        mvwchgat(win, 4, 0, 5, A_NORMAL, 7, NULL);
+        mvwchgat(win, 5, 0, 4, A_NORMAL, 7, NULL);
+
+        for (int i = 0; i < 6; i++) {
+                mvwchgat(win, i, 18, 1, A_NORMAL, 9, NULL);
+        }
+
+        mvwprintw(win, 7, 0, "Inventory");
+        mvwchgat(win, 7, 0, 9, A_NORMAL, 7, NULL);
+        print_line(8, win);
+        int line = 9;
+        for (int i = 0; i < 10; i++) {
+                const json &inv_item = item["inventory"][i];
+
+                if (inv_item.is_null()) {
+                        continue;
+                }
+
+                std::string id = inv_item.get<std::string>();
+                auto card = find_card(id);
+                if (card == nullptr) {
+                        wattron(win, 4);
+                        mvwprintw(win, line, 0, "* Unknown Item (%s)", id.c_str());
+                        mvwchgat(win, line, 0, 1, A_NORMAL, 6, NULL);
+                        wattroff(win, 4);
+                } else {
+                        mvwprintw(win, line, 0, "* %s", card->name.c_str());
+                        mvwchgat(win, line, 0, 1, A_NORMAL, 6, NULL);
+                }
+                line++;
+        }
 
         if (item["plugins_changed"].get<bool>()) {
                 wattron(win, COLOR_PAIR(4));
-                mvwprintw(win, 6, 0, "Warning: Plugins are changed after this save created");
+                mvwprintw(win, line + 1, 0, "Warning: Plugins are changed after this save created");
                 wattroff(win, COLOR_PAIR(4));
         }
 }
@@ -423,11 +531,27 @@ bool saves_tui() {
 
                         case 'r':
                                 // TODO: add save recovery mode
+                                // 1. create a temprorary data directory
+                                // 2. install plugins (if they are installed from git)
+                                // 3. copy save file (data_dir/recovery.json) with plugins_changed = false
+                                // 4. launch crogue with --load-save <filename>
                                 break;
 
                         case 10:
                         case KEY_ENTER:
-                                apply_save(saves_list[selected_idx]);
+                                try {
+                                        apply_save(saves_list[selected_idx]);
+                                } catch (std::runtime_error &e) {
+                                        clear();
+                                        attron(2);
+                                        mvprintw(0, 0, "%s", e.what());
+                                        attroff(2);
+                                        refresh();
+                                        press_enter_to_continue();
+                                        redraw_all = true;
+                                        break;
+                                }
+
                                 delwin(pad);
                                 delwin(details_win);
                                 return true;

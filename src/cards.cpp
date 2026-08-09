@@ -33,6 +33,7 @@ void reset_game(bool full) {
         game::player::hp = 100;
         game::player::level = 0;
         game::player::inventory.clear();
+        game::player::inventory.resize(10, nullptr);
 
         game::card_set.clear();
         game::logs.clear();
@@ -390,20 +391,12 @@ void card_event(const std::shared_ptr<card_t> card, const int extra) {
                         log("You found item: " + card->name, NORMAL);
 
                         bool added = false;
-
                         for (int i = 0; i < 10; i++) {
-                                if (i >= (int)game::player::inventory.size()) {
-                                        game::player::inventory.push_back(card);
-                                        minilog::fdebugc("inventory", logfile,
-                                                         "added item via push_back to index: ", i);
-                                        added = true;
-                                        break;
-                                }
-
                                 if (game::player::inventory[i] == nullptr) {
                                         game::player::inventory[i] = card;
-                                        minilog::fdebugc("inventory", logfile, "added item to empty slot: ", i);
                                         added = true;
+
+                                        minilog::fdebugc("inventory", logfile, "added item to index: ", i);
                                         break;
                                 }
                         }
