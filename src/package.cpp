@@ -111,7 +111,7 @@ fs::path create_temp_dir() {
         std::uniform_int_distribution<uint64_t> dis;
 
         std::stringstream ss;
-        ss << "crogue_pkg_" << std::hex << std::setfill('0') << std::setw(16) << dis(gen);
+        ss << "crogue_" << std::hex << std::setfill('0') << std::setw(16) << dis(gen);
 
         fs::path temp_dir = fs::temp_directory_path() / ss.str();
 
@@ -533,7 +533,6 @@ void reset(const std::string &package) {
 
 void list(json *output = nullptr) {
         fs::path plugins_dir(game::_data_directory / "plugins");
-        std::cout << "\033[35m";
         for (const auto &entry : std::filesystem::directory_iterator(plugins_dir)) {
                 fs::path path = entry.path();
                 if (fs::is_directory(path)) {
@@ -543,11 +542,16 @@ void list(json *output = nullptr) {
                                 continue;
 
                         if (fs::exists(path / "git_repo.json")) {
-                                std::ifstream file(path / "git_repo.json");
-                                json info;
-                                file >> info;
-                                file.close();
-                                source = info["url"].get<std::string>();
+                                try {
+                                        std::ifstream file(path / "git_repo.json");
+                                        json info;
+                                        file >> info;
+                                        file.close();
+                                        source = info["url"].get<std::string>();
+                                } catch (std::exception &e) {
+                                        source = "git-unknown";
+                                        continue;
+                                }
                         }
 
                         if (output) {
@@ -558,7 +562,6 @@ void list(json *output = nullptr) {
                         }
                 }
         }
-        std::cout << "\033[0m";
 }
 
 }  // namespace package

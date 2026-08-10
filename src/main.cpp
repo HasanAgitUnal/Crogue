@@ -69,6 +69,8 @@ void interrupt_handler(int sig) {
 }
 
 void handle_cli(int argc, char **argv) {
+        game::argv0 = argv[0];
+
         CLI::App app{"crogue - Card Based Roguelike Game"};
 
         // options & flags //
@@ -225,8 +227,8 @@ int main(int argc, char **argv) {
         signal(SIGTERM, interrupt_handler);
         signal(SIGINT, interrupt_handler);
 
-        // debug logs
 #ifdef DEBUG
+        // debug logs
         minilog::categories["seed"] = "3;96m";
         minilog::categories["setup"] = "32m";
         minilog::categories["event"] = "36m";

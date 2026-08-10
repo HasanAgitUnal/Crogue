@@ -494,9 +494,11 @@ void game() {
 
                 // check if level changed
                 if (last_level != game::player::level) {
-                        // return if exited
+                        // remove save and return if amulet of yendor found
                         if (on_level_complete(game::player::level)) {
                                 game::game_is_running = false;
+                                fs::remove(game::_curr_save_loaded);
+                                game::_curr_save_loaded = "";
                                 return;
                         }
 

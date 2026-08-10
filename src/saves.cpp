@@ -43,12 +43,16 @@ std::string check_save_data(const json &save) {
         }
 
         std::vector<std::string> required = {
-            "seed", "hp", "level", "last_played", "created_with_plugins", "plugins_changed", "inventory"};
+            "name", "seed", "hp", "level", "last_played", "created_with_plugins", "plugins_changed", "inventory"};
 
         for (auto key : required) {
                 if (!save.contains(key)) {
                         return "\"" + key + "\" key not found";
                 }
+        }
+
+        if (!save["name"].is_string()) {
+                return "\"name\" is not a string";
         }
 
         if (!save["seed"].is_number_integer()) {
@@ -401,10 +405,10 @@ void update_details(WINDOW *win, json &item) {
                 std::string id = inv_item.get<std::string>();
                 auto card = find_card(id);
                 if (card == nullptr) {
-                        wattron(win, 4);
+                        wattron(win, COLOR_PAIR(4));
                         mvwprintw(win, line, 0, "* Unknown Item (%s)", id.c_str());
                         mvwchgat(win, line, 0, 1, A_NORMAL, 6, NULL);
-                        wattroff(win, 4);
+                        wattroff(win, COLOR_PAIR(4));
                 } else {
                         mvwprintw(win, line, 0, "* %s", card->name.c_str());
                         mvwchgat(win, line, 0, 1, A_NORMAL, 6, NULL);
@@ -454,6 +458,9 @@ void draw_layout_decorations(int max_y, int max_x) {
 
 bool saves_tui() {
         json saves_list = get_saves();
+
+        minilog::fdebugc("saves", logfile, "saves_list: ", saves_list.dump());
+
         if (saves_list.empty()) {
                 clear();
                 mvprintw(0, 0, "No save found");
@@ -482,7 +489,15 @@ bool saves_tui() {
 
         int key = 0;
         while (key != 'q') {
-                minilog::fdebug("saves", logfile, "test: ", saves_list.dump());
+                if (saves_list.empty()) {
+                        clear();
+                        mvprintw(0, 0, "No save remain");
+                        refresh();
+                        press_enter_to_continue();
+                        delwin(pad);
+                        delwin(details_win);
+                        return false;
+                }
 
                 getmaxyx(stdscr, max_y, max_x);
                 int viewport_height = max_y - 3;
@@ -537,22 +552,196 @@ bool saves_tui() {
                                 saves_list.erase(selected_idx);
                                 redraw_all = true;
                                 selected_idx = 0;
-                                if (saves_list.empty()) {
-                                        clear();
-                                        mvprintw(0, 0, "No save remain");
-                                        refresh();
-                                        press_enter_to_continue();
-                                        return false;
-                                }
+                                minilog::fdebugc("saves", logfile, "saves_list: ", saves_list.dump());
+                                pad_height = saves_list.size();
                                 break;
 
-                        case 'r':
-                                // TODO: add save recovery mode
-                                // 1. create a temprorary data directory
-                                // 2. install plugins (if they are installed from git)
-                                // 3. copy save file (data_dir/recovery.json) with plugins_changed = false
-                                // 4. launch crogue with --load-save <filename>
+                        case 'r': {
+                                redraw_all = true;
+
+                                json save = saves_list[selected_idx];
+
+                                // detect recoverable plugins
+                                json installed_plugins = json::object();
+                                package::list(&installed_plugins);
+
+                                const json &plugins = save["created_with_plugins"];
+                                json install_plugins = json::array();
+                                json plugins_to_copy = json::array();
+
+                                std::string unrecoverable = "";
+
+                                for (const auto &[plugin_name, source] : plugins.items()) {
+                                        if (installed_plugins.contains(plugin_name)) {
+                                                // copy if already a copy of the plugin installed
+                                                plugins_to_copy.push_back(plugin_name);
+
+                                        } else if (source.get<std::string>() != "local") {
+                                                // install it from git
+                                                install_plugins.push_back(source);
+
+                                        } else {
+                                                unrecoverable =
+                                                    "A plugin with name \"" + plugin_name + "\"" +
+                                                    " has unknown source. Only plugins exists in the current data "
+                                                    "directory and git plugins are recoverable.";
+                                                break;
+                                        }
+                                }
+
+                                if (!unrecoverable.empty()) {
+                                        clear();
+                                        mvprintw(0, 0, "Can't recover this save: ");
+                                        attron(COLOR_PAIR(2));
+                                        mvprintw(1, 0, "%s", unrecoverable.c_str());
+                                        attroff(COLOR_PAIR(2));
+                                        refresh();
+                                        press_enter_to_continue();
+                                        minilog::fdebugc("saves", logfile, "saves_list: ", saves_list.dump());
+                                        break;
+                                }
+
+                                clear();
+                                mvprintw(0, 0,
+                                         "All plugins are recoverable, do not run any crogue pm commands while "
+                                         "recovery is running.");
+                                refresh();
+                                press_enter_to_continue();
+
+
+                                // stop ncurses to show normal terminal
+                                delwin(pad);
+                                delwin(details_win);
+                                pad = nullptr;
+                                details_win = nullptr;
+                                endwin();
+
+                                // copy/install plugins
+                                fs::path temp_dir = package::create_temp_dir();
+
+                                auto reload = [&]() {
+                                        // reload ncurses things
+                                        setlocale(LC_ALL, "");
+                                        initscr();
+                                        cbreak();
+                                        noecho();
+                                        keypad(stdscr, TRUE);
+                                        set_escdelay(25);
+                                        curs_set(0);
+                                        start_color();
+                                        use_default_colors();
+                                        setup_colors();
+
+                                        pad = newpad(pad_height, 38);
+                                        details_win = newwin(details_height, details_width, 2, 42);
+
+                                        getmaxyx(stdscr, max_y, max_x);
+
+                                        details_height = max_y - 3;
+                                        details_width = max_x - 42;
+
+                                        wresize(details_win, details_height, details_width);
+
+                                        redraw_all = true;
+                                        fs::remove_all(temp_dir);
+                                };
+
+                                bool fail = false;
+                                fs::create_directory(temp_dir / "plugins");
+                                for (auto &plugin : plugins_to_copy) {
+                                        minilog::out("\033[32m==>\033[0m Copying from data directory: ",
+                                                     plugin.get<std::string>());
+                                        fs::path dir = game::_data_directory / "plugins" / plugin.get<std::string>();
+
+                                        std::error_code ec;
+                                        fs::copy(dir, temp_dir / "plugins" / plugin.get<std::string>(),
+                                                 fs::copy_options::recursive, ec);
+                                        if (ec) {
+                                                minilog::err(minilog::msg::error, "Copying failed: ", ec.message());
+                                                minilog::err("Press Enter to continue...");
+                                                std::string input;
+                                                std::getline(std::cin, input);
+                                                reload();
+                                                fail = true;
+                                                break;
+                                        }
+                                }
+                                if (fail)
+                                        break;
+
+                                std::string install_cmd =
+                                    game::argv0 + " --data " + temp_dir.string() + " pm install --force ";
+
+                                bool install = false;
+                                for (auto &repo : install_plugins) {
+                                        minilog::out("\033[32m==>\033[0m Adding ", repo.get<std::string>(),
+                                                     "to install...");
+                                        install_cmd += "-g " + repo.get<std::string>() + " ";
+
+                                        install = true;
+                                }
+
+                                if (install) {
+                                        minilog::out("\033[32m==>\033[0m Running: ", install_cmd);
+                                        int status = std::system(install_cmd.c_str());
+
+                                        if (status != 0) {
+                                                minilog::err(minilog::msg::error, "Failed to recover\033[0m");
+                                                minilog::err("Press Enter to continue...");
+                                                std::string input;
+                                                std::getline(std::cin, input);
+
+                                                reload();
+                                                break;
+                                        }
+                                }
+
+                                minilog::out("\033[32m==>\033[0m All plugins are recovered");
+
+                                // create save file
+                                minilog::out("\033[32m==>\033[0m Creating recovery.json file at temporary directory");
+                                save["plugins_changed"] = false;
+                                fs::remove(save["_filepath"].get<std::string>());
+                                save.erase("_filepath");
+
+                                fs::create_directory(temp_dir / "saves");
+
+                                std::ofstream file(temp_dir / "saves" / "recovery.json");
+                                file << save;
+                                file.close();
+
+                                // launch crogue
+                                std::string run_cmd = game::argv0 + " --data " + temp_dir.string() + " --load-save " +
+                                                      (temp_dir / "saves" / "recovery.json").string() + " ";
+
+                                minilog::out("\033[32m==>\033[0m Running: ", run_cmd);
+                                int status = std::system(run_cmd.c_str());
+
+                                // get new saves
+                                for (auto &entry : fs::directory_iterator(temp_dir / "saves")) {
+                                        fs::path path = entry.path();
+
+                                        if (!fs::is_regular_file(path))
+                                                continue;
+
+                                        if (path.filename().string() == "recovery.json") {
+                                                save["plugins_changed"] = true;
+                                                saves::save(save);
+                                                continue;
+                                        }
+
+                                        fs::copy(path, game::_data_directory / "saves" / path.filename().string());
+                                }
+
+                                saves_list = get_saves();
+
+                                selected_idx = 0;
+                                pad_height = saves_list.size();
+
+                                reload();
+                                minilog::fdebugc("saves", logfile, "saves_list: ", saves_list.dump());
                                 break;
+                        }
 
                         case 10:
                         case KEY_ENTER:
@@ -560,9 +749,9 @@ bool saves_tui() {
                                         apply_save(saves_list[selected_idx]);
                                 } catch (std::runtime_error &e) {
                                         clear();
-                                        attron(2);
+                                        attron(COLOR_PAIR(2));
                                         mvprintw(0, 0, "%s", e.what());
-                                        attroff(2);
+                                        attroff(COLOR_PAIR(2));
                                         refresh();
                                         press_enter_to_continue();
                                         redraw_all = true;

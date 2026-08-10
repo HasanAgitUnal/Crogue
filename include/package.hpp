@@ -8,6 +8,8 @@ fs::path get_cache_dir();
 
 namespace package {
 
+fs::path create_temp_dir();
+
 void pack();
 
 bool check_package(fs::path pack_dir, bool silent = false);

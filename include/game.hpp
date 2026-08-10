@@ -74,6 +74,9 @@ namespace game {
 
 // flags & other shit //
 
+// argv[0]
+inline std::string argv0;
+
 // data directory for plugins and saves
 inline fs::path _data_directory = "";
 
