@@ -15,6 +15,7 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <ncurses.h>
+#include <minilog.hpp>
 #include <random>
 #include <sstream>
 #include <string>
@@ -22,7 +23,6 @@
 
 #include "cards.hpp"
 #include "lua.hpp"
-#include "minilog.hpp"
 #include "saves.hpp"
 #include "scenes.hpp"
 #include "settings.hpp"

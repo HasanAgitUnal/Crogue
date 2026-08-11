@@ -16,11 +16,11 @@
 
 #include <ncurses.h>
 #include <charconv>
+#include <minilog.hpp>
 #include <string_view>
 #include <vector>
 
 #include "game.hpp"
-#include "minilog.hpp"
 #include "tui.hpp"
 
 void setup_colors() {

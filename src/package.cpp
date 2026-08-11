@@ -25,12 +25,12 @@
 #include <filesystem>
 #include <fstream>
 #include <memory>
+#include <minilog.hpp>
 #include <random>
 #include <string>
 
 #include "game.hpp"
 #include "lua.hpp"
-#include "minilog.hpp"
 
 using json = nlohmann::json;
 namespace fs = std::filesystem;

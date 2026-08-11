@@ -18,11 +18,11 @@
 #include <cinttypes>
 #include <filesystem>
 #include <fstream>
+#include <minilog.hpp>
 #include <nlohmann/json.hpp>
 #include <string>
 
 #include "game.hpp"
-#include "minilog.hpp"
 #include "package.hpp"
 #include "tui.hpp"
 

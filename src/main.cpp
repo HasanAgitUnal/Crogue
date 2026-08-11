@@ -21,12 +21,12 @@
 #include <clocale>
 #include <csignal>
 #include <cstdlib>
+#include <minilog.hpp>
 #include <random>
 #include <string>
 
 #include "game.hpp"
 #include "lua.hpp"
-#include "minilog.hpp"
 #include "package.hpp"
 #include "scenes.hpp"
 #include "tui.hpp"

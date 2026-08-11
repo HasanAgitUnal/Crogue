@@ -16,13 +16,13 @@
 
 #include <ncurses.h>
 #include <algorithm>
+#include <minilog.hpp>
 #include <random>
 #include <sol/sol.hpp>
 
 #include "cards.hpp"
 #include "game.hpp"
 #include "lua.hpp"
-#include "minilog.hpp"
 #include "tui.hpp"
 
 void reset_game(bool full) {

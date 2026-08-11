@@ -1,11 +1,11 @@
 #include <ncurses.h>
 #include <fstream>
+#include <minilog.hpp>
 #include <sstream>
 #include <string>
 #include <vector>
 
 #include "game.hpp"
-#include "minilog.hpp"
 #include "package.hpp"
 #include "tui.hpp"
 

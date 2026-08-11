@@ -20,13 +20,13 @@
 #include <algorithm>
 #include <filesystem>
 #include <fstream>
+#include <minilog.hpp>
 #include <nlohmann/json.hpp>
 #include <sol/sol.hpp>
 #include <sstream>
 
 #include "cards.hpp"
 #include "game.hpp"
-#include "minilog.hpp"
 #include "package.hpp"
 
 using json = nlohmann::json;
