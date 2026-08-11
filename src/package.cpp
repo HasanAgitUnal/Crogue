@@ -126,7 +126,7 @@ fs::path create_temp_dir() {
 
 bool check_package(fs::path pack_dir, bool silent = false) {
         if (!silent) {
-                minilog::out("\033[32m==>\033[0m Checking init.lua...");
+                minilog::out("\033[32m==>\033[0m Checking package");
         }
 
         fs::path init_file = pack_dir / "init.lua";
@@ -135,10 +135,6 @@ bool check_package(fs::path pack_dir, bool silent = false) {
                         minilog::fatal(1, "init.lua does not exists or not a file");
                 }
                 return false;
-        }
-
-        if (!silent) {
-                minilog::out("\033[32m==>\033[0m Checking metadata.json...");
         }
 
         fs::path metadata_file = pack_dir / "metadata.json";
@@ -175,10 +171,6 @@ bool check_package(fs::path pack_dir, bool silent = false) {
                         minilog::fatal(1, "Invalid metadata: ", error);
                 }
                 return false;
-        }
-
-        if (!silent) {
-                minilog::out("\033[32m==>\033[0m Checking pack_name.txt...");
         }
 
         fs::path pack_name_file = pack_dir / "pack_name.txt";
@@ -229,17 +221,21 @@ bool check_git() {
 }
 
 void clone_git(const std::string &repo_url, const fs::path &target_dir) {
-        if (!check_git()) {
-                minilog::fatal(1, "git binary not found in PATH. Please install git first.");
-        }
-
         minilog::out("\033[32m==>\033[0m Cloning ", repo_url, "...");
-        std::string cmd = "git clone --depth 1 " + repo_url + " " + target_dir.string();
-
-        int status = std::system(cmd.c_str());
-        if (status != 0) {
-                minilog::fatal(1, "Failed to clone repository: ", repo_url);
+        std::string cmd =
+            "git clone --depth 1 \"" + repo_url + "\" \"" + target_dir.string() + "\" 2>&1 | grep -v 'remote:'";
+        int ret = std::system(cmd.c_str());
+        if (ret != 0) {
+                minilog::fatal(1, "Failed to clone: ", repo_url);
         }
+}
+
+bool is_repo_exists(const std::string &repo) {
+#ifdef WIN32
+        return std::system(("git ls-remote --exit-code " + repo + " HEAD > nul 2>&1").c_str()) == 0;
+#else
+        return std::system(("git ls-remote --exit-code " + repo + " HEAD >/dev/null 2>&1").c_str()) == 0;
+#endif
 }
 
 std::string get_git_commit(const fs::path &repo_dir) {
@@ -389,7 +385,6 @@ void install(const fs::path &directory, const std::string &plugin_name, bool for
         }
 
 install:
-        minilog::out("\033[32m==>\033[0m Installing...");
         std::error_code ec;
         fs::rename(directory, plugin_dir, ec);
 
@@ -404,14 +399,9 @@ install:
                 // no error handling because its not important
                 fs::remove_all(directory);
         }
-        minilog::out("\033[32m==>\033[0m Installation Successfull");
 }
 
-void install_file(const std::string &path, bool force) {
-        if (!fs::exists(path)) {
-                minilog::fatal(1, "File doesn't exitst: ", path);
-        }
-
+std::pair<fs::path, std::string> prepare_file(const std::string &path, bool force) {
         fs::path temp_dir = create_temp_dir();
 
         extract_zip(path, temp_dir);
@@ -428,10 +418,10 @@ void install_file(const std::string &path, bool force) {
                 minilog::fatal(1, "pack_name.txt is empty.");
         }
 
-        install(temp_dir, plugin_name, force);
+        return {temp_dir, plugin_name};
 }
 
-void install_git(const std::string &repo_url, bool force) {
+std::pair<fs::path, std::string> prepare_git(const std::string &repo_url, bool force) {
         fs::path temp_dir = create_temp_dir();
         clone_git(repo_url, temp_dir);
 
@@ -447,7 +437,7 @@ void install_git(const std::string &repo_url, bool force) {
                 minilog::fatal(1, "pack_name.txt is empty.");
         }
 
-        // save repo url & git commit to allow updating later
+        // save repo url & git commit to update later
         std::ofstream repo_file(temp_dir / "git_repo.json");
         json repo_info = json::object();
         repo_info["url"] = repo_url;
@@ -458,8 +448,59 @@ void install_git(const std::string &repo_url, bool force) {
         // remove .git directory
         fs::remove_all(temp_dir / ".git");
 
-        install(temp_dir, plugin_name, force);
+        return {temp_dir, plugin_name};
 };
+
+void install_plugins(const std::vector<std::string> &files, const std::vector<std::string> &repos, bool force) {
+        for (const std::string &repo : repos) {
+                if (!is_repo_exists(repo)) {
+                        minilog::fatal(1, "Git repository doesn't exists: ", repo);
+                };
+        }
+
+        for (const std::string &file : files) {
+                if (!fs::exists(file) || !fs::is_regular_file(file)) {
+                        minilog::fatal(1, "File doesn't exists or not a file: ", file);
+                }
+        }
+
+        minilog::out("\033[34m::\033[0m Installing plugins: ");
+        if (!repos.empty()) {
+                minilog::out("    From git:");
+        }
+        for (const std::string &repo : repos) {
+                minilog::out("      \033[90m->\033[0m ", repo);
+        }
+
+        if (!files.empty()) {
+                minilog::out("    From file:");
+        }
+        for (const std::string &file : files) {
+                minilog::out("      \033[90m->\033[0m ", file);
+        }
+
+        if (!force && !confirm("\033[32m==>\033[0m Continue to installation [Y/n]: \n\033[32m==>\033[0m ")) {
+                exit(0);
+        }
+
+        minilog::out("\033[34m::\033[0m Preparing plugins...");
+        std::vector<std::pair<fs::path, std::string>> prepared;
+        for (const std::string &file : files) {
+                minilog::out("\033[32m==>\033[0m Preparing file: ", file);
+                prepared.push_back(prepare_file(file, force));
+        }
+
+        for (const std::string &repo : repos) {
+                minilog::out("\033[32m==>\033[0m Preparing git: ", repo);
+                prepared.push_back(prepare_git(repo, force));
+        }
+
+        minilog::out("\033[34m::\033[0m Installing plugins...");
+        for (const auto p : prepared) {
+                minilog::out("\033[32m==>\033[0m Installing: ", p.second);
+                install(p.first, p.second, force);
+        }
+}
 
 void update(std::vector<std::string> packages) {
         fs::path plugins_dir(game::_data_directory / "plugins");
@@ -492,7 +533,7 @@ void update(std::vector<std::string> packages) {
                 if (repo_info.contains("url") && repo_info.contains("commit")) {
                         if (check_git_update(repo_info.at("url"), repo_info.at("commit"))) {
                                 minilog::out("\033[32m==>\033[0m Updating \"", pack, "\"");
-                                install_git(repo_info.at("url"), true);
+                                prepare_git(repo_info.at("url"), true);
                                 no_update = false;
                         } else {
                                 minilog::out("\033[32m==>\033[0m " + pack + " is at newest version");

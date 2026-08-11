@@ -193,16 +193,7 @@ void handle_cli(int argc, char **argv) {
                         minilog::fatal(1, "At least one package source (-f or -g) must be specified.");
                 }
 
-                for (const auto &file : pack_files) {
-                        minilog::out("\033[32m==>\033[0m Installing plugin from file: ", file);
-                        package::install_file(file, force);
-                }
-
-                for (const auto &repo : pack_repos) {
-                        minilog::out("\033[32m==>\033[0m Installing plugin via git: ", repo);
-                        package::install_git(repo, force);
-                }
-
+                package::install_plugins(pack_files, pack_repos, force);
                 exit(0);
         });
 
