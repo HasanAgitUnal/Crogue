@@ -38,7 +38,7 @@ Under development.
 - [x] saves system
 - [x] custom data dir/plugins dir/saves dir from cli
 - [x] recovery mode to load broken saves
-- [ ] add ncurses WINDOW management to cr.curses
+- [x] add ncurses WINDOW management to cr.curses 
 - [ ] code quality
 - [ ] optimizations
 - [ ] create vanilla plugins to make a playable game
