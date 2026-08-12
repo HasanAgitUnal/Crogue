@@ -84,9 +84,10 @@ target_compile_definitions(${APPNAME} PRIVATE $<$<CONFIG:Debug>:DEBUG>)
 #
 # Libs
 #
+
 find_package(PkgConfig REQUIRED)
 
-# lua 5.1-5.4 (pkg-config candidate search)
+# lua 5.1-5.4
 set(_lua_pkg_names lua54 lua5.4 lua-5.4 lua53 lua5.3 lua-5.3 lua52 lua5.2 lua-5.2 lua51 lua5.1 lua-5.1)
 set(_lua_selected "")
 
@@ -135,9 +136,9 @@ target_precompile_headers(${APPNAME} PRIVATE
 # Linking
 #
 
-if(UNIX)
-        target_link_options(${APPNAME} PRIVATE -rdynamic)
-endif()
+target_link_options(${APPNAME} PRIVATE
+  $<$<NOT:$<CONFIG:Release>>:-rdynamic>
+)
 
 target_link_libraries(${APPNAME} PRIVATE
         PkgConfig::LUA

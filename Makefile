@@ -1,4 +1,3 @@
-COPY_COMPILE_COMMANDS ?= no
 LOG_ENABLED ?= 1
 APPNAME ?= $(shell grep 'set(APPNAME' CMakeLists.txt | cut -d' ' -f2 | tr -d ')')
 RUNFLAGS ?=
@@ -8,12 +7,7 @@ BUILD_TYPE = -DCMAKE_BUILD_TYPE=Release
 CMAKE_TARGET_FLAGS = $(BUILD_TYPE)
 CMAKE_FLAGS = $(CMAKE_TARGET_FLAGS) -Wno-author
 
-all: clean build compile_commands
-
-compile_commands:
-ifeq ($(COPY_COMPILE_COMMANDS),yes)
-	@cp -f $(BUILD_DIR)/compile_commands.json . 2>/dev/null || true
-endif
+all: clean build
 
 build:
 	@sleep 0.3
@@ -21,7 +15,6 @@ build:
 	@printf -- "--------------------------------------------------------------\n"
 	@printf -- " APPNAME                : $(APPNAME)\n"
 	@printf -- " RUNFLAGS               : $(RUNFLAGS)\n"
-	@printf -- " COPY_COMPILE_COMMANDS  : $(COPY_COMPILE_COMMANDS)\n"
 	@printf -- " CMAKE_FLAGS            : $(CMAKE_FLAGS)\n"
 	@printf -- "--------------------------------------------------------------\n"
 	@if [ ! -f $(BUILD_DIR)/Makefile ]; then \
@@ -29,6 +22,8 @@ build:
 		cd $(BUILD_DIR) && cmake $(CMAKE_FLAGS) ..; \
 	fi
 	@$(MAKE) -C $(BUILD_DIR)
+
+	@cp -f $(BUILD_DIR)/compile_commands.json . 2>/dev/null || true
 
 dbuild: BUILD_TYPE = -DCMAKE_BUILD_TYPE=Debug
 dbuild: build
