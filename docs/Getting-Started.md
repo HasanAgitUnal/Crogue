@@ -37,6 +37,9 @@ Directory Structure:
 └──  settings.json         # Main game settings, contains plugins enabled or not
 ```
 
+> [!NOTE]
+> **You can get current data directory location using `cr.get_data_dir()` function. It returns the data directory path.**
+
 ### Creating your first plugin
 
 Create a new directory for your plugin. And create these files:

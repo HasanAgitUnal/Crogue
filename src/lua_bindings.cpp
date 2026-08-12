@@ -236,6 +236,8 @@ void setup_lua() {
 
         crogue["is_game_running"] = [&]() -> bool { return game::game_is_running; };
 
+        crogue["get_data_dir"] = [&]() -> std::string { return game::_data_directory.string(); };
+
         crogue["hook"] = [](std::string event, sol::function func) {
                 try {
                         if (event == "before_refresh") {
@@ -283,6 +285,13 @@ void setup_lua() {
                         } else if (event == "card_event") {
                                 game::hooks::card_event.push_back(
                                     func.as<std::function<bool(std::shared_ptr<card_t>, int)>>());
+
+                        } else if (event == "s_save") {
+                                game::hooks::s_save.push_back(func.as<void(std::string)>());
+
+                        } else if (event == "s_load") {
+                                game::hooks::s_save.push_back(func.as<void(std::string)>());
+
                         } else {
                                 throw sol::error::runtime_error("Invalid hook name!: " + event);
                         }

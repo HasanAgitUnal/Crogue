@@ -114,6 +114,8 @@ std::string save(json save_data) {
         file << save_data.dump(4);
         file.close();
 
+        game::hooks::trigger(game::hooks::s_save, save_data.dump());
+
         return save_path.string();
 }
 
@@ -229,6 +231,8 @@ void apply_save(const json save) {
         game::_curr_save_created_with_plugins = save["created_with_plugins"];
         game::_curr_save_loaded = save["_filepath"].get<std::string>();
         game::_curr_save_name = save["name"].get<std::string>();
+
+        game::hooks::trigger(game::hooks::s_load, save.dump());
 }
 
 void sync_with_plugins(json &saves) {

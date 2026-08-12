@@ -47,20 +47,19 @@ else()
 endif()
 
 # enable LTO
-if(CMAKE_CXX_COMPILER_ID MATCHES "Clang" AND NOT CMAKE_BUILD_TYPE STREQUAL "Debug")
-        include(CheckIPOSupported)
-        check_ipo_supported(RESULT ipo_supported)
-        if(ipo_supported)
-                set(CMAKE_INTERPROCEDURAL_OPTIMIZATION TRUE)
-                message(STATUS "LTO enabled")
-        else()
-                message(STATUS "LTO not supported")
-        endif()
-endif()
+#include(CheckIPOSupported)
+#check_ipo_supported(RESULT ipo_supported)
+#if(ipo_supported)
+#        set(CMAKE_INTERPROCEDURAL_OPTIMIZATION TRUE)
+#        message(STATUS "LTO enabled")
+#else()
+#        message(STATUS "LTO not supported")
+#endif()
 
 #
 # Building
 #
+
 file(GLOB_RECURSE SOURCE_FILES CONFIGURE_DEPENDS "src/*.c" "src/*.cpp" "src/*.cxx")
 file(GLOB THIRD_PARTY LIST_DIRECTORIES true CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/third_party/*/include")
 

@@ -98,4 +98,40 @@ cr.hook("slot", function(slot_id)
 end)
 ```
 
+##### **`s_load` & `s_save`**
+
+Runned after a save loaded (`s_load`) or created/updated (`s_save`).
+
+No return type.
+Takes 1 string argument: save data as json.
+
+Example save data:
+```json
+{
+    "_filepath": "/home/melon/.local/share/crogue/saves/7992049797823664169_1786440919.json",
+    "created_with_plugins": {
+        "test": "local",
+        "vanilla": "https://codeberg.org/HasanAgitUnal/CROGUE-Vanilla.git"
+    },
+    "hp": 100,
+    "inventory": [
+        "vanilla:teleporter",
+        "vanilla:apple",
+        "vanilla:apple",
+        "vanilla:apple",
+        "vanilla:apple",
+        null,
+        null,
+        null,
+        null,
+        null
+    ],
+    "last_played": 1786440919,
+    "level": 1,
+    "name": "No name",
+    "plugins_changed": false,
+    "seed": 7992049797823664169
+}
+```
+
 

@@ -163,6 +163,10 @@ inline std::vector<std::function<bool(std::shared_ptr<card_t>)>> item;
 // return: is_canceled?
 inline std::vector<std::function<bool(std::shared_ptr<card_t>, int)>> card_event;
 
+// arg: save data (json)
+inline std::vector<std::function<void(std::string)>> s_save;
+inline std::vector<std::function<void(std::string)>> s_load;
+
 template <typename... Args>
 inline void trigger(std::vector<std::function<void(Args...)>> &hooks, Args... args) {
         for (auto &hook : hooks) {
