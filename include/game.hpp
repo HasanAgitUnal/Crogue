@@ -16,6 +16,12 @@
 
 #pragma once
 #define SOL_ALL_SAFETIES_ON 1
+
+// needed to bind ncurses functions to lua
+struct _win_st {
+        int _dummy;
+};
+
 #include <ncurses.h>
 #include <cstdint>
 #include <deque>

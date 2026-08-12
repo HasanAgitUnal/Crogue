@@ -1,35 +1,47 @@
-To allow plugins managing TUI completely, CROGUE opens some basic NCurses functions for plugins.
+# NCurses (`cr.curses`)
+
+To allow plugins managing TUI completely, CROGUE opens some NCurses functions for plugins.
 Usage of them is not shown here. Look at NCurses documentation for them.
+
+`stdscr` is defined as `cr.curses.stdscr`.
 
 > [!WARNING]
 > **Do not destroy TUI**
-> Avoid using clear() to refresh game UI.
+> Avoid using `cr.curses.clear()` to refresh game UI.
 > You may remove a thing a plugin did.
 
-Functions:
-- `cr.curses.printw`
-- `cr.curses.move`
-- `cr.curses.mvprintw`
-- `cr.curses.clear`
-- `cr.curses.refresh`
-- `cr.curses.getch`
-- `cr.curses.attrset`
-- `cr.curses.attron`
-- `cr.curses.attroff`
-- `cr.curses.curs_set`
-- `cr.curses.getmaxyx`
+## Avaible functions
+
+The functions you expect to have is avaible under `cr.curses`. But some functions are not allowed and some functions are not added. See `src/lua_bindings.cpp` file in source code to see full list of functions.
 
 > [!WARNING]
-> `cr.curses.getmaxyx` function **is not used as in normal NCurses**.
-> It returns a table with x, y values.
+> `cr.curses.getyx`, `cr.curses.getbegyx`, `cr.curses.getparyx`, `cr.curses.getmaxyx`
+> functions **are not used as in normal NCurses**.
+> They take a window (or `cr.curses.stdscr`) and return a table with `x`, `y` values.
 > Usage:
 > ```lua
-> local cords = cr.curses.getmaxyx()
+> local cords = cr.curses.getmaxyx(cr.curses.stdscr)
 > printw("X: " .. cords.x .. " Y: " .. cords.y)
+> ```
+> 
+> The functions must be called like that:
+> - `cr.curses.getyx(win)`
+> - `cr.curses.getbegyx(win)`
+> - `cr.curses.getparyx(win)`
+> - `cr.curses.getmaxyx(win)`
+
+## Macros
+
+Avaible NCurses macros:
+
+* `cr.curses.COLS()`
+* `cr.curses.LINES()`
+* `cr.curses.OK`
+* `cr.curses.ERR`
 
 ## `cr.curses.attr_t` and ANSI
 
-And you can use `cr.curses.attr_t` as NCurses `attr_t`.
+You can use `cr.curses.attr_t` as NCurses `attr_t`.
 If you hate ncurses attrs like me you can use `cr.curses.ansi2attr` function to get ncurses attrs:
 ```lua
 local red = cr.curses.ansi2attr("38;5;1m")
@@ -38,11 +50,11 @@ cr.curses.printw("This is a red text!")
 cr.curses.attroff(red)
 ```
 
-See [ANSI Support][./ansi.md] for the full list of supported ansi codes.
+See [ANSI Support][./ANSI-Support] for the full list of supported ansi codes.
 
 ## Keyboard Handling, `KEY_` variables
 
-All of the NCurses `KEY_` variables are accessable from `cr.curses`.
+All of the NCurses `KEY_` variables are accessible from `cr.curses`.
 See NCurses documentation or `ncurses.h` header on your system for full list of `KEY_` variables.
 Example:
 ```lua
@@ -53,8 +65,6 @@ c.refresh()
 
 local key = c.getch()
 if (key == c.KEY_ENTER)
-    c.printw("You pressed enter!")
+  c.printw("You pressed enter!")  
 end
 ```
-
-

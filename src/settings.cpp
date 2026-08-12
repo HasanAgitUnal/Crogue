@@ -1,4 +1,3 @@
-#include <ncurses.h>
 #include <fstream>
 #include <minilog.hpp>
 #include <sstream>

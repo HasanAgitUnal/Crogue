@@ -335,24 +335,292 @@ void setup_lua() {
 
         curses["ansi2attr"] = &parse_ansi_color;
 
+        curses["stdscr"] = stdscr;
+
+        // screen
         curses["move"] = &move;
-        curses["printw"] = &printw;
-        curses["mvprintw"] = &mvprintw;
+        curses["wmove"] = &wmove;
+
         curses["clear"] = &clear;
+        curses["wclear"] = &wclear;
+
+        curses["erase"] = &erase;
+        curses["werase"] = &werase;
+
         curses["refresh"] = &refresh;
-        curses["getch"] = &getch;
+        curses["wrefresh"] = &wrefresh;
+        curses["prefresh"] = &prefresh;
+        curses["wnoutrefresh"] = &wnoutrefresh;
+        curses["pnoutrefresh"] = &pnoutrefresh;
 
-        curses["attron"] = &attron;
-        curses["attrset"] = &attrset;
-        curses["attroff"] = &attroff;
+        curses["doupdate"] = &doupdate;
+        curses["resize_term"] = &resize_term;
 
+        // characters
+        curses["keyname"] = &keyname;
+        curses["key_name"] = &key_name;
+        curses["unctrl"] = &unctrl;
+
+        // feedback
+        curses["napms"] = &napms;
+        curses["beep"] = &beep;
+        curses["flash"] = &flash;
+
+        // scroll
+        curses["scrl"] = &scrl;
+        curses["wscrl"] = &wscrl;
+        curses["setscrreg"] = &setscrreg;
+        curses["wsetscrreg"] = &wsetscrreg;
+
+        // touch
+        curses["touchwin"] = &touchwin;
+        curses["untouchwin"] = &untouchwin;
+        curses["touchline"] = &touchline;
+        curses["wtouchln"] = &wtouchln;
+        curses["is_linetouched"] = &is_linetouched;
+        curses["is_wintouched"] = &is_wintouched;
+
+        // background
+        curses["bkgd"] = &bkgd;
+        curses["wbkgd"] = &wbkgd;
+        curses["bkgdset"] = &bkgdset;
+        curses["wbkgdset"] = &wbkgdset;
+        curses["getbkgd"] = &getbkgd;
+
+        // insertion
+        curses["insch"] = &insch;
+        curses["winsch"] = &winsch;
+        curses["mvinsch"] = &mvinsch;
+        curses["mvwinsch"] = &mvwinsch;
+
+        curses["insstr"] = &insstr;
+        curses["winsstr"] = &winsstr;
+        curses["mvinsstr"] = &mvinsstr;
+        curses["mvwinsstr"] = &mvwinsstr;
+
+        curses["insnstr"] = &insnstr;
+        curses["winsnstr"] = &winsnstr;
+        curses["mvinsnstr"] = &mvinsnstr;
+        curses["mvwinsnstr"] = &mvwinsnstr;
+
+        // safe output (n variants)
+        curses["addnstr"] = &addnstr;
+        curses["waddnstr"] = &waddnstr;
+        curses["mvaddnstr"] = &mvaddnstr;
+        curses["mvwaddnstr"] = &mvwaddnstr;
+
+        curses["addchstr"] = &addchstr;
+        curses["waddchstr"] = &waddchstr;
+        curses["mvaddchstr"] = &mvaddchstr;
+        curses["mvwaddchstr"] = &mvwaddchstr;
+
+        curses["addchnstr"] = &addchnstr;
+        curses["waddchnstr"] = &waddchnstr;
+        curses["mvaddchnstr"] = &mvaddchnstr;
+        curses["mvwaddchnstr"] = &mvwaddchnstr;
+
+        // extraction
+        curses["inch"] = &inch;
+        curses["winch"] = &winch;
+        curses["mvinch"] = &mvinch;
+        curses["mvwinch"] = &mvwinch;
+
+        curses["instr"] = &instr;
+        curses["winstr"] = &winstr;
+        curses["mvinstr"] = &mvinstr;
+        curses["mvwinstr"] = &mvwinstr;
+
+        curses["innstr"] = &innstr;
+        curses["winnstr"] = &winnstr;
+        curses["mvinnstr"] = &mvinnstr;
+        curses["mvwinnstr"] = &mvwinnstr;
+
+        curses["inchstr"] = &inchstr;
+        curses["winchstr"] = &winchstr;
+        curses["mvinchstr"] = &mvinchstr;
+        curses["mvwinchstr"] = &mvwinchstr;
+
+        curses["inchnstr"] = &inchnstr;
+        curses["winchnstr"] = &winchnstr;
+        curses["mvinchnstr"] = &mvinchnstr;
+        curses["mvwinchnstr"] = &mvwinchnstr;
+
+        // windows
+        curses["newwin"] = &newwin;
+        curses["newpad"] = &newpad;
+        curses["derwin"] = &derwin;
+        curses["dupwin"] = &dupwin;
+        curses["mvwin"] = &mvwin;
+        curses["delwin"] = &delwin;
+        curses["copywin"] = &copywin;
+        curses["wresize"] = &wresize;
+
+        // input behavior
+        curses["keypad"] = &keypad;
+        curses["timeout"] = &timeout;
+        curses["wtimeout"] = &wtimeout;
+        curses["nodelay"] = &nodelay;
+        curses["notimeout"] = &notimeout;
+        curses["meta"] = &meta;
+        curses["intrflush"] = &intrflush;
+        curses["halfdelay"] = &halfdelay;
+        curses["typeahead"] = &typeahead;
+        curses["qiflush"] = &qiflush;
+        curses["noqiflush"] = &noqiflush;
+
+        // output behavior modifiers
+        curses["leaveok"] = &leaveok;
+        curses["scrollok"] = &scrollok;
+        curses["clearok"] = &clearok;
+        curses["idlok"] = &idlok;
+        curses["idcok"] = &idcok;
+        curses["immedok"] = &immedok;
+        curses["syncok"] = &syncok;
+        curses["redrawwin"] = &redrawwin;
+        curses["wredrawln"] = &wredrawln;
+
+        // global terminal state
+        curses["cbreak"] = &cbreak;
+        curses["nocbreak"] = &nocbreak;
+        curses["raw"] = &raw;
+        curses["noraw"] = &noraw;
+        curses["echo"] = &echo;
+        curses["noecho"] = &noecho;
+        curses["nl"] = &nl;
+        curses["nonl"] = &nonl;
+        curses["filter"] = &filter;
+
+        // color behavior
+        curses["has_colors"] = &has_colors;
+
+        // screen/window state
         curses["curs_set"] = &curs_set;
+        curses["def_prog_mode"] = &def_prog_mode;
+        curses["reset_prog_mode"] = &reset_prog_mode;
+        curses["def_shell_mode"] = &def_shell_mode;
+        curses["reset_shell_mode"] = &reset_shell_mode;
+        curses["savetty"] = &savetty;
+        curses["resetty"] = &resetty;
+        curses["endwin"] = &endwin;
+        curses["isendwin"] = &isendwin;
 
-        curses["getmaxyx"] = []() {
+        // printing
+        curses["printw"] = &printw;
+        curses["wprintw"] = &wprintw;
+        curses["mvprintw"] = &mvprintw;
+        curses["mvwprintw"] = &mvwprintw;
+
+        curses["addch"] = &addch;
+        curses["waddch"] = &waddch;
+        curses["mvaddch"] = &mvaddch;
+        curses["mvwaddch"] = &mvwaddch;
+
+        curses["addstr"] = &addstr;
+        curses["waddstr"] = &waddstr;
+        curses["mvaddstr"] = &mvaddstr;
+        curses["mvwaddstr"] = &mvwaddstr;
+
+        // deleting
+        curses["delch"] = &delch;
+        curses["wdelch"] = &wdelch;
+        curses["mvdelch"] = &mvdelch;
+        curses["mvwdelch"] = &mvwdelch;
+
+        curses["insertln"] = &insertln;
+        curses["winsertln"] = &winsertln;
+
+        curses["deleteln"] = &deleteln;
+        curses["wdeleteln"] = &wdeleteln;
+
+        curses["insdelln"] = &insdelln;
+        curses["winsdelln"] = &winsdelln;
+
+        curses["clrtoeol"] = &clrtoeol;
+        curses["wclrtoeol"] = &wclrtoeol;
+
+        curses["clrtobot"] = &clrtobot;
+        curses["wclrtobot"] = &wclrtobot;
+
+        // drawing
+        curses["box"] = &box;
+        curses["border"] = &border;
+
+        curses["hline"] = &hline;
+        curses["whline"] = &whline;
+        curses["mvhline"] = &mvhline;
+        curses["mvwhline"] = &mvwhline;
+
+        curses["vline"] = &vline;
+        curses["wvline"] = &wvline;
+        curses["mvvline"] = &mvvline;
+        curses["mvwvline"] = &mvwvline;
+
+        // attr
+        curses["attron"] = &attron;
+        curses["wattron"] = &wattron;
+
+        curses["attrset"] = &attrset;
+        curses["wattrset"] = &wattrset;
+
+        curses["attroff"] = &attroff;
+        curses["wattroff"] = &wattroff;
+
+        curses["chgat"] = &chgat;
+        curses["wchgat"] = &wchgat;
+        curses["mvchgat"] = &mvchgat;
+        curses["mvwchgat"] = &mvwchgat;
+
+        // input
+        curses["ungetch"] = &ungetch;
+
+        curses["getch"] = &getch;
+        curses["wgetch"] = &wgetch;
+        curses["mvgetch"] = &mvgetch;
+        curses["mvwgetch"] = &mvwgetch;
+
+        curses["getstr"] = &getstr;
+        curses["wgetstr"] = &wgetstr;
+        curses["mvgetstr"] = &mvgetstr;
+        curses["mvwgetstr"] = &mvwgetstr;
+
+        curses["getnstr"] = &getnstr;
+        curses["wgetnstr"] = &wgetnstr;
+        curses["mvgetnstr"] = &mvgetnstr;
+        curses["mvwgetnstr"] = &mvwgetnstr;
+
+        curses["flushinp"] = &flushinp;
+
+        // position & size
+        curses["getyx"] = [](WINDOW *win) {
                 int y, x;
-                getmaxyx(stdscr, y, x);
+                getyx(win, y, x);
                 return game::lua.create_table_with("y", y, "x", x);
         };
+
+        curses["getbegyx"] = [](WINDOW *win) {
+                int y, x;
+                getbegyx(win, y, x);
+                return game::lua.create_table_with("y", y, "x", x);
+        };
+
+        curses["getparyx"] = [](WINDOW *win) {
+                int y, x;
+                getparyx(win, y, x);
+                return game::lua.create_table_with("y", y, "x", x);
+        };
+
+        curses["getmaxyx"] = [](WINDOW *win) {
+                int y, x;
+                getmaxyx(win, y, x);
+                return game::lua.create_table_with("y", y, "x", x);
+        };
+
+        // important macros
+        curses["LINES"] = []() { return LINES; };
+        curses["COLS"] = []() { return COLS; };
+
+        curses["OK"] = OK;
+        curses["ERR"] = ERR;
 
         // KEY_*
         curses["KEY_CODE_YES"] = KEY_CODE_YES;

@@ -15,7 +15,7 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #define BOOST_STACKTRACE_USE_ADDR2LINE
-#include <ncurses.h>
+
 #include <unistd.h>
 #include <CLI/CLI.hpp>
 #include <clocale>

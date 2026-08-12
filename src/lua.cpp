@@ -16,7 +16,6 @@
 
 #define SOL_ALL_SAFETIES_ON 1
 
-#include <ncurses.h>
 #include <algorithm>
 #include <filesystem>
 #include <fstream>

@@ -375,7 +375,8 @@ void install(const fs::path &directory, const std::string &plugin_name, bool for
                 }
 
                 minilog::out("\033[33m==>\033[0m A plugin with this name already exists.");
-                if (!confirm("\033[32m==>\033[0m Remove it and continue to installation? [Y/n]: ")) {
+                if (!confirm(
+                        "\033[32m==>\033[0m Remove it and continue to installation? [Y/n]: \n\033[32m==>\033[0m ")) {
                         minilog::out("\033[33m==>\033[0m Canceled...");
                         fs::remove_all(directory);
                         exit(0);

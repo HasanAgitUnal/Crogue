@@ -2,7 +2,7 @@ Read [Shared Types](./Shared-Types) to learn shared types.
 
 ### Functions
 
-All this functions automatically adds objects to related containers.
+All these functions automatically adds objects to related containers.
 There is no function for `cr.obj.card_slot`
 
 | Function            | Return       |
