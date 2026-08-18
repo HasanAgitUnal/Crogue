@@ -361,6 +361,26 @@ CONTINUE:
         return false;
 }
 
+std::vector<std::string> wrap_text(std::string text, int width) {
+
+        std::vector<std::string> lines;
+        std::stringstream ss(text);
+        std::string word, line;
+        while (ss >> word) {
+                if (line.length() + word.length() + 1 > (size_t)width) {
+                        lines.push_back(line);
+                        line = word;
+                } else {
+                        if (!line.empty())
+                                line += " ";
+                        line += word;
+                }
+        }
+        if (!line.empty())
+                lines.push_back(line);
+        return lines;
+}
+
 void game() {
         if (game::settings::metadata.empty()) {
                 // return if no plugin loaded
@@ -476,6 +496,71 @@ void game() {
                                                 turn_taken = true;
                                         }
                                 }
+                                break;
+                        }
+                        case 'i': {
+                                char slot = ask("Which slot? [a/b/c]: ");
+                                std::shared_ptr<card_t> card;
+                                bool end = false;
+                                switch (slot) {
+                                        case 'a':
+                                                card = game::slot1.front;
+                                                break;
+
+                                        case 'b':
+                                                card = game::slot2.front;
+                                                break;
+
+                                        case 'c':
+                                                card = game::slot3.front;
+                                                break;
+
+                                        default:
+                                                end = true;
+                                                break;
+                                }
+
+                                if (end || card == nullptr) {
+                                        break;
+                                }
+
+                                int max_y, max_x;
+                                getmaxyx(stdscr, max_y, max_x);
+                                int win_h = max_y * 0.6;
+                                int win_w = max_x * 0.7;
+                                int win_y = (max_y - win_h) / 2;
+                                int win_x = (max_x - win_w) / 2;
+                                WINDOW *info_win = newwin(win_h, win_w, win_y, win_x);
+
+                                wattron(info_win, COLOR_PAIR(9));
+                                box(info_win, 0, 0);
+                                wattroff(info_win, COLOR_PAIR(9));
+
+                                wattron(info_win, COLOR_PAIR(4));
+
+                                getmaxyx(info_win, max_y, max_x);
+                                mvwprintw(info_win, 1, (max_x - 8) / 2, "- INFO -");
+                                wattroff(info_win, COLOR_PAIR(4));
+
+                                wattron(info_win, COLOR_PAIR(7));
+                                mvwprintw(info_win, 3, 2, "Card Name: %s", card->name.c_str());
+                                wattroff(info_win, COLOR_PAIR(7));
+
+                                auto lines = wrap_text(card->info, max_x - 4);
+                                for (int i = 0; i < lines.size(); i++) {
+                                        mvwprintw(info_win, 5 + i, 2, "%s", lines[i].c_str());
+
+                                        if (i + 6 > max_y - 8) {
+                                                mvwprintw(info_win, 5 + i, 2, "...");
+                                                break;
+                                        }
+                                }
+
+                                mvwprintw(info_win, max_y - 2, 2, "Press any key to continue...");
+                                wrefresh(info_win);
+                                getch();
+
+                                delwin(info_win);
                                 break;
                         }
                         case 'q':

@@ -36,6 +36,7 @@ int generate_unique_level_id();
 std::shared_ptr<card_t> create_card(const int count,
                 const std::string &id,
                 const std::string &name,
+                const std::string &info,
                 const card_type &type,
                 const std::vector<int> levelids,
                 const std::string &logmsg,

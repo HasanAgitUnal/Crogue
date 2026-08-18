@@ -18,7 +18,7 @@ void install_plugins(const std::vector<std::string> &files, const std::vector<st
 
 void remove(const std::string &package, bool force);
 
-void reset(const std::string &package);
+void reset(const std::string &package, bool force);
 
 void update(std::vector<std::string> packages);
 

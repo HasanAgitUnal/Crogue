@@ -515,7 +515,9 @@ void update(std::vector<std::string> packages) {
                 }
         }
 
+        minilog::out("\033[34m::\033[0m Checking for updates...");
         bool no_update = true;
+        std::vector<std::string> updates;
         for (auto pack : packages) {
                 fs::path pack_dir = plugins_dir / pack;
                 if (!fs::exists(pack_dir)) {
@@ -534,7 +536,7 @@ void update(std::vector<std::string> packages) {
                 if (repo_info.contains("url") && repo_info.contains("commit")) {
                         if (check_git_update(repo_info.at("url"), repo_info.at("commit"))) {
                                 minilog::out("\033[32m==>\033[0m Updating \"", pack, "\"");
-                                prepare_git(repo_info.at("url"), true);
+                                updates.push_back(repo_info.at("url"));
                                 no_update = false;
                         } else {
                                 minilog::out("\033[32m==>\033[0m " + pack + " is at newest version");
@@ -544,6 +546,14 @@ void update(std::vector<std::string> packages) {
                                      (pack_dir / "git_repo.json").string() + "\" is invalid\033[0m");
                 }
         }
+
+        if (no_update) {
+                minilog::out("\033[32m==>\033[0m Everything is up to date");
+                return;
+        }
+
+        minilog::out("\033[34m::\033[0m Installing found updates...");
+        install_plugins({}, updates, true);
 }
 
 void remove(const std::string &package, bool force) {
@@ -566,10 +576,15 @@ remove:
         fs::remove_all(pack);
 }
 
-void reset(const std::string &package) {
+void reset(const std::string &package, bool force) {
         fs::path settings(game::_data_directory / "plugins" / package / "settings.json");
+        if (!confirm("\033[32m==>\033[0m Are you sure? [Y/n]\n\033[32m==>\033[0m")) {
+                minilog::out("\033[33m==>\033[0m Canceled...");
+                exit(0);
+        }
 
         // do not matter exists or not
+        minilog::out("\033[34m::\033[0m Resetting...");
         fs::remove(settings);
 }
 

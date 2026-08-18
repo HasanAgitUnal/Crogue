@@ -46,6 +46,7 @@ struct card_t {
         std::string id = "";
         int count = 0;
         std::string name = "";
+        std::string info = "";
         card_type type = BASIC;
         std::vector<int> level_ids;
         std::string logmsg = "";

@@ -161,9 +161,10 @@ void handle_cli(int argc, char **argv) {
         // reset
         auto *reset_cmd = pack_cmd->add_subcommand("reset", "Reset plugin settings");
         reset_cmd->add_option("PLUGIN", plugin_name, "Plugin name")->required();
+        reset_cmd->add_flag("-F,--force", force, "Force to remove");
 
         reset_cmd->callback([&]() {
-                package::reset(plugin_name);
+                package::reset(plugin_name, force);
                 exit(0);
         });
 

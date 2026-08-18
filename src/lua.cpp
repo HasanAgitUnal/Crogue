@@ -505,7 +505,9 @@ void process_single_plugin(const fs::path &subpath) {
 void load_plugins() {
         minilog::fdebugc("lua", logfile, "Loading plugins");
 
-        create_card(1, "crogue:exit_gate", "~ Exit Gate ~", EXIT, {}, "", 0, 0, exit_gate);
+        create_card(1, "crogue:exit_gate", "~ Exit Gate ~",
+                    "Complete the current level. Make sure you collected the loot you need.", EXIT, {}, "", 0, 0,
+                    exit_gate);
 
         load_settings();
 
