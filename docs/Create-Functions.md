@@ -28,6 +28,7 @@ local zombie = cr.obj.card.new()
 
 zombie.count = 5
 zombie.name = "Zombie"
+zombie.info = "Normaly hits -1 HP. A weak creature. Infects you, if you kill 10 of them you will be a zombie."
 zombie.id = "my_plugin:zombie"
 zombie.type = cr.card_type.ENEMY
 zombie.level_ids = {}
@@ -49,6 +50,7 @@ local zombie = cr.create_card({
     count = 5,
     name = "Zombie",
     id = "my_plugin:zombie",
+    info = "Normaly hits -1 HP. A weak creature. Infects you, if you kill 10 of them you will be a zombie.",
     type = cr.card_type.ENEMY,
     level_ids = {},
     logmsg = "You killed a zombie",
