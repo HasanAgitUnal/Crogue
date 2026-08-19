@@ -48,7 +48,7 @@ bool game_running = false;
 #include <boost/stacktrace.hpp>
 #endif
 
-void segfault_handler(int sig) {
+static void segfault_handler(int sig) {
         if (game_running) {
                 end_program();
         }
@@ -61,14 +61,14 @@ void segfault_handler(int sig) {
         exit(139);
 }
 
-void interrupt_handler(int sig) {
+static void interrupt_handler(int sig) {
         if (game_running) {
                 end_program();
         }
         exit(130);
 }
 
-void handle_cli(int argc, char **argv) {
+static void handle_cli(int argc, char **argv) {
         game::argv0 = argv[0];
 
         CLI::App app{"crogue - Card Based Roguelike Game"};

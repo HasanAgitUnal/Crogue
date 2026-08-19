@@ -77,7 +77,7 @@ void end_program() {
  * Main Job
  */
 
-json load_json(const fs::path &path) {
+static json load_json(const fs::path &path) {
         std::ifstream metadata_file(path);
 
         if (!fs::exists(path)) {
@@ -103,7 +103,7 @@ json load_json(const fs::path &path) {
 }
 
 // clang-format off
-json safe_load(const std::string plugin_name, const fs::path path) {
+static json safe_load(const std::string plugin_name, const fs::path path) {
         try {
                 return load_json(path);
 
@@ -208,7 +208,7 @@ std::string check_metadata(const json &metadata) {
         return "";
 }
 
-std::string check_settings(const json &settings, const json &metadata) {
+static std::string check_settings(const json &settings, const json &metadata) {
         if (!settings.is_object()) {
                 return "settings is not a JSON object";
         }
@@ -305,7 +305,7 @@ void load_plugin(const fs::path &plugindir) {
         game::lua["package"]["cpath"] = original_cpath;
 }
 
-fs::path create_plugins_dir() {
+static fs::path create_plugins_dir() {
         fs::path plugins_directory;
 
         try {
@@ -332,7 +332,7 @@ fs::path create_plugins_dir() {
         return plugins_directory;
 }
 
-void load_settings() {
+static void load_settings() {
         fs::path settings_path = game::_data_directory / "settings.json";
 
         if (!fs::exists(settings_path)) {
@@ -362,7 +362,7 @@ void load_settings() {
         }
 }
 
-void save_settings() {
+static void save_settings() {
         fs::path settings_path = game::_data_directory / "settings.json";
         std::ofstream settings_file(settings_path);
 
@@ -382,7 +382,7 @@ void save_settings() {
 }
 
 // remove invalid/removed plugin's settings
-void cleanup_orphaned_settings(const fs::path &plugins_directory) {
+static void cleanup_orphaned_settings(const fs::path &plugins_directory) {
         std::vector<std::string> existing_plugins;
         for (const auto &entry : fs::directory_iterator(plugins_directory)) {
                 if (package::check_package(entry, true)) {
@@ -403,7 +403,7 @@ void cleanup_orphaned_settings(const fs::path &plugins_directory) {
         }
 }
 
-void generate_default_settings(const std::string &plugin, const fs::path &path) {
+static void generate_default_settings(const std::string &plugin, const fs::path &path) {
         fs::path plugin_settings_path = path / "settings.json";
 
         minilog::fdebugc("settings", logfile, "Generating default settings.json file for ", plugin);
@@ -435,7 +435,7 @@ void generate_default_settings(const std::string &plugin, const fs::path &path) 
 }
 
 // WARN: must be runned after metadata loaded
-void load_plugin_config(const std::string &plugin_name, const fs::path &subpath) {
+static void load_plugin_config(const std::string &plugin_name, const fs::path &subpath) {
         fs::path plugin_settings_path = subpath / "settings.json";
 
         if (fs::exists(plugin_settings_path)) {
@@ -461,7 +461,7 @@ void load_plugin_config(const std::string &plugin_name, const fs::path &subpath)
         }
 }
 
-void process_single_plugin(const fs::path &subpath) {
+static void process_single_plugin(const fs::path &subpath) {
         if (!fs::is_directory(subpath) || !fs::exists(subpath / "init.lua"))
                 return;
 
@@ -507,7 +507,12 @@ void load_plugins() {
 
         create_card(1, "crogue:exit_gate", "~ Exit Gate ~",
                     "Complete the current level. Make sure you collected the loot you need.", EXIT, {}, "", 0, 0,
-                    exit_gate);
+                    []() -> int {
+                            minilog::fdebugc("player", logfile, "player find an exit");
+                            game::player::level++;
+                            minilog::fdebugc("setup", logfile, "new level index: ", game::player::level);
+                            return 0;
+                    });
 
         load_settings();
 

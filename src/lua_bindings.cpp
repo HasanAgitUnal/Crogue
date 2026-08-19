@@ -36,35 +36,35 @@
  * Wrapper Things
  */
 
-int get_player_hp() {
+static int get_player_hp() {
         return game::player::hp;
 }
 
-void set_player_hp(int value) {
+static void set_player_hp(int value) {
         game::player::hp = value;
 }
 
-int get_player_level() {
+static int get_player_level() {
         return game::player::level;
 }
 
-void set_player_level(int value) {
+static void set_player_level(int value) {
         game::player::level = value;
 }
 
-std::string get_seed() {
+static std::string get_seed() {
         return std::to_string(game::seed);
 }
 
-int get_levelid() {
+static int get_levelid() {
         return game::levelid;
 }
 
-void set_levelid(int value) {
+static void set_levelid(int value) {
         game::levelid = value;
 }
 
-void set_seed(const std::string &value) {
+static void set_seed(const std::string &value) {
         try {
                 game::seed = std::stoull(value);
         } catch (const std::invalid_argument &e) {
@@ -75,7 +75,7 @@ void set_seed(const std::string &value) {
         }
 }
 
-std::shared_ptr<scene_t> create_scene(sol::table table) {
+static std::shared_ptr<scene_t> create_scene(sol::table table) {
         try {
                 scene_t new_scene;
                 new_scene.ui_refresh = table.get<std::function<void(void)>>("ui_refresh");
@@ -91,7 +91,7 @@ std::shared_ptr<scene_t> create_scene(sol::table table) {
         return nullptr;
 }
 
-sol::table get_settings(const std::string plugin) {
+static sol::table get_settings(const std::string plugin) {
         sol::table table = game::lua.create_table();
 
         minilog::fdebug(logfile, "plugin name: '", plugin, "'");

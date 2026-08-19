@@ -109,21 +109,15 @@ bool check_die() {
         return 0;
 }
 
-int exit_gate() {
-        minilog::fdebugc("player", logfile, "player find an exit");
-        game::player::level++;
-        minilog::fdebugc("setup", logfile, "new level index: ", game::player::level);
-        return 0;
-}
-
 /*
  * Levels
  */
 
-// only generates an id
+static std::mt19937 id_rng;
+
 int generate_unique_level_id() {
-        static std::mt19937 id_rng(game::seed);
-        std::uniform_int_distribution<int> dist(100000, 999999);
+        id_rng.seed(game::seed);
+        static std::uniform_int_distribution<int> dist(100000, 999999);
 
         while (true) {
                 int new_id = dist(id_rng);
@@ -143,7 +137,7 @@ int generate_unique_level_id() {
         }
 }
 
-std::shared_ptr<level_t> create_level(const std::string name) {
+std::shared_ptr<level_t> create_level(const std::string &name) {
         std::shared_ptr<level_t> new_level = std::make_shared<level_t>();
         new_level->name = name;
         new_level->id = generate_unique_level_id();
@@ -171,7 +165,7 @@ std::shared_ptr<biome_t> create_biome(const int difficulty, const std::vector<st
 }
 
 // clang-format off
-std::shared_ptr<biome_t> create_biome(sol::table table) {
+std::shared_ptr<biome_t> create_biome(const sol::table &table) {
         try {
                 return create_biome(
                                 table.get<int>("difficulty"),
@@ -229,7 +223,7 @@ std::shared_ptr<buff_t> create_buff(const std::string name, std::function<void(s
 }
 
 // clang-format off
-std::shared_ptr<buff_t> create_buff(sol::table table) {
+std::shared_ptr<buff_t> create_buff(const sol::table &table) {
         try {
                 return create_buff(
                                 table.get<std::string>("name"),
@@ -292,7 +286,7 @@ std::shared_ptr<card_t> create_card(const int count,
         return card;
 }
 
-std::shared_ptr<card_t> create_card(sol::table table) {
+std::shared_ptr<card_t> create_card(const sol::table &table) {
         try {
                 return create_card(
                                 table.get<int>("count"),
@@ -318,7 +312,7 @@ std::shared_ptr<card_t> create_card(sol::table table) {
 
 // clang-format on
 
-void add_card(std::shared_ptr<card_t> cardptr) {
+inline static void add_card(std::shared_ptr<card_t> cardptr) {
         // empty level_ids means always active card
         if (cardptr->level_ids.empty()) {
                 minilog::fdebugc("setup", logfile, "reason: global. Adding card with name: \"", cardptr->name, "\"");

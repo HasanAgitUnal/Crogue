@@ -1,12 +1,10 @@
 #include <fstream>
 #include <minilog.hpp>
-#include <sstream>
-#include <string>
 #include <vector>
 
 #include "game.hpp"
-#include "package.hpp"
 #include "tui.hpp"
+#include "utils.hpp"
 
 struct plugin_item_t {
         std::string name;
@@ -24,27 +22,7 @@ struct settings_item_t {
         json data;
 };
 
-std::vector<std::string> wrap_text(std::string text, int width) {
-
-        std::vector<std::string> lines;
-        std::stringstream ss(text);
-        std::string word, line;
-        while (ss >> word) {
-                if (line.length() + word.length() + 1 > (size_t)width) {
-                        lines.push_back(line);
-                        line = word;
-                } else {
-                        if (!line.empty())
-                                line += " ";
-                        line += word;
-                }
-        }
-        if (!line.empty())
-                lines.push_back(line);
-        return lines;
-}
-
-void print_switch(WINDOW *win, int line, bool enabled) {
+static void print_switch(WINDOW *win, int line, bool enabled) {
         if (enabled) {
                 wattr_set(win, A_NORMAL, (int)311, NULL);
                 mvwprintw(win, line, 0, "  ");
@@ -64,7 +42,7 @@ void print_switch(WINDOW *win, int line, bool enabled) {
         }
 }
 
-void print_plugin(WINDOW *win, plugin_item_t &plugin, bool hovered) {
+static void print_plugin(WINDOW *win, plugin_item_t &plugin, bool hovered) {
         bool enabled = game::settings::settings[plugin.name]["enabled"].get<bool>();
         print_switch(win, plugin.startline, enabled);
 
@@ -86,7 +64,7 @@ void print_plugin(WINDOW *win, plugin_item_t &plugin, bool hovered) {
 // its here because choosable settings type needs this to draw choose menu
 int settings_offset = 0;
 
-std::string handle_menu(WINDOW *win, std::vector<std::string> items) {
+static std::string handle_menu(WINDOW *win, std::vector<std::string> items) {
         int itemsc = items.size();
         int key;
         int choice = 0;
@@ -138,7 +116,7 @@ std::string handle_menu(WINDOW *win, std::vector<std::string> items) {
 }
 
 // function used to edit settings
-void toggle_setting(WINDOW *win, settings_item_t &setting, std::function<void(void)> refresher) {
+static void toggle_setting(WINDOW *win, settings_item_t &setting, std::function<void(void)> refresher) {
         json current_value = game::settings::settings[setting.plugin_name][setting.data["option"].get<std::string>()];
         if (setting.data["type"].get<std::string>() == "switch") {
                 bool value = current_value.get<bool>();
@@ -196,7 +174,7 @@ void toggle_setting(WINDOW *win, settings_item_t &setting, std::function<void(vo
         }
 }
 
-void print_setting(WINDOW *win, settings_item_t &setting, bool hovered) {
+static void print_setting(WINDOW *win, settings_item_t &setting, bool hovered) {
         json current_value = game::settings::settings[setting.plugin_name][setting.data["option"].get<std::string>()];
 
         if (setting.data["type"].get<std::string>() == "switch") {
@@ -271,7 +249,7 @@ void print_setting(WINDOW *win, settings_item_t &setting, bool hovered) {
         }
 }
 
-int plugin2item(WINDOW *win, std::string &pluginname, int start, plugin_item_t &plugin) {
+static int plugin2item(WINDOW *win, std::string &pluginname, int start, plugin_item_t &plugin) {
         int max_y, max_x;
         getmaxyx(win, max_y, max_x);
 
@@ -284,7 +262,7 @@ int plugin2item(WINDOW *win, std::string &pluginname, int start, plugin_item_t &
         return start + plugin.desc.size() + 2;
 }
 
-int setting2item(WINDOW *win, std::string plugin, int start, json &data, settings_item_t &setting) {
+static int setting2item(WINDOW *win, std::string plugin, int start, json &data, settings_item_t &setting) {
         int max_y, max_x;
         getmaxyx(win, max_y, max_x);
 
@@ -299,7 +277,7 @@ int setting2item(WINDOW *win, std::string plugin, int start, json &data, setting
         return start + setting.desc.size() + 2;
 }
 
-void plugin_settings(std::string pluginname) {
+static void plugin_settings(std::string pluginname) {
         clear();
         refresh();
 
@@ -396,7 +374,7 @@ void plugin_settings(std::string pluginname) {
         refresh();
 }
 
-void plugin_manager() {
+static void plugin_manager() {
         int max_y, max_x;
         getmaxyx(stdscr, max_y, max_x);
 

@@ -26,38 +26,17 @@
 #include "scenes.hpp"
 #include "settings.hpp"
 #include "tui.hpp"
+#include "utils.hpp"
 
 namespace scene {
 
-void handle_seed_input(int y, int max_x) {
-        curs_set(1);
-        std::string seed_str = std::to_string(game::seed);
+inline static void handle_seed_input(int y, int max_x) {
         int box_size = 20;
         int label_len = 5;
         int start_x = (max_x - (label_len + 1 + box_size)) / 2 + label_len + 1;
 
-        auto redraw_input = [&]() {
-                mvprintw(y, start_x, "%-*s", box_size, seed_str.c_str());
-                mvchgat(y, start_x, box_size, A_NORMAL, 501, NULL);
-                move(y, start_x + seed_str.length());
-                refresh();
-        };
-
-        curs_set(2);
-        redraw_input();
-
-        int ch;
-        while ((ch = getch()) != '\n' && ch != KEY_ENTER && ch != 10) {
-                if (ch == 27)
-                        break;
-                if (ch == KEY_BACKSPACE || ch == 127 || ch == 8) {
-                        if (!seed_str.empty())
-                                seed_str.pop_back();
-                } else if (isdigit(ch) && seed_str.length() < (size_t)box_size) {
-                        seed_str += ch;
-                }
-                redraw_input();
-        }
+        std::string seed_str =
+            handle_input(stdscr, y, start_x, box_size, std::to_string(game::seed), "0123456789", []() { refresh(); });
 
         if (!seed_str.empty()) {
                 try {
@@ -65,7 +44,6 @@ void handle_seed_input(int y, int max_x) {
                 } catch (...) {
                 }
         }
-        curs_set(0);
 }
 
 void main_menu() {
@@ -109,17 +87,18 @@ void main_menu() {
 
         bool seed_changed = true;
 
-        std::vector<std::string> main = {"New Game", "Continue", "Plugin Manager", "Reload All Plugins", "Quit"};
-        std::vector<std::string> new_game = {"Play", "Seed:", "Random Seed", "Back"};
+        static const std::vector<std::string> main = {"New Game", "Continue", "Plugin Manager", "Reload All Plugins",
+                                                      "Quit"};
+        static const std::vector<std::string> new_game = {"Play", "Seed:", "Random Seed", "Back"};
 
         std::vector<std::string> menu = main;
         int choice = 0;
         int key = 0;
 
-        while (key != 'q') {
+        init_pair(500, -1, 236);
+        init_pair(501, -1, 234);
 
-                init_pair(500, -1, 236);
-                init_pair(501, -1, 234);
+        while (key != 'q') {
                 print_menu(menu, choice);
 
                 // on play menu show a warning if user does not changes seed.
@@ -257,7 +236,7 @@ void main_menu() {
         }
 }
 
-bool on_level_complete(int curr_level) {
+static bool on_level_complete(int curr_level) {
         game::hooks::trigger(game::hooks::level_up, game::player::level);
 
         if (game::player::level == (int)game::levels.size()) {
@@ -359,26 +338,6 @@ CONTINUE:
         log("You are now at level: " + game::levels[game::player::level]->name, WARN);
 
         return false;
-}
-
-std::vector<std::string> wrap_text(std::string text, int width) {
-
-        std::vector<std::string> lines;
-        std::stringstream ss(text);
-        std::string word, line;
-        while (ss >> word) {
-                if (line.length() + word.length() + 1 > (size_t)width) {
-                        lines.push_back(line);
-                        line = word;
-                } else {
-                        if (!line.empty())
-                                line += " ";
-                        line += word;
-                }
-        }
-        if (!line.empty())
-                lines.push_back(line);
-        return lines;
 }
 
 void game() {

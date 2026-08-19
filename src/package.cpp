@@ -31,6 +31,7 @@
 
 #include "game.hpp"
 #include "lua.hpp"
+#include "utils.hpp"
 
 using json = nlohmann::json;
 namespace fs = std::filesystem;
@@ -81,15 +82,7 @@ fs::path get_cache_dir() {
 
 namespace package {
 
-static std::string trim(const std::string &str) {
-        size_t first = str.find_first_not_of(" \t\n\r");
-        if (first == std::string::npos)
-                return "";
-        size_t last = str.find_last_not_of(" \t\n\r");
-        return str.substr(first, (last - first + 1));
-}
-
-void extract_zip(const std::string &zip_path, const std::string &target_dir) {
+static void extract_zip(const std::string &zip_path, const std::string &target_dir) {
         void *reader = mz_zip_reader_create();
         if (!reader)
                 minilog::fatal(1, "Not enough memory avaible.");
@@ -106,9 +99,9 @@ void extract_zip(const std::string &zip_path, const std::string &target_dir) {
 }
 
 fs::path create_temp_dir() {
-        std::random_device rd;
-        std::mt19937_64 gen(rd());
-        std::uniform_int_distribution<uint64_t> dis;
+        static std::random_device rd;
+        static std::mt19937_64 gen(rd());
+        static std::uniform_int_distribution<uint64_t> dis;
 
         std::stringstream ss;
         ss << "crogue_" << std::hex << std::setfill('0') << std::setw(16) << dis(gen);
@@ -211,7 +204,7 @@ bool confirm(const std::string msg) {
         return true;
 }
 
-bool check_git() {
+static bool check_git() {
 #if defined(_WIN32)
         int status = std::system("where git > nul 2>&1");
 #else
@@ -220,7 +213,7 @@ bool check_git() {
         return (status == 0);
 }
 
-void clone_git(const std::string &repo_url, const fs::path &target_dir) {
+static void clone_git(const std::string &repo_url, const fs::path &target_dir) {
         minilog::out("\033[32m==>\033[0m Cloning ", repo_url, "...");
         std::string cmd =
             "git clone --depth 1 \"" + repo_url + "\" \"" + target_dir.string() + "\" 2>&1 | grep -v 'remote:'";
@@ -230,7 +223,7 @@ void clone_git(const std::string &repo_url, const fs::path &target_dir) {
         }
 }
 
-bool is_repo_exists(const std::string &repo) {
+static bool is_repo_exists(const std::string &repo) {
 #ifdef WIN32
         return std::system(("git ls-remote --exit-code " + repo + " HEAD > nul 2>&1").c_str()) == 0;
 #else
@@ -238,7 +231,7 @@ bool is_repo_exists(const std::string &repo) {
 #endif
 }
 
-std::string get_git_commit(const fs::path &repo_dir) {
+static std::string get_git_commit(const fs::path &repo_dir) {
         std::string cmd = "git -C " + repo_dir.string() + " rev-parse HEAD 2>/dev/null";
 
         std::array<char, 128> buffer;
@@ -258,7 +251,7 @@ std::string get_git_commit(const fs::path &repo_dir) {
         return trim(result);
 }
 
-bool check_git_update(const std::string &repo_url, const std::string &local_commit) {
+static bool check_git_update(const std::string &repo_url, const std::string &local_commit) {
         if (!check_git()) {
                 return false;
         }
@@ -357,7 +350,7 @@ void pack() {
         minilog::out("\033[32m==>\033[0m Successfully generated: ", zip_basename, ".zip");
 }
 
-void install(const fs::path &directory, const std::string &plugin_name, bool force) {
+static void install(const fs::path &directory, const std::string &plugin_name, bool force) {
         fs::path plugins_dir = game::_data_directory / "plugins";
 
         try {
@@ -402,7 +395,7 @@ install:
         }
 }
 
-std::pair<fs::path, std::string> prepare_file(const std::string &path, bool force) {
+static std::pair<fs::path, std::string> prepare_file(const std::string &path, bool force) {
         fs::path temp_dir = create_temp_dir();
 
         extract_zip(path, temp_dir);
@@ -422,7 +415,7 @@ std::pair<fs::path, std::string> prepare_file(const std::string &path, bool forc
         return {temp_dir, plugin_name};
 }
 
-std::pair<fs::path, std::string> prepare_git(const std::string &repo_url, bool force) {
+static std::pair<fs::path, std::string> prepare_git(const std::string &repo_url, bool force) {
         fs::path temp_dir = create_temp_dir();
         clone_git(repo_url, temp_dir);
 
@@ -503,7 +496,7 @@ void install_plugins(const std::vector<std::string> &files, const std::vector<st
         }
 }
 
-void update(std::vector<std::string> packages) {
+void update(std::vector<std::string> &packages) {
         fs::path plugins_dir(game::_data_directory / "plugins");
         if (packages.empty()) {
                 // update all if no package given

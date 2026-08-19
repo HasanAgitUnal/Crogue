@@ -20,7 +20,7 @@ void remove(const std::string &package, bool force);
 
 void reset(const std::string &package, bool force);
 
-void update(std::vector<std::string> packages);
+void update(std::vector<std::string> &packages);
 
 void list(json *output = nullptr);
 

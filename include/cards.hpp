@@ -28,8 +28,6 @@ void log(const std::string msg, const log_type type);
 
 bool check_die();
 
-int exit_gate();
-
 int generate_unique_level_id();
 
 // clang-format off
@@ -45,15 +43,15 @@ std::shared_ptr<card_t> create_card(const int count,
                 std::function<int()> event);
 // clang-format on
 
-std::shared_ptr<card_t> create_card(sol::table table);
+std::shared_ptr<card_t> create_card(const sol::table &table);
 
-std::shared_ptr<level_t> create_level(const std::string name);
+std::shared_ptr<level_t> create_level(const std::string &name);
 
 std::shared_ptr<buff_t> create_buff(const std::string name, std::function<void(std::shared_ptr<buff_t>)> event);
-std::shared_ptr<buff_t> create_buff(sol::table table);
+std::shared_ptr<buff_t> create_buff(const sol::table &table);
 
 std::shared_ptr<biome_t> create_biome(const int difficulty, const std::vector<std::shared_ptr<level_t>> &levels);
-std::shared_ptr<biome_t> create_biome(sol::table table);
+std::shared_ptr<biome_t> create_biome(const sol::table &table);
 
 void generate_levels();
 

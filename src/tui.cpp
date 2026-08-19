@@ -14,13 +14,13 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#include <charconv>
 #include <minilog.hpp>
 #include <string_view>
 #include <vector>
 
 #include "game.hpp"
 #include "tui.hpp"
+#include "utils.hpp"
 
 void setup_colors() {
         //// 256 ////
@@ -51,27 +51,6 @@ void print_line(int line, WINDOW *win) {
                 waddstr(win, "─");
         }
         wattroff(win, COLOR_PAIR(9));
-}
-
-std::vector<std::string_view> split(std::string_view str, std::string_view delim) {
-        std::vector<std::string_view> output;
-        size_t first = 0;
-        size_t last = str.find_first_of(delim);
-
-        while (last != std::string_view::npos) {
-                output.emplace_back(str.substr(first, last - first));
-                first = last + 1;
-                last = str.find_first_of(delim, first);
-        }
-
-        output.emplace_back(str.substr(first));
-        return output;
-}
-
-int to_int(std::string_view sv) {
-        int value = 0;
-        std::from_chars(sv.data(), sv.data() + sv.size(), value);
-        return value;
 }
 
 attr_t parse_ansi_color(std::string params) {
@@ -223,29 +202,6 @@ int get_real_size(const std::string &line) {
         return size;
 }
 
-std::string to_roman(int n) {
-        if (n < 0) {
-                return "-" + to_roman(-n);
-        }
-
-        struct romandata_t {
-                int val;
-                const char *res;
-        };
-
-        const romandata_t data[] = {{1000, "M"}, {900, "CM"}, {500, "D"}, {400, "CD"}, {100, "C"},
-                                    {90, "XC"},  {50, "L"},   {40, "XL"}, {10, "X"},   {9, "IX"},
-                                    {5, "V"},    {4, "IV"},   {1, "I"}};
-        std::string res = "";
-        for (const auto &entry : data) {
-                while (n >= entry.val) {
-                        res += entry.res;
-                        n -= entry.val;
-                }
-        }
-        return res;
-}
-
 std::string handle_input(WINDOW *win, int y, int start_x, int box_size, std::string value, std::string allowed_chars,
                          std::function<void(void)> refresher) {
 
@@ -291,7 +247,7 @@ std::string handle_input(WINDOW *win, int y, int start_x, int box_size, std::str
  * Main Menu
  */
 
-void show_error(std::pair<std::string, std::string> plugin) {
+static void show_error(std::pair<std::string, std::string> plugin) {
         auto &plugin_name = plugin.first;
         auto &error_msg = plugin.second;
 
@@ -338,15 +294,17 @@ void print_menu(const std::vector<std::string> &menu, int choice) {
         getmaxyx(stdscr, max_y, max_x);
         clear();
 
-        std::vector<std::string> banner_lines;
-        std::string line;
-        std::stringstream ss(banner);
-        while (std::getline(ss, line)) {
-                if (!line.empty())
-                        banner_lines.push_back(line);
-        }
+        static const std::vector<std::string> banner_lines = [] {
+                std::vector<std::string> l;
+                std::stringstream s(banner);
+                std::string t;
+                while (std::getline(s, t))
+                        if (!t.empty())
+                                l.push_back(t);
+                return l;
+        }();
 
-        int banner_h = banner_lines.size();
+        static int banner_h = banner_lines.size();
         int menu_h = menu.size() + (menu.size() - 1);
         int spacing = 2;  // space between banner and menu
         int total_h = banner_h + spacing + menu_h;
@@ -430,7 +388,7 @@ std::string ask_string(std::string what) {
         while ((ch = getch()) != '\n' && ch != KEY_ENTER) {
                 if (ch == 27) {
                         curs_set(0);
-                        return std::string((char *)27);  // return esc
+                        return "\033";  // return esc
 
                 } else if (ch == KEY_BACKSPACE || ch == 127 || ch == 8) {
                         if (!input.empty()) {

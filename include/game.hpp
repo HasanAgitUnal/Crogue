@@ -175,14 +175,14 @@ inline std::vector<std::function<void(std::string)>> s_save;
 inline std::vector<std::function<void(std::string)>> s_load;
 
 template <typename... Args>
-inline void trigger(std::vector<std::function<void(Args...)>> &hooks, Args... args) {
+inline void trigger(const std::vector<std::function<void(Args...)>> &hooks, Args... args) {
         for (auto &hook : hooks) {
                 hook(args...);
         }
 }
 
 template <typename... Args>
-inline bool trigger_bool(std::vector<std::function<bool(Args...)>> &hooks, Args... args) {
+inline bool trigger_bool(const std::vector<std::function<bool(Args...)>> &hooks, Args... args) {
         bool canceled = false;
         for (auto &hook : hooks) {
                 if (hook(args...)) {
@@ -219,7 +219,7 @@ struct scene_t {
 
                         key = getch();
 
-                        // if scene ends key_handler returns true
+                        // if scene ends, key_handler returns true
                         if (this->key_handler(key))
                                 break;
                 }

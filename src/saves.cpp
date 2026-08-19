@@ -32,17 +32,17 @@ namespace fs = std::filesystem;
 
 namespace saves {
 
-uint64_t get_unix_timestamp() {
+static uint64_t get_unix_timestamp() {
         using namespace std::chrono;
         return static_cast<uint64_t>(duration_cast<seconds>(system_clock::now().time_since_epoch()).count());
 }
 
-std::string check_save_data(const json &save) {
+static std::string check_save_data(const json &save) {
         if (!save.is_object()) {
                 return "not an object";
         }
 
-        std::vector<std::string> required = {
+        static const std::vector<std::string> required = {
             "name", "seed", "hp", "level", "last_played", "created_with_plugins", "plugins_changed", "inventory"};
 
         for (auto key : required) {
@@ -102,7 +102,7 @@ std::string check_save_data(const json &save) {
         return "";
 }
 
-std::string save(json save_data) {
+std::string save(const json &save_data) {
         minilog::fdebugc("saves", logfile, "Saving a save with name: ", save_data["name"].get<std::string>());
         fs::create_directories(game::_data_directory / "saves");
 
@@ -121,7 +121,7 @@ std::string save(json save_data) {
 
 // returns array contains inventory data. example return:
 // [ vanilla:apple, vanilla:teleporter, null, vanilla:apple, null, null, null, null, null, null ]
-json get_inventory() {
+inline static json get_inventory() {
         json inventory = json::array();
 
         for (int i = 0; i < 10; i++) {
@@ -192,7 +192,7 @@ json load(const fs::path path) {
         return save_data;
 }
 
-std::shared_ptr<card_t> find_item(const std::string &id) {
+static std::shared_ptr<card_t> find_item(const std::string &id) {
         for (auto &card : game::deck) {
                 if (card->id == id) {
                         if (card->type != ITEM) {
@@ -289,7 +289,7 @@ json get_saves() {
         return saves;
 }
 
-std::string get_relative_time_str(int64_t diff_sec) {
+static std::string get_relative_time_str(int64_t diff_sec) {
         if (diff_sec < 60) {
                 return "just now";
         }
@@ -357,7 +357,7 @@ std::string get_formatted_date(const uint64_t timestamp) {
         return ss.str();
 }
 
-void print_item(WINDOW *win, int line, json &item, bool hover) {
+static void print_item(WINDOW *win, int line, json &item, bool hover) {
         if (hover) {
                 wattr_set(win, A_UNDERLINE, (int)314, NULL);
         }
@@ -367,7 +367,7 @@ void print_item(WINDOW *win, int line, json &item, bool hover) {
         wattr_set(win, A_NORMAL, 0, NULL);
 }
 
-std::shared_ptr<card_t> find_card(const std::string &id) {
+static std::shared_ptr<card_t> find_card(const std::string &id) {
         for (auto &card : game::deck) {
                 if (card->id == id) {
                         return card;
@@ -377,7 +377,7 @@ std::shared_ptr<card_t> find_card(const std::string &id) {
         return nullptr;
 }
 
-void update_details(WINDOW *win, json &item) {
+static void update_details(WINDOW *win, json &item) {
         werase(win);
         mvwprintw(win, 0, 0, "Save Name         : %s", item["name"].get<std::string>().c_str());
         mvwprintw(win, 1, 0, "Last Played       : %s", get_formatted_date(item["last_played"].get<uint64_t>()).c_str());
@@ -432,7 +432,7 @@ void update_details(WINDOW *win, json &item) {
         }
 }
 
-void draw_layout_decorations(int max_y, int max_x) {
+static void draw_layout_decorations(int max_y, int max_x) {
 
 
         mvprintw(0, 0, " Select Save                            │ Details");
@@ -460,7 +460,7 @@ void draw_layout_decorations(int max_y, int max_x) {
         wnoutrefresh(stdscr);
 }
 
-void recovery(json &save, std::function<void(void)> stop_curses, std::function<void(void)> reload) {
+static void recovery(json &save, std::function<void(void)> stop_curses, std::function<void(void)> reload) {
         minilog::out("\033[34m::\033[0m Recovery started");
         // detect recoverable plugins
         json installed_plugins = json::object();

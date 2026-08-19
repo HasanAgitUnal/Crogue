@@ -4,7 +4,7 @@ namespace fs = std::filesystem;
 
 namespace saves {
 
-std::string save(json save_data);
+std::string save(const json &save_data);
 std::string save_curr();
 json load(const fs::path path);
 void apply_save(const json save);
