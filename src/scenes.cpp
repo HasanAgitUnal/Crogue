@@ -173,22 +173,21 @@ void main_menu() {
                                 } else if (menu[choice] == "Seed:") {
                                         int max_y, max_x;
                                         getmaxyx(stdscr, max_y, max_x);
-
-                                        int banner_h = 0;
-                                        std::stringstream ss(banner);
-                                        std::string temp;
-                                        while (std::getline(ss, temp)) {
-                                                if (!temp.empty())
-                                                        banner_h++;
-                                        }
+                                        static const int banner_h = [] {
+                                                int h = 0;
+                                                std::stringstream ss(banner);
+                                                std::string temp;
+                                                while (std::getline(ss, temp))
+                                                        if (!temp.empty())
+                                                                h++;
+                                                return h;
+                                        }();
 
                                         int menu_h = menu.size() + (menu.size() - 1);
                                         int spacing = 2;
                                         int total_h = banner_h + spacing + menu_h;
-
                                         int start_y = (max_y - total_h) / 2;
                                         int menu_start_y = start_y + banner_h + spacing;
-
                                         uint64_t last_seed = game::seed;
                                         handle_seed_input(menu_start_y + (choice * 2), max_x);
                                         if (game::seed != last_seed) {
@@ -205,11 +204,9 @@ void main_menu() {
                                         if (game::seed != last_seed) {
                                                 seed_changed = true;
                                         }
-
                                 } else if (menu[choice] == "Back") {
                                         menu = main;
                                         choice = 0;
-
                                 } else if (menu[choice] == "Reload All Plugins") {
                                         cleanup_lua();
                                         reset_game(true);
@@ -223,10 +220,8 @@ void main_menu() {
 
                                         mvprintw(max_y - 2, 0, "Successfuly reloaded plugins!");
                                         press_enter_to_continue();
-
                                 } else if (menu[choice] == "Plugin Manager") {
                                         settings();
-
                                 } else if (menu[choice] == "Quit") {
                                         return;
                                 }

@@ -78,28 +78,20 @@ void end_program() {
  */
 
 static json load_json(const fs::path &path) {
-        std::ifstream metadata_file(path);
+        std::ifstream file(path);
 
         if (!fs::exists(path)) {
                 throw std::runtime_error("File doesn't exits: " + path.string());
         }
 
-        if (!metadata_file.is_open()) {
+        if (!file.is_open()) {
                 throw std::runtime_error("Can't open file: " + path.string());
         }
 
-        std::stringstream ss;
-        ss << metadata_file.rdbuf();
+        json content;
+        file >> content;
 
-        // if empty create an empty json
-        if (ss.str().empty()) {
-                std::ofstream file(path);
-                file << "{}";
-                file.close();
-                return json::object();
-        }
-
-        return json::parse(ss.str());
+        return content;
 }
 
 // clang-format off

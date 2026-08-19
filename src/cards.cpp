@@ -113,26 +113,17 @@ bool check_die() {
  * Levels
  */
 
-static std::mt19937 id_rng;
 
 int generate_unique_level_id() {
-        id_rng.seed(game::seed);
+        static std::mt19937 id_rng(game::seed);
         static std::uniform_int_distribution<int> dist(100000, 999999);
+
+        static std::vector<int> used_ids;
 
         while (true) {
                 int new_id = dist(id_rng);
 
-                bool exists = false;
-                for (const auto &biome : game::biomes) {
-                        for (const auto &lvl : biome->levels) {
-                                if (lvl->id == new_id) {
-                                        exists = true;
-                                        break;
-                                }
-                        }
-                }
-
-                if (!exists)
+                if (std::find(used_ids.begin(), used_ids.end(), 2) == used_ids.end())
                         return new_id;
         }
 }

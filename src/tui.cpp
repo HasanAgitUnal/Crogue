@@ -143,30 +143,24 @@ void print_ansi(const std::string &str) {
         bool in_escape = false;
         std::string params = "";
         std::string buffer = "";
+        buffer.reserve(str.size());
 
         for (size_t i = 0; i < str.size(); ++i) {
                 unsigned char ch = (unsigned char)str[i];
-
                 if (ch == '\033') {
                         if (!buffer.empty()) {
                                 printw("%s", buffer.c_str());
-                                buffer = "";
+                                buffer.clear();
                         }
                         in_escape = true;
                         if (i + 1 < str.size() && str[i + 1] == '[')
                                 i++;
                         continue;
                 }
-
                 if (in_escape) {
                         if (ch == 'm') {
-                                /*
-                                sol::table ansiattr = parse_ansi_color(params);
-                                attrset(ansiattr.get<attr_t>("style"));
-                                attron(ansiattr.get<attr_t>("color"));
-                                */
                                 attrset(parse_ansi_color(params));
-                                params = "";
+                                params.clear();
                                 in_escape = false;
                         } else {
                                 params += (char)ch;

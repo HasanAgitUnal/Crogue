@@ -206,7 +206,7 @@ static std::shared_ptr<card_t> find_item(const std::string &id) {
         return nullptr;
 }
 
-void apply_save(const json save) {
+void apply_save(const json &save) {
         minilog::fdebugc("saves", logfile, "applying a save with name: ", save["name"].get<std::string>());
         game::seed = save["seed"].get<uint64_t>();
         game::player::hp = save["hp"].get<int>();

@@ -7,7 +7,7 @@ namespace saves {
 std::string save(const json &save_data);
 std::string save_curr();
 json load(const fs::path path);
-void apply_save(const json save);
+void apply_save(const json &save);
 json get_saves();
 bool saves_tui();
 void sync_with_plugins(json &saves);

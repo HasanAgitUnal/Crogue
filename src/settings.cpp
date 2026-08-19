@@ -253,7 +253,8 @@ static int plugin2item(WINDOW *win, std::string &pluginname, int start, plugin_i
         int max_y, max_x;
         getmaxyx(win, max_y, max_x);
 
-        plugin.desc = wrap_text(game::settings::metadata[pluginname]["description"], max_x);
+        auto description = game::settings::metadata[pluginname]["description"].get<std::string>();
+        plugin.desc = wrap_text(description, max_x - 4);
         plugin.title = game::settings::metadata[pluginname]["name"];
         plugin.name = pluginname;
         plugin.startline = start;
@@ -268,7 +269,8 @@ static int setting2item(WINDOW *win, std::string plugin, int start, json &data, 
 
         setting.plugin_name = plugin;
         setting.title = data["name"];
-        setting.desc = wrap_text(data["description"].get<std::string>(), max_x);
+        auto description = data["description"].get<std::string>();
+        setting.desc = wrap_text(description, max_x - 4);
         setting.option = data["option"];
         setting.startline = start;
         setting.data = data;
@@ -284,8 +286,13 @@ static void plugin_settings(std::string pluginname) {
         int max_y, max_x;
         getmaxyx(stdscr, max_y, max_x);
 
-        // scrollable pad
-        WINDOW *settings_pad = newpad(500, max_x - 2);
+        int pad_height = 5;
+        for (const auto &setting : game::settings::metadata[pluginname]["settings"]) {
+                auto description = setting["description"].get<std::string>();
+                pad_height += wrap_text(description, max_x - 6).size() + 2;
+        }
+
+        WINDOW *settings_pad = newpad(pad_height, max_x - 2);
 
         auto refresher = [&]() { prefresh(settings_pad, settings_offset, 0, 3, 0, max_y - 5, max_x - 2); };
 
@@ -350,7 +357,23 @@ static void plugin_settings(std::string pluginname) {
 
                         case KEY_RESIZE:
                                 getmaxyx(stdscr, max_y, max_x);
-                                wresize(settings_pad, 200, max_x - 2);
+                                pad_height = 5;
+                                for (const auto &s : game::settings::metadata[pluginname]["settings"]) {
+                                        auto d = s["description"].get<std::string>();
+                                        pad_height += wrap_text(d, max_x - 6).size() + 2;
+                                }
+
+                                wresize(settings_pad, pad_height, max_x - 2);
+
+                                items.clear();
+                                lastend = 0;
+                                for (auto s : game::settings::metadata[pluginname]["settings"]) {
+                                        settings_item_t item;
+                                        lastend = setting2item(settings_pad, pluginname, lastend, s, item);
+                                        items.push_back(item);
+                                }
+                                settings_offset = 0;
+
                                 clear();
                                 refresh();
                                 break;
@@ -378,8 +401,13 @@ static void plugin_manager() {
         int max_y, max_x;
         getmaxyx(stdscr, max_y, max_x);
 
-        // scrollable pad
-        WINDOW *manager_pad = newpad(500, max_x - 2);
+        int pad_height = 0;
+        for (auto &[key, value] : game::settings::settings.items()) {
+                auto description = game::settings::metadata[key]["description"].get<std::string>();
+                pad_height += wrap_text(description, max_x - 6).size() + 2;
+        }
+
+        WINDOW *manager_pad = newpad(pad_height, max_x - 2);
         int offset = 0;
 
         std::vector<std::string> plugin_names;
@@ -501,7 +529,14 @@ static void plugin_manager() {
 
                         case KEY_RESIZE:
                                 getmaxyx(stdscr, max_y, max_x);
-                                wresize(manager_pad, 200, max_x - 2);
+                                pad_height = 0;
+                                for (auto &[k, v] : game::settings::settings.items()) {
+                                        auto d = game::settings::metadata[k]["description"].get<std::string>();
+                                        pad_height += wrap_text(d, max_x - 6).size() + 2;
+                                }
+
+                                wresize(manager_pad, pad_height, max_x - 2);
+                                offset = 0;
                                 clear();
                                 refresh();
                                 break;

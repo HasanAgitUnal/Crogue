@@ -395,6 +395,12 @@ install:
         }
 }
 
+static std::string read_pack_name(const fs::path &dir) {
+        std::ifstream file(dir / "pack_name.txt");
+        std::string raw_name((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
+        return trim(raw_name);
+}
+
 static std::pair<fs::path, std::string> prepare_file(const std::string &path, bool force) {
         fs::path temp_dir = create_temp_dir();
 
@@ -406,7 +412,7 @@ static std::pair<fs::path, std::string> prepare_file(const std::string &path, bo
         std::string raw_name((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
         file.close();
 
-        std::string plugin_name = trim(raw_name);
+        std::string plugin_name = read_pack_name(temp_dir);
         if (plugin_name.empty()) {
                 fs::remove_all(temp_dir);
                 minilog::fatal(1, "pack_name.txt is empty.");
@@ -425,7 +431,7 @@ static std::pair<fs::path, std::string> prepare_git(const std::string &repo_url,
         std::string raw_name((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
         file.close();
 
-        std::string plugin_name = trim(raw_name);
+        std::string plugin_name = read_pack_name(temp_dir);
         if (plugin_name.empty()) {
                 fs::remove_all(temp_dir);
                 minilog::fatal(1, "pack_name.txt is empty.");

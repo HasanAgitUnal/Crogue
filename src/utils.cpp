@@ -3,7 +3,7 @@
 #include <string_view>
 #include <vector>
 
-std::vector<std::string> wrap_text(std::string text, int width) {
+std::vector<std::string> wrap_text(std::string &text, int width) {
 
         std::vector<std::string> lines;
         std::stringstream ss(text);
