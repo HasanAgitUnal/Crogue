@@ -41,7 +41,7 @@ Under development.
 - [x] add ncurses WINDOW management to cr.curses 
 - [x] code quality
 
-- [ ] optimizations
+- [x] optimizations
 - [ ] create vanilla plugins to make a playable game
 
 ### BUGS LIST
