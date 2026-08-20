@@ -292,8 +292,11 @@ void setup_lua() {
                         } else if (event == "s_load") {
                                 game::hooks::s_save.push_back(func.as<void(std::string)>());
 
+                        } else if (event == "damage") {
+                                game::hooks::damage.push_back(func.as<void(sol::table)>());
+
                         } else {
-                                throw sol::error::runtime_error("Invalid hook name!: " + event);
+                                throw sol::error::runtime_error("Invalid hook event: " + event);
                         }
 
                         minilog::fdebugc("lua", logfile, "Added a ", event, " hook");

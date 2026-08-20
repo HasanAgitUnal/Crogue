@@ -39,6 +39,19 @@ Takes an integer argument: the key pressed.
 
 Handle the key with `string.char()` and `string.byte()` functions, and [`cr.curses.KEY_` variables](./ncurses.md). 
 
+##### **`damage`**
+
+Runned after a card event runned and before changing HP (with card event return value and extra damage).
+Takes a table argument with fields:
+| Field | Type | Description |
+| :-- | :-: | :-- |
+| `id` | string | ID of the card |
+| `base` | integer | Base HP change (card event return value) |
+| `extra` | integer | Extra damage |
+
+> [!NOTE]
+> `base` or `extra` may be empty.
+
 ##### **`level_up`**
 
 Runned when exit gate found.

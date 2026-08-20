@@ -40,7 +40,6 @@ Under development.
 - [x] recovery mode to load broken saves
 - [x] add ncurses WINDOW management to cr.curses 
 - [x] code quality
-
 - [x] optimizations
 - [ ] create vanilla plugins to make a playable game
 

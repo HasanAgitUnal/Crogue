@@ -174,6 +174,9 @@ inline std::vector<std::function<bool(std::shared_ptr<card_t>, int)>> card_event
 inline std::vector<std::function<void(std::string)>> s_save;
 inline std::vector<std::function<void(std::string)>> s_load;
 
+// arg: this table: { id: string, base: int , extra: int }
+inline std::vector<std::function<void(sol::table)>> damage;
+
 template <typename... Args>
 inline void trigger(const std::vector<std::function<void(Args...)>> &hooks, Args... args) {
         for (auto &hook : hooks) {
