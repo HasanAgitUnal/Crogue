@@ -272,7 +272,7 @@ void load_plugin(const fs::path &plugindir) {
         // update path
         std::string original_path = game::lua["package"]["path"];
         std::string original_cpath = game::lua["package"]["cpath"];
-        std::string plugin_path = plugindir.string() + "/?.lua;" + original_path;
+        std::string plugin_path = plugindir.string() + "/?.lua;" + plugindir.string() + "/?/init.lua;" + original_path;
 
 #ifdef _WIN32
         std::string plugin_cpath = plugindir.string() + "/?.dll;" + plugindir.string() + "/lib?.dll;" + original_cpath;
