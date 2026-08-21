@@ -107,3 +107,7 @@ And if you change something they can update plugin version with `crogue pm updat
 ```bash
 crogue pm update my_plugin
 ```
+
+> [!NOTE]
+> **`.crogueignore` files**
+> `crogue pm build` command supports `.gitignore` like ignoring with `.crogueignore` files. Every subdirectory can have their own `.crogueignore` file. `.crogueignore` files under subdirectories has lower priority.
