@@ -108,6 +108,7 @@ You will see `cr.create_*` functions instead of the `.new()` method, but thats a
 
 > [!WARNING]
 > **Always generate cards first**
+>
 > Do not create cards on card events or [hooks](./Hooks). This may cause game saves to be broken. For example if you create an item when a boss dies and player gets this item and saves game then quits and loads the save this item will does not exists because event of the boss is not runned before save load.
 
 

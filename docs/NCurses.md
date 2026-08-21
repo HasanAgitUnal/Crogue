@@ -7,6 +7,7 @@ Usage of them is not shown here. Look at NCurses documentation for them.
 
 > [!WARNING]
 > **Do not destroy TUI**
+>
 > Avoid using `cr.curses.clear()` to refresh game UI.
 > You may remove a thing a plugin did.
 

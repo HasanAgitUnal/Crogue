@@ -23,6 +23,7 @@ Takes one required bool parameter `full`. If `full` is `true` resets the things 
 
 > [!WARNING]
 > **Avoid using cr.reset_game(full)**
+>
 > This parameter says function to reset everything created from plugins. If you use this, you will destroy everything done before. If you want to remove just one thing from these variables just delete them manualy using `:erase()` method of the containers. Bu you can't delete hooks.
 
 #### `cr.basic_card_event(card, extra)`

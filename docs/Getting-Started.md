@@ -83,6 +83,14 @@ Congrulations you created your first plugin.
 
 ### Sharing with others
 
+Create a `.crogueignore` file at top of your project directory:
+```
+my_plugin.zip
+```
+
+> [!NOTE]
+> `crogue pm build` command supports `.gitignore` like ignoring with `.crogueignore` files. Every subdirectory can have their own `.crogueignore` file. `.crogueignore` files under subdirectories has lower priority.
+
 Build it with `crogue pm build`:
 ```bash
 crogue pm build
@@ -108,6 +116,3 @@ And if you change something they can update plugin version with `crogue pm updat
 crogue pm update my_plugin
 ```
 
-> [!NOTE]
-> **`.crogueignore` files**
-> `crogue pm build` command supports `.gitignore` like ignoring with `.crogueignore` files. Every subdirectory can have their own `.crogueignore` file. `.crogueignore` files under subdirectories has lower priority.

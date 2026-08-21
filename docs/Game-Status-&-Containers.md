@@ -50,7 +50,7 @@ cr.log("randomnumber: " .. tostring(randomnumber), cr.log_type.NORMAL)
 
 ## Containers
 
-> [!INFO]
+> [!NOTE]
 > **Container methods**
 >
 > To see full list of methods of containers go to [Container Operations](https://sol2.readthedocs.io/en/v2.20.6/containers.html#container-operations) on sol2 documentation
@@ -113,6 +113,7 @@ cr.stat.logs
 
 > [!WARNING]
 > **Never try :add() logs**
+>
 > At the C++ side log pairs not binded perfectly.
 > You can edit existing pairs but can't use :add() method on it.
 
