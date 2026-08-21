@@ -1,7 +1,139 @@
 #include <charconv>
+#include <cstddef>
 #include <string>
 #include <string_view>
+#include <utility>
 #include <vector>
+
+// regex special chars
+static bool isRegexSpecial(char c) {
+        switch (c) {
+                case '.':
+                case '^':
+                case '$':
+                case '*':
+                case '+':
+                case '?':
+                case '(':
+                case ')':
+                case '[':
+                case '{':
+                case '}':
+                case '\\':
+                case '|':
+                case ']':
+                case '-':
+                        return true;
+                default:
+                        return false;
+        }
+}
+
+static std::string convertPattern(const std::string &pat) {
+        std::string result;
+        size_t i = 0;
+        while (i < pat.size()) {
+                char c = pat[i];
+
+                if (c == '\\') {
+                        if (i + 1 < pat.size()) {
+                                char next = pat[i + 1];
+                                if (isRegexSpecial(next))
+                                        result.push_back('\\');
+                                result.push_back(next);
+                                i += 2;
+                        } else {
+                                result.push_back('\\');
+                                i++;
+                        }
+                        continue;
+                }
+
+                if (c == '[') {
+                        size_t start = i;
+                        size_t end = pat.find(']', i + 1);
+                        if (end != std::string::npos) {
+                                std::string cls = pat.substr(i, end - i + 1);
+                                // negation
+                                if (cls.size() >= 2 && cls[1] == '!') {
+                                        cls[1] = '^';
+                                }
+                                result += cls;
+                                i = end + 1;
+                        } else {
+                                result += "\\[";
+                                i++;
+                        }
+                        continue;
+                }
+
+                // **
+                if (c == '*' && i + 1 < pat.size() && pat[i + 1] == '*') {
+                        result += ".*";
+                        i += 2;
+                        continue;
+                }
+
+                // *
+                if (c == '*') {
+                        result += "[^/]*";
+                        i++;
+                        continue;
+                }
+
+                // ?
+                if (c == '?') {
+                        result += "[^/]";
+                        i++;
+                        continue;
+                }
+
+                // normal chars
+                if (isRegexSpecial(c))
+                        result.push_back('\\');
+                result.push_back(c);
+                i++;
+        }
+        return result;
+}
+
+// .gitignore wildcard -> regex
+// return: {regex, negated}
+std::pair<std::string, bool> wildcard2regex(const std::string &wildcard) {
+        std::string pat = wildcard;
+        bool negated = false;
+
+        // remove negation
+        if (!pat.empty() && pat[0] == '!') {
+                negated = true;
+                pat = pat.substr(1);
+        }
+
+        bool anchored = false;
+        if (!pat.empty() && pat[0] == '/') {
+                anchored = true;
+                pat = pat.substr(1);
+        }
+
+        bool hasSlash = (pat.find('/') != std::string::npos);
+
+        if (pat.empty()) {
+                return {"^$", negated};
+        }
+
+        std::string regexStr;
+
+        if (!anchored && !hasSlash) {
+                regexStr = "^(?:.*/)?";
+        } else {
+                regexStr = "^";
+        }
+
+        regexStr += convertPattern(pat);
+        regexStr += "$";
+
+        return {regexStr, negated};
+}
 
 std::vector<std::string> wrap_text(std::string &text, int width) {
 

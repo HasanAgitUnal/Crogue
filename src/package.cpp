@@ -27,6 +27,7 @@
 #include <memory>
 #include <minilog.hpp>
 #include <random>
+#include <regex>
 #include <string>
 
 #include "game.hpp"
@@ -284,9 +285,62 @@ static bool check_git_update(const std::string &repo_url, const std::string &loc
         return (remote_commit != local_commit);
 }
 
+struct IgnoreRule {
+        std::regex re;
+        bool negated;
+};
+
+static void pack_recursive(void *zip_writer, const fs::path &base_dir, const fs::path &current_dir,
+                           std::vector<IgnoreRule> rules, const fs::path &target_zip, const fs::path &tmp_zip) {
+        fs::path ign = current_dir / ".crogueignore";
+        if (fs::exists(ign) && fs::is_regular_file(ign)) {
+                std::ifstream ifs(ign);
+                std::string line;
+                while (std::getline(ifs, line)) {
+                        std::string pat = trim(line);
+                        if (pat.empty() || pat[0] == '#') {
+                                continue;
+                        }
+                        if (!pat.empty() && pat.back() == '/') {
+                                pat += "**";
+                        }
+
+                        auto [regex_str, negated] = wildcard2regex(pat);
+                        try {
+                                rules.push_back({std::regex(regex_str), negated});
+                        } catch (const std::regex_error &) {
+                                minilog::err(" \033[33m->\033[0m Invalid ignore pattern: ", pat, " -> skipping");
+                        }
+                }
+        }
+
+        for (const auto &e : fs::directory_iterator(current_dir)) {
+                fs::path p = fs::absolute(e.path());
+                if (p == target_zip || p == tmp_zip || p == ign) {
+                        continue;
+                }
+
+                std::string zn = fs::relative(p, base_dir).generic_string();
+
+                bool exclude = false;
+                for (const auto &r : rules) {
+                        if (std::regex_match(zn, r.re))
+                                exclude = !r.negated;
+                }
+                if (exclude) {
+                        continue;
+                }
+
+                if (fs::is_regular_file(e.status())) {
+                        mz_zip_writer_add_file(zip_writer, p.string().c_str(), zn.c_str());
+                } else if (fs::is_directory(e.status())) {
+                        pack_recursive(zip_writer, base_dir, p, rules, target_zip, tmp_zip);
+                }
+        }
+}
+
 void pack() {
         fs::path cwd = fs::current_path();
-
         check_package(cwd);
 
         fs::path pack_name_file = cwd / "pack_name.txt";
@@ -297,15 +351,12 @@ void pack() {
 
         std::string raw_name((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
         std::string zip_basename = trim(raw_name);
-
         if (zip_basename.empty()) {
                 minilog::fatal(1, "pack_name.txt can't be empty.");
         }
 
-
         minilog::out("\033[32m==>\033[0m Compressing...");
         fs::path absolute_target_zip = fs::absolute(cwd / (zip_basename + ".zip"));
-
         fs::path temp_zip = fs::absolute(cwd / (zip_basename + ".tmp"));
 
         void *zip_writer = mz_zip_writer_create();
@@ -314,7 +365,6 @@ void pack() {
         }
 
         mz_zip_writer_set_compress_level(zip_writer, MZ_COMPRESS_LEVEL_BEST);
-
         int32_t err = mz_zip_writer_open_file(zip_writer, temp_zip.string().c_str(), 0, 0);
         if (err != MZ_OK) {
                 mz_zip_writer_delete(&zip_writer);
@@ -322,21 +372,8 @@ void pack() {
                                ". Error code: ", std::to_string(err));
         }
 
-        for (const auto &entry : fs::recursive_directory_iterator(cwd)) {
-                fs::path current_entry_path = fs::absolute(entry.path());
-
-                // dont compress .zip or .tmp file
-                if (current_entry_path == absolute_target_zip || current_entry_path == temp_zip) {
-                        continue;
-                }
-
-                fs::path relative_path = fs::relative(current_entry_path, cwd);
-                std::string zip_entry_name = relative_path.generic_string();
-
-                if (fs::is_regular_file(entry.status())) {
-                        mz_zip_writer_add_file(zip_writer, current_entry_path.string().c_str(), zip_entry_name.c_str());
-                }
-        }
+        // pack it
+        pack_recursive(zip_writer, cwd, cwd, {}, absolute_target_zip, temp_zip);
 
         mz_zip_writer_close(zip_writer);
         mz_zip_writer_delete(&zip_writer);
