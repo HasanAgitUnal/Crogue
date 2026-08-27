@@ -38,9 +38,9 @@ using json = nlohmann::json;
 
 const std::string logfile = "./build/debug.log";
 
-enum card_type { BASIC, ITEM, ENEMY, EXIT };
+enum card_type { BASIC = 0, ITEM = 1, ENEMY = 2, EXIT = 3 };
 
-enum log_type { NORMAL, WARN, IMPORTANT };
+enum log_type { NORMAL = 0, WARN = 1, IMPORTANT = 2 };
 
 struct card_t {
         std::string id = "";

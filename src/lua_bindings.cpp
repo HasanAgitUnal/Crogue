@@ -75,20 +75,18 @@ static void set_seed(const std::string &value) {
         }
 }
 
-static std::shared_ptr<scene_t> create_scene(sol::table table) {
+static scene_t create_scene(sol::table table) {
         try {
                 scene_t new_scene;
                 new_scene.ui_refresh = table.get<std::function<void(void)>>("ui_refresh");
                 new_scene.key_handler = table.get<std::function<bool(int)>>("key_handler");
                 new_scene.exit_key = table.get_or<int>("exit_key", 'q');
 
-                return std::make_shared<scene_t>(new_scene);
+                return new_scene;
         } catch (const sol::error &e) {
                 minilog::fdebug(logfile, minilog::msg::error, "Error in plugin", e.what());
                 throw sol::error::runtime_error("Invalid table");
         }
-
-        return nullptr;
 }
 
 static sol::table get_settings(const std::string plugin) {
@@ -290,10 +288,13 @@ void setup_lua() {
                                 game::hooks::s_save.push_back(func.as<void(std::string)>());
 
                         } else if (event == "s_load") {
-                                game::hooks::s_save.push_back(func.as<void(std::string)>());
+                                game::hooks::s_load.push_back(func.as<void(std::string)>());
 
                         } else if (event == "damage") {
                                 game::hooks::damage.push_back(func.as<void(sol::table)>());
+
+                        } else if (event == "die") {
+                                game::hooks::die.push_back(func.as<void(void)>());
 
                         } else {
                                 throw sol::error::runtime_error("Invalid hook event: " + event);

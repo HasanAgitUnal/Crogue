@@ -1,0 +1,640 @@
+-- ============================================
+-- CROGUE Lua API Definitions For LSPs
+--
+-- Add this file to your project directory
+-- ============================================
+
+---@meta
+
+-- ============================================
+-- Types For LSP
+-- ============================================
+
+---@class _ARGS_create_card
+---@field count integer
+---@field name string
+---@field id string
+---@field info string
+---@field type 0 | 1 | 2 | 3
+---@field level_ids integer[]
+---@field logmsg string
+---@field ttl integer
+---@field power integer
+---@field event fun():integer
+
+---@class _ARGS_create_buff
+---@field name string
+---@field event fun(self: _SHARED_buff)
+
+---@class _ARGS_create_biome
+---@field difficulty integer
+---@field levels _SHARED_level[]
+
+---@class _ARGS_create_scene
+---@field ui_refresh fun()
+---@field key_handler fun(key: integer):boolean
+--- ASCII value of the key to exit scene
+--- Defaults to 113 (ASCII 'q')
+---@field exit_key integer|nil
+
+---@class _ARGS_damage_hook_data
+---@field id string
+---@field base integer
+---@field extra integer
+
+---@class _log
+---@field first 0|1|2
+---@field second string
+
+---@class _CURSES_window
+
+---@class _CURSES_attr_t : integer
+
+---@class _CURSES_chtype : integer
+
+---@class _CURSES_coords
+---@field x integer
+---@field y integer
+
+-- ============================================
+-- Main Table
+-- ============================================
+
+---@class cr
+--
+-- Enums
+---@field card_type cr.card_type
+---@field log_type cr.log_type
+--
+-- Objects
+---@field obj cr.obj
+--
+-- Game Status Variables
+---@field stat cr.stat
+---@field player cr.player
+--
+-- TUI
+---@field tui cr.tui
+--
+-- Curses
+---@field curses cr.curses
+--
+--  Functions
+---@field ask fun(what: string)
+---@field ask_string fun(what: string)
+---@field log fun(msg: string, type: 0|1|2)
+--
+---@field create_card fun(table: _ARGS_create_card):_SHARED_card
+---@field create_buff fun(table: _ARGS_create_buff):_SHARED_buff
+---@field create_level fun(name: string):_SHARED_level
+---@field create_biome fun(table: _ARGS_create_biome):_SHARED_biome
+---@field create_scene fun(table: _ARGS_create_scene):cr.obj.scene
+--
+---@field reset_game fun(full: boolean)
+---@field generate_levels fun()
+---@field draw_cards fun()
+---@field draw_slots fun()
+---@field handle_slot fun(slot: cr.obj.card_slot)
+---@field handle_buffs fun()
+---@field basic_card_event fun(card: _SHARED_card, extra: integer)
+---@field card_event fun(card: _SHARED_card, extra: integer)
+--
+---@field settings fun(plugin: string):table
+---@field get_data_dir fun():string
+---@field is_game_running fun():boolean
+---@field hook fun(event: string, func: function)
+cr = {}
+
+-- ============================================
+-- Enums
+-- ============================================
+
+---@class cr.card_type
+---@field BASIC 0
+---@field ITEM 1
+---@field ENEMY 2
+---@field EXIT 3
+cr.card_type = {}
+
+---@class cr.log_type
+---@field NORMAL 0
+---@field WARN 1
+---@field IMPORTANT 2
+cr.log_type = {}
+
+-- ============================================
+-- Objects
+-- ============================================
+
+---@class cr.obj
+---@field card cr.obj.card
+---@field card_slot cr.obj.card_slot
+---@field level cr.obj.level
+---@field biome cr.obj.biome
+---@field buff cr.obj.buff
+---@field scene cr.obj.scene
+cr.obj = {}
+
+---@class cr.obj.card
+---@field count integer
+---@field name string
+---@field info string
+---@field id string
+---@field type 0|1|2|3
+---@field level_ids integer[]
+---@field logmsg string
+---@field ttl integer
+---@field power integer
+---@field event fun():integer
+---@field new fun():cr.obj.card
+cr.obj.card = {}
+
+---@class cr.obj.card_slot
+---@field front _SHARED_card|nil
+---@field back _SHARED_card|nil
+---@field _lived integer
+---@field new fun():cr.obj.card_slot
+cr.obj.card_slot = {}
+
+---@class cr.obj.level
+---@field name string
+---@field id integer
+---@field new fun():cr.obj.level
+cr.obj.level = {}
+
+---@class cr.obj.biome
+---@field difficulty integer
+---@field levels _SHARED_level[]
+---@field new fun():cr.obj.biome
+cr.obj.biome = {}
+
+---@class cr.obj.buff
+---@field name string
+---@field level integer
+---@field event fun(self: _SHARED_buff)
+---@field new fun():cr.obj.buff
+cr.obj.buff = {}
+
+---@class cr.obj.scene
+---@field exit_key integer
+---@field ui_refresh fun()
+---@field key_handler fun(key: integer):boolean
+---@field run fun()
+---@field new fun():cr.obj.scene
+cr.obj.scene = {}
+
+-- ============================================
+-- Shared Types
+-- ============================================
+
+---@class _SHARED_card
+---@field count integer
+---@field name string
+---@field info string
+---@field id string
+---@field type 0|1|2|3
+---@field level_ids integer[]
+---@field logmsg string
+---@field ttl integer
+---@field power integer
+---@field event fun():integer
+
+---@class _SHARED_card_slot
+---@field front _SHARED_card|nil
+---@field back _SHARED_card|nil
+---@field _lived integer
+
+---@class _SHARED_level
+---@field name string
+---@field id integer
+
+---@class _SHARED_biome
+---@field difficulty integer
+---@field levels _SHARED_level[]
+
+---@class _SHARED_buff
+---@field name string
+---@field level integer
+---@field event fun(self: _SHARED_buff)
+
+---@class cr.shared
+---@field card fun(card:cr.obj.card):_SHARED_card
+---@field buff fun(buff:cr.obj.buff):_SHARED_buff
+---@field level fun(level:cr.obj.level):_SHARED_level
+---@field biome fun(biome:cr.obj.biome):_SHARED_biome
+
+-- ============================================
+-- Game Status Variables
+-- ============================================
+
+---@class cr.stat
+---@field deck _SHARED_card[]
+---@field card_set _SHARED_card[]
+---@field slot1 cr.obj.card_slot
+---@field slot2 cr.obj.card_slot
+---@field slot3 cr.obj.card_slot
+---@field biomes _SHARED_biome[]
+---@field levels _SHARED_level[]
+---@field buffs _SHARED_buff[]
+---@field logs _log[]
+--
+---@field get_levelid fun():integer
+---@field set_levelid fun(value: integer)
+---@field get_seed fun():string
+---@field set_seed fun(value: string)
+--
+cr.stat = {}
+
+---@class cr.player
+---@field inventory _SHARED_card[]
+---@field get_hp fun():integer
+---@field set_hp fun(value: integer)
+---@field get_level fun():integer
+---@field set_level fun(value: integer)
+cr.player = {}
+
+-- ============================================
+-- TUI
+-- ============================================
+
+---@class cr.tui
+---@field print_ansi fun(ansi: string)
+---@field print_line fun(line: integer, win?: _CURSES_window)
+---@field print_slots fun(line: integer):integer
+---@field print_stats fun(line: integer)
+---@field print_buffs fun(line: integer)
+---@field print_logs fun(line: integer):integer
+---@field print_inventory fun():integer
+---@field print_all fun()
+cr.tui = {}
+
+-- ============================================
+-- Functions
+-- ============================================
+
+---@overload fun(event: "before_refresh", func: fun())
+---@overload fun(event: "after_refresh", func: fun())
+---@overload fun(event: "start", func: fun())
+---@overload fun(event: "game_start", func: fun())
+---@overload fun(event: "game_end", func: fun())
+---@overload fun(event: "game_quit", func: fun())
+---@overload fun(event: "reload", func: fun())
+---@overload fun(event: "ending", func: fun())
+---@overload fun(event: "draw", func: fun())
+---@overload fun(event: "level_gen", func: fun())
+---@overload fun(event: "die", func: fun())
+---@overload fun(event: "key", func: fun(key: integer))
+---@overload fun(event: "level_up", func: fun(level: integer))
+---@overload fun(event: "slot", func: fun(slot: integer): boolean)
+---@overload fun(event: "item", func: fun(card: _SHARED_card): boolean)
+---@overload fun(event: "card_event", func: fun(card: _SHARED_card, extra: integer): boolean)
+---@overload fun(event: "s_save", func: fun(data: string))
+---@overload fun(event: "s_load", func: fun(data: string))
+---@overload fun(event: "damage", func: fun(data: _ARGS_damage_hook_data))
+function cr.hook(event, func) end
+
+-- ============================================
+-- NCurses
+-- ============================================
+
+-- WARN: These are generated by AI may be wrong or incomplete
+
+---@class cr.curses
+---@field stdscr _CURSES_window
+---@field attr_t _CURSES_attr_t
+--
+---@field ansi2attr fun(ansi: string): _CURSES_attr_t
+--
+---@field move fun(y: integer, x: integer): integer
+---@field wmove fun(win: _CURSES_window, y: integer, x: integer): integer
+---@field clear fun(): integer
+---@field wclear fun(win: _CURSES_window): integer
+---@field erase fun(): integer
+---@field werase fun(win: _CURSES_window): integer
+---@field refresh fun(): integer
+---@field wrefresh fun(win: _CURSES_window): integer
+---@field prefresh fun(pad: _CURSES_window, pminrow: integer, pmincol: integer, sminrow: integer, smincol: integer, smaxrow: integer, smaxcol: integer): integer
+---@field wnoutrefresh fun(win: _CURSES_window): integer
+---@field pnoutrefresh fun(pad: _CURSES_window, pminrow: integer, pmincol: integer, sminrow: integer, smincol: integer, smaxrow: integer, smaxcol: integer): integer
+---@field doupdate fun(): integer
+---@field resize_term fun(lines: integer, cols: integer): integer
+--
+---@field keyname fun(c: integer): string
+---@field key_name fun(c: integer): string      -- actually takes wchar_t, but int in binding
+---@field unctrl fun(c: _CURSES_chtype): string
+--
+---@field napms fun(ms: integer): integer
+---@field beep fun(): integer
+---@field flash fun(): integer
+--
+---@field scrl fun(n: integer): integer
+---@field wscrl fun(win: _CURSES_window, n: integer): integer
+---@field setscrreg fun(top: integer, bottom: integer): integer
+---@field wsetscrreg fun(win: _CURSES_window, top: integer, bottom: integer): integer
+--
+---@field touchwin fun(win: _CURSES_window): integer
+---@field untouchwin fun(win: _CURSES_window): integer
+---@field touchline fun(win: _CURSES_window, start: integer, count: integer): integer
+---@field wtouchln fun(win: _CURSES_window, y: integer, n: integer, changed: integer): integer
+---@field is_linetouched fun(win: _CURSES_window, line: integer): boolean
+---@field is_wintouched fun(win: _CURSES_window): boolean
+--
+---@field bkgd fun(ch: _CURSES_chtype): integer
+---@field wbkgd fun(win: _CURSES_window, ch: _CURSES_chtype): integer
+---@field bkgdset fun(ch: _CURSES_chtype)
+---@field wbkgdset fun(win: _CURSES_window, ch: _CURSES_chtype)
+---@field getbkgd fun(win: _CURSES_window): _CURSES_chtype
+--
+---@field insch fun(ch: _CURSES_chtype): integer
+---@field winsch fun(win: _CURSES_window, ch: _CURSES_chtype): integer
+---@field mvinsch fun(y: integer, x: integer, ch: _CURSES_chtype): integer
+---@field mvwinsch fun(win: _CURSES_window, y: integer, x: integer, ch: _CURSES_chtype): integer
+--
+---@field insstr fun(str: string): integer
+---@field winsstr fun(win: _CURSES_window, str: string): integer
+---@field mvinsstr fun(y: integer, x: integer, str: string): integer
+---@field mvwinsstr fun(win: _CURSES_window, y: integer, x: integer, str: string): integer
+--
+---@field insnstr fun(str: string, n: integer): integer
+---@field winsnstr fun(win: _CURSES_window, str: string, n: integer): integer
+---@field mvinsnstr fun(y: integer, x: integer, str: string, n: integer): integer
+---@field mvwinsnstr fun(win: _CURSES_window, y: integer, x: integer, str: string, n: integer): integer
+--
+---@field addnstr fun(str: string, n: integer): integer
+---@field waddnstr fun(win: _CURSES_window, str: string, n: integer): integer
+---@field mvaddnstr fun(y: integer, x: integer, str: string, n: integer): integer
+---@field mvwaddnstr fun(win: _CURSES_window, y: integer, x: integer, str: string, n: integer): integer
+--
+---@field addchstr fun(chstr: _CURSES_chtype[]): integer
+---@field waddchstr fun(win: _CURSES_window, chstr: _CURSES_chtype[]): integer
+---@field mvaddchstr fun(y: integer, x: integer, chstr: _CURSES_chtype[]): integer
+---@field mvwaddchstr fun(win: _CURSES_window, y: integer, x: integer, chstr: _CURSES_chtype[]): integer
+--
+---@field addchnstr fun(chstr: _CURSES_chtype[], n: integer): integer
+---@field waddchnstr fun(win: _CURSES_window, chstr: _CURSES_chtype[], n: integer): integer
+---@field mvaddchnstr fun(y: integer, x: integer, chstr: _CURSES_chtype[], n: integer): integer
+---@field mvwaddchnstr fun(win: _CURSES_window, y: integer, x: integer, chstr: _CURSES_chtype[], n: integer): integer
+--
+---@field inch fun(): _CURSES_chtype
+---@field winch fun(win: _CURSES_window): _CURSES_chtype
+---@field mvinch fun(y: integer, x: integer): _CURSES_chtype
+---@field mvwinch fun(win: _CURSES_window, y: integer, x: integer): _CURSES_chtype
+--
+---@field instr fun(str: string): integer
+---@field winstr fun(win: _CURSES_window, str: string): integer
+---@field mvinstr fun(y: integer, x: integer, str: string): integer
+---@field mvwinstr fun(win: _CURSES_window, y: integer, x: integer, str: string): integer
+--
+---@field innstr fun(str: string, n: integer): integer
+---@field winnstr fun(win: _CURSES_window, str: string, n: integer): integer
+---@field mvinnstr fun(y: integer, x: integer, str: string, n: integer): integer
+---@field mvwinnstr fun(win: _CURSES_window, y: integer, x: integer, str: string, n: integer): integer
+--
+---@field inchstr fun(chstr: _CURSES_chtype[]): integer
+---@field winchstr fun(win: _CURSES_window, chstr: _CURSES_chtype[]): integer
+---@field mvinchstr fun(y: integer, x: integer, chstr: _CURSES_chtype[]): integer
+---@field mvwinchstr fun(win: _CURSES_window, y: integer, x: integer, chstr: _CURSES_chtype[]): integer
+--
+---@field inchnstr fun(chstr: _CURSES_chtype[], n: integer): integer
+---@field winchnstr fun(win: _CURSES_window, chstr: _CURSES_chtype[], n: integer): integer
+---@field mvinchnstr fun(y: integer, x: integer, chstr: _CURSES_chtype[], n: integer): integer
+---@field mvwinchnstr fun(win: _CURSES_window, y: integer, x: integer, chstr: _CURSES_chtype[], n: integer): integer
+--
+---@field newwin fun(lines: integer, cols: integer, y: integer, x: integer): _CURSES_window
+---@field newpad fun(lines: integer, cols: integer): _CURSES_window
+---@field derwin fun(parent: _CURSES_window, lines: integer, cols: integer, y: integer, x: integer): _CURSES_window
+---@field dupwin fun(win: _CURSES_window): _CURSES_window
+---@field mvwin fun(win: _CURSES_window, y: integer, x: integer): integer
+---@field delwin fun(win: _CURSES_window): integer
+---@field copywin fun(src: _CURSES_window, dst: _CURSES_window, sminrow: integer, smincol: integer, dminrow: integer, dmincol: integer, dmaxrow: integer, dmaxcol: integer, overlay: integer): integer
+---@field wresize fun(win: _CURSES_window, lines: integer, cols: integer): integer
+--
+---@field keypad fun(win: _CURSES_window, bf: boolean): integer
+---@field timeout fun(delay: integer)
+---@field wtimeout fun(win: _CURSES_window, delay: integer)
+---@field nodelay fun(win: _CURSES_window, bf: boolean): integer
+---@field notimeout fun(win: _CURSES_window, bf: boolean): integer
+---@field meta fun(win: _CURSES_window, bf: boolean): integer
+---@field intrflush fun(win: _CURSES_window, bf: boolean): integer
+---@field halfdelay fun(tenths: integer): integer
+---@field typeahead fun(fd: integer): integer
+---@field qiflush fun()
+---@field noqiflush fun()
+--
+---@field leaveok fun(win: _CURSES_window, bf: boolean): integer
+---@field scrollok fun(win: _CURSES_window, bf: boolean): integer
+---@field clearok fun(win: _CURSES_window, bf: boolean): integer
+---@field idlok fun(win: _CURSES_window, bf: boolean): integer
+---@field idcok fun(win: _CURSES_window, bf: boolean)
+---@field immedok fun(win: _CURSES_window, bf: boolean)
+---@field syncok fun(win: _CURSES_window, bf: boolean): integer
+---@field redrawwin fun(win: _CURSES_window): integer
+---@field wredrawln fun(win: _CURSES_window, beg_line: integer, num_lines: integer): integer
+--
+---@field cbreak fun(): integer
+---@field nocbreak fun(): integer
+---@field raw fun(): integer
+---@field noraw fun(): integer
+---@field echo fun(): integer
+---@field noecho fun(): integer
+---@field nl fun(): integer
+---@field nonl fun(): integer
+---@field filter fun()
+--
+---@field has_colors fun(): boolean
+--
+---@field curs_set fun(visibility: integer): integer
+---@field def_prog_mode fun(): integer
+---@field reset_prog_mode fun(): integer
+---@field def_shell_mode fun(): integer
+---@field reset_shell_mode fun(): integer
+---@field savetty fun(): integer
+---@field resetty fun(): integer
+---@field endwin fun(): integer
+---@field isendwin fun(): boolean
+--
+---@field printw fun(fmt: string, ...: any): integer
+---@field wprintw fun(win: _CURSES_window, fmt: string, ...: any): integer
+---@field mvprintw fun(y: integer, x: integer, fmt: string, ...: any): integer
+---@field mvwprintw fun(win: _CURSES_window, y: integer, x: integer, fmt: string, ...: any): integer
+--
+---@field addch fun(ch: _CURSES_chtype): integer
+---@field waddch fun(win: _CURSES_window, ch: _CURSES_chtype): integer
+---@field mvaddch fun(y: integer, x: integer, ch: _CURSES_chtype): integer
+---@field mvwaddch fun(win: _CURSES_window, y: integer, x: integer, ch: _CURSES_chtype): integer
+--
+---@field addstr fun(str: string): integer
+---@field waddstr fun(win: _CURSES_window, str: string): integer
+---@field mvaddstr fun(y: integer, x: integer, str: string): integer
+---@field mvwaddstr fun(win: _CURSES_window, y: integer, x: integer, str: string): integer
+--
+---@field delch fun(): integer
+---@field wdelch fun(win: _CURSES_window): integer
+---@field mvdelch fun(y: integer, x: integer): integer
+---@field mvwdelch fun(win: _CURSES_window, y: integer, x: integer): integer
+--
+---@field insertln fun(): integer
+---@field winsertln fun(win: _CURSES_window): integer
+--
+---@field deleteln fun(): integer
+---@field wdeleteln fun(win: _CURSES_window): integer
+--
+---@field insdelln fun(n: integer): integer
+---@field winsdelln fun(win: _CURSES_window, n: integer): integer
+--
+---@field clrtoeol fun(): integer
+---@field wclrtoeol fun(win: _CURSES_window): integer
+--
+---@field clrtobot fun(): integer
+---@field wclrtobot fun(win: _CURSES_window): integer
+--
+---@field box fun(win: _CURSES_window, verch: _CURSES_chtype, horch: _CURSES_chtype): integer
+---@field border fun(ls: _CURSES_chtype, rs: _CURSES_chtype, ts: _CURSES_chtype, bs: _CURSES_chtype, tl: _CURSES_chtype, tr: _CURSES_chtype, bl: _CURSES_chtype, br: _CURSES_chtype): integer
+--
+---@field hline fun(ch: _CURSES_chtype, n: integer): integer
+---@field whline fun(win: _CURSES_window, ch: _CURSES_chtype, n: integer): integer
+---@field mvhline fun(y: integer, x: integer, ch: _CURSES_chtype, n: integer): integer
+---@field mvwhline fun(win: _CURSES_window, y: integer, x: integer, ch: _CURSES_chtype, n: integer): integer
+--
+---@field vline fun(ch: _CURSES_chtype, n: integer): integer
+---@field wvline fun(win: _CURSES_window, ch: _CURSES_chtype, n: integer): integer
+---@field mvvline fun(y: integer, x: integer, ch: _CURSES_chtype, n: integer): integer
+---@field mvwvline fun(win: _CURSES_window, y: integer, x: integer, ch: _CURSES_chtype, n: integer): integer
+--
+---@field attron fun(attrs: _CURSES_attr_t): integer
+---@field wattron fun(win: _CURSES_window, attrs: _CURSES_attr_t): integer
+---@field attrset fun(attrs: _CURSES_attr_t): integer
+---@field wattrset fun(win: _CURSES_window, attrs: _CURSES_attr_t): integer
+---@field attroff fun(attrs: _CURSES_attr_t): integer
+---@field wattroff fun(win: _CURSES_window, attrs: _CURSES_attr_t): integer
+---@field chgat fun(n: integer, attr: _CURSES_attr_t, pair: integer, opts: any?): integer
+---@field wchgat fun(win: _CURSES_window, n: integer, attr: _CURSES_attr_t, pair: integer, opts: any?): integer
+---@field mvchgat fun(y: integer, x: integer, n: integer, attr: _CURSES_attr_t, pair: integer, opts: any?): integer
+---@field mvwchgat fun(win: _CURSES_window, y: integer, x: integer, n: integer, attr: _CURSES_attr_t, pair: integer, opts: any?): integer
+--
+---@field ungetch fun(ch: integer): integer
+--
+---@field getch fun(): integer
+---@field wgetch fun(win: _CURSES_window): integer
+---@field mvgetch fun(y: integer, x: integer): integer
+---@field mvwgetch fun(win: _CURSES_window, y: integer, x: integer): integer
+--
+---@field getstr fun(str: string): integer
+---@field wgetstr fun(win: _CURSES_window, str: string): integer
+---@field mvgetstr fun(y: integer, x: integer, str: string): integer
+---@field mvwgetstr fun(win: _CURSES_window, y: integer, x: integer, str: string): integer
+--
+---@field getnstr fun(str: string, n: integer): integer
+---@field wgetnstr fun(win: _CURSES_window, str: string, n: integer): integer
+---@field mvgetnstr fun(y: integer, x: integer, str: string, n: integer): integer
+---@field mvwgetnstr fun(win: _CURSES_window, y: integer, x: integer, str: string, n: integer): integer
+--
+---@field flushinp fun(): integer
+--
+---@field getyx fun(win: _CURSES_window): _CURSES_coords   -- returns {x, y}
+---@field getbegyx fun(win: _CURSES_window): _CURSES_coords
+---@field getparyx fun(win: _CURSES_window): _CURSES_coords
+---@field getmaxyx fun(win: _CURSES_window): _CURSES_coords
+--
+---@field LINES fun(): integer
+---@field COLS fun(): integer
+--
+---@field OK integer   -- constant 0
+---@field ERR integer  -- constant -1
+--
+---@field KEY_CODE_YES integer
+---@field KEY_MIN integer
+---@field KEY_BREAK integer
+---@field KEY_SRESET integer
+---@field KEY_RESET integer
+---@field KEY_DOWN integer
+---@field KEY_UP integer
+---@field KEY_LEFT integer
+---@field KEY_RIGHT integer
+---@field KEY_HOME integer
+---@field KEY_BACKSPACE integer
+---@field KEY_F0 integer
+---@field KEY_F fun(n: integer): integer
+---@field KEY_DL integer
+---@field KEY_IL integer
+---@field KEY_DC integer
+---@field KEY_IC integer
+---@field KEY_EIC integer
+---@field KEY_CLEAR integer
+---@field KEY_EOS integer
+---@field KEY_EOL integer
+---@field KEY_SF integer
+---@field KEY_SR integer
+---@field KEY_NPAGE integer
+---@field KEY_PPAGE integer
+---@field KEY_STAB integer
+---@field KEY_CTAB integer
+---@field KEY_CATAB integer
+---@field KEY_ENTER integer
+---@field KEY_PRINT integer
+---@field KEY_LL integer
+---@field KEY_A1 integer
+---@field KEY_A3 integer
+---@field KEY_B2 integer
+---@field KEY_C1 integer
+---@field KEY_C3 integer
+---@field KEY_BTAB integer
+---@field KEY_BEG integer
+---@field KEY_CANCEL integer
+---@field KEY_CLOSE integer
+---@field KEY_COMMAND integer
+---@field KEY_COPY integer
+---@field KEY_CREATE integer
+---@field KEY_END integer
+---@field KEY_EXIT integer
+---@field KEY_FIND integer
+---@field KEY_HELP integer
+---@field KEY_MARK integer
+---@field KEY_MESSAGE integer
+---@field KEY_MOVE integer
+---@field KEY_NEXT integer
+---@field KEY_OPEN integer
+---@field KEY_OPTIONS integer
+---@field KEY_PREVIOUS integer
+---@field KEY_REDO integer
+---@field KEY_REFERENCE integer
+---@field KEY_REFRESH integer
+---@field KEY_REPLACE integer
+---@field KEY_RESTART integer
+---@field KEY_RESUME integer
+---@field KEY_SAVE integer
+---@field KEY_SBEG integer
+---@field KEY_SCANCEL integer
+---@field KEY_SCOMMAND integer
+---@field KEY_SCOPY integer
+---@field KEY_SCREATE integer
+---@field KEY_SDC integer
+---@field KEY_SDL integer
+---@field KEY_SELECT integer
+---@field KEY_SEND integer
+---@field KEY_SEOL integer
+---@field KEY_SEXIT integer
+---@field KEY_SFIND integer
+---@field KEY_SHELP integer
+---@field KEY_SHOME integer
+---@field KEY_SIC integer
+---@field KEY_SLEFT integer
+---@field KEY_SMESSAGE integer
+---@field KEY_SMOVE integer
+---@field KEY_SNEXT integer
+---@field KEY_SOPTIONS integer
+---@field KEY_SPREVIOUS integer
+---@field KEY_SPRINT integer
+---@field KEY_SREDO integer
+---@field KEY_SREPLACE integer
+---@field KEY_SRIGHT integer
+---@field KEY_SRSUME integer
+---@field KEY_SSAVE integer
+---@field KEY_SSUSPEND integer
+---@field KEY_SUNDO integer
+---@field KEY_SUSPEND integer
+---@field KEY_UNDO integer
+---@field KEY_MOUSE integer
+---@field KEY_RESIZE integer
+---@field KEY_MAX integer
+cr.curses = {}
