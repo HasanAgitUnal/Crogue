@@ -66,43 +66,43 @@
 
 --- CROGUE Plugin API
 --- @class cr
---- @field card_type cr.card_type
---- @field log_type cr.log_type
+--- @field card_type cr.card_type       Used to set card type
+--- @field log_type cr.log_type         Used to set log type
 --
---- @field obj cr.obj
+--- @field obj cr.obj                   Crogue Objects
 --
---- @field shared cr.shared
+--- @field shared cr.shared             Normal to shared object converter functions
 --
---- @field stat cr.stat
---- @field player cr.player
+--- @field stat cr.stat                 Game Status Variables
+--- @field player cr.player             Player Variables
 --
---- @field tui cr.tui
+--- @field tui cr.tui                   CROGUE TUI Functions
 --
---- @field curses cr.curses
+--- @field curses cr.curses             NCurses Access for plugins. Things under this table is not documented there, see official NCurses documentation.
 --
---- @field ask fun(what: string)
---- @field ask_string fun(what: string)
---- @field log fun(msg: string, type: cr.log_type)
+--- @field ask fun(what: string):integer                                Ask for a key to user
+--- @field ask_string fun(what: string):string                          Ask for a text to user
+--- @field log fun(msg: string, type: cr.log_type)                      Display a log with given urgency
 --
---- @field create_card fun(table: _ARGS_create_card):_SHARED_card
---- @field create_buff fun(table: _ARGS_create_buff):_SHARED_buff
---- @field create_level fun(name: string):_SHARED_level
---- @field create_biome fun(table: _ARGS_create_biome):_SHARED_biome
---- @field create_scene fun(table: _ARGS_create_scene):cr.obj.scene
+--- @field create_card fun(table: _ARGS_create_card):_SHARED_card       Creates a shared card, adds to cr.stat.deck and returns the card.
+--- @field create_buff fun(table: _ARGS_create_buff):_SHARED_buff       Creates a shared buff, adds to cr.stat.buffs, and returns the biome
+--- @field create_level fun(name: string):_SHARED_level                 Creates a shared level with given name, assigns an ID, and returns the level
+--- @field create_biome fun(table: _ARGS_create_biome):_SHARED_biome    Creates a shared biome, adds to cr.stat.biomes, and returns the biome
+--- @field create_scene fun(table: _ARGS_create_scene):cr.obj.scene     Creates a scene and returns it
 --
---- @field reset_game fun(full: boolean)
---- @field generate_levels fun()
---- @field draw_cards fun()
---- @field draw_slots fun()
---- @field handle_slot fun(slot: cr.obj.card_slot)
---- @field handle_buffs fun()
---- @field basic_card_event fun(card: _SHARED_card, extra: integer)
---- @field card_event fun(card: _SHARED_card, extra: integer)
+--- @field reset_game fun(full: boolean)                                Resets game
+--- @field generate_levels fun()                                        Generates cr.stat.levels from cr.stat.biomes
+--- @field draw_cards fun()                                             Generates cr.stat.card_set from cr.stat.deck
+--- @field draw_slots fun()                                             Draws card to all slots
+--- @field handle_slot fun(slot: cr.obj.card_slot)                      Does the action when user picks a slot
+--- @field handle_buffs fun()                                           Checks level of all buffs inside (cr.stat.buffs), runs their events if level ~= 0
+--- @field basic_card_event fun(card: _SHARED_card, extra: integer)     Runs the card event and applies HP change and extra damage (player_hp = player_hp + event_return - extra_damage)
+--- @field card_event fun(card: _SHARED_card, extra: integer)           Does action related to type of the card
 --
---- @field settings fun(plugin: string):table
---- @field get_data_dir fun():string
---- @field is_game_running fun():boolean
---- @field hook fun(event: _HOOK_EVENT, func: function)
+--- @field settings fun(plugin: string):table                           Returns settings of the given plugin. see: https://github.com/HasanAgitUnal/CROGUE/wiki/Settings
+--- @field get_data_dir fun():string                                    Returns data directory path (Use cross platform thing to use this path!!)
+--- @field is_game_running fun():boolean                                Returns true if a game is running. Usefull for async jobs.
+--- @field hook fun(event: _HOOK_EVENT, func: function)                 Creates a hook for event
 cr = {}
 
 -- ============================================
@@ -136,66 +136,66 @@ cr.log_type = {
 
 --- Crogue Objects
 --- @class cr.obj
---- @field card cr.obj.card
---- @field card_slot cr.obj.card_slot
---- @field level cr.obj.level
---- @field biome cr.obj.biome
---- @field buff cr.obj.buff
---- @field scene cr.obj.scene
+--- @field card cr.obj.card                     CROGUE cards
+--- @field card_slot cr.obj.card_slot           CROGUE card slots
+--- @field level cr.obj.level                   CROGUE levels
+--- @field biome cr.obj.biome                   CROGUE biomes, used to manage and sort levels
+--- @field buff cr.obj.buff                     CROUGE buffs, used to apply a constant effect
+--- @field scene cr.obj.scene                   CROGUE scenes, used to create custom TUIs
 cr.obj = {}
 
 --- CROGUE cards
 --- @class cr.obj.card
---- @field count integer                                Card count to generate in cr.stat.card_set
---- @field name string                                  Card name
---- @field info string                                  Card info
---- @field id string                                    Card id, plugin_name:something syntax is recommended
---- @field type cr.card_type                            Card type
---- @field level_ids _CONTAINER<integer>                Card will appear on these levels, set to {} make it appear on all levels
---- @field logmsg string                                Log message will be displayed when card found
---- @field ttl integer                                  Time-to-live see: https://github.com/HasanAgitUnal/CROGUE/wiki/Variable-Types
---- @field power integer                                Card power not damage!! see: https://github.com/HasanAgitUnal/CROGUE/wiki/Variable-Types
---- @field event fun():integer                          Card event, the return value will be appied to player health (use negative values to give damage)
---- @field new fun():cr.obj.card                        Create a new empty object
+--- @field count integer                         Card count to generate in cr.stat.card_set
+--- @field name string                           Card name
+--- @field info string                           Card info
+--- @field id string                             Card id, plugin_name:something syntax is recommended
+--- @field type cr.card_type                     Card type
+--- @field level_ids _CONTAINER<integer>         Card will appear on these levels, set to {} make it appear on all levels
+--- @field logmsg string                         Log message will be displayed when card found
+--- @field ttl integer                           Time-to-live see: https://github.com/HasanAgitUnal/CROGUE/wiki/Variable-Types
+--- @field power integer                         Card power not damage!! see: https://github.com/HasanAgitUnal/CROGUE/wiki/Variable-Types
+--- @field event fun():integer                   Card event, the return value will be appied to player health (use negative values to give damage)
+--- @field new fun():cr.obj.card                 Create a new empty object
 cr.obj.card = {}
 
 --- CROGUE card slots
 --- @class cr.obj.card_slot
---- @field front _SHARED_card|nil                       Card at the front
---- @field back _SHARED_card|nil                        Card at the back
---- @field _lived integer                               See: https://github.com/HasanAgitUnal/CROGUE/wiki/Variable-Types
---- @field new fun():cr.obj.card_slot                   Create a new empty object
+--- @field front _SHARED_card|nil                Card at the front
+--- @field back _SHARED_card|nil                 Card at the back
+--- @field _lived integer                        See: https://github.com/HasanAgitUnal/CROGUE/wiki/Variable-Types
+--- @field new fun():cr.obj.card_slot            Create a new empty object
 cr.obj.card_slot = {}
 
 --- CROGUE levels
 --- @class cr.obj.level
---- @field name string                                  Level name, use roman numbers
---- @field id integer                                   Level ID, automaticaly setted when created with cr.create_level() function. Do not manualy set it.
---- @field new fun():cr.obj.level                       Create a new empty object
+--- @field name string                           Level name, use roman numbers
+--- @field id integer                            Level ID, automaticaly setted when created with cr.create_level() function. Do not manualy set it.
+--- @field new fun():cr.obj.level                Create a new empty object
 cr.obj.level = {}
 
 --- CROGUE biomes, used to manage and sort levels
 --- @class cr.obj.biome
---- @field difficulty integer                           Difficulty of the biome, used to sort biomes. Range: 0-100
---- @field levels _CONTAINER<_SHARED_level>             Levels the biome contains
---- @field new fun():cr.obj.biome                       Create a new empty object
+--- @field difficulty integer                    Difficulty of the biome, used to sort biomes. Range: 0-100
+--- @field levels _CONTAINER<_SHARED_level>      Levels the biome contains
+--- @field new fun():cr.obj.biome                Create a new empty object
 cr.obj.biome = {}
 
 --- CROUGE buffs, used to apply a constant effect
 --- @class cr.obj.buff
---- @field name string                                  Buff name
---- @field level integer                                Buff level. If its 0, user doesn't effected with this buff. So its event will be runned when level ~= 0
---- @field event fun(self: _SHARED_buff)                Event of the buff
---- @field new fun():cr.obj.buff                        Create a new empty object
+--- @field name string                           Buff name
+--- @field level integer                         Buff level. If its 0, user doesn't effected with this buff. So its event will be runned when level ~= 0
+--- @field event fun(self: _SHARED_buff)         Event of the buff
+--- @field new fun():cr.obj.buff                 Create a new empty object
 cr.obj.buff = {}
 
 --- CROGUE scenes, used to create custom TUIs
 --- @class cr.obj.scene
---- @field exit_key integer                             ASCII value of the key to exit scene Defaults to 113 (ASCII 'q')
---- @field ui_refresh fun()                             The function will be used for refreshing UI
---- @field key_handler fun(key: integer):boolean        Keyboard handler function. If returns true, scene ends. Takes ASCII code of the pressed key.
---- @field run fun()                                    Method to start scene. Do not change it!
---- @field new fun():cr.obj.scene                       Create a new empty object
+--- @field exit_key integer                      ASCII value of the key to exit scene Defaults to 113 (ASCII 'q')
+--- @field ui_refresh fun()                      The function will be used for refreshing UI
+--- @field key_handler fun(key: integer):boolean Keyboard handler function. If returns true, scene ends. Takes ASCII code of the pressed key.
+--- @field run fun()                             Method to start scene. Do not change it!
+--- @field new fun():cr.obj.scene                Create a new empty object
 cr.obj.scene = {}
 
 -- ============================================
@@ -340,7 +340,7 @@ function cr.generate_levels() end
 --- Generates cr.stat.card_set from cr.stat.deck
 function cr.draw_cards() end
 
--- Draws card to all slots
+--- Draws card to all slots
 function cr.draw_slots() end
 
 --- Does the action when user picks a slot

@@ -116,3 +116,36 @@ And if you change something they can update plugin version with `crogue pm updat
 crogue pm update my_plugin
 ```
 
+### LSP integration
+
+Steps to get LSP integration:
+
+1. Go to your project directory and download `crogue.d.lua` file:
+```bash
+wget https://raw.githubusercontent.com/HasanAgitUnal/Crogue/main/crogue.d.lua
+```
+
+2. Put it to a directory like `lib/`.
+
+3. Configure your LSP to see this file.
+
+4. Example `.luarc.json` config:
+```json
+{
+    "$schema": "https://raw.githubusercontent.com/LuaLS/vscode-lua/master/setting/schema.json",
+    "workspace": {
+            "library": [
+                    "lib"
+            ]
+    },
+    "diagnostics": {
+        "globals": ["cr"]
+    },
+    "hint": {
+            "enable": true
+    },
+    "completion": {
+            "enable": true
+    }
+}
+```
