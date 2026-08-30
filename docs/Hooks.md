@@ -23,6 +23,7 @@ These events does not take any argument and does not return a value.
 - `before_refresh`: Always runned before UI refresh.
 - `game_start`: When a new game starts.
 - `game_end`: When a game ends.
+- game_quit: When user quits from game.
 - `die`: Runned when player dies.
 - `ending`: Runned when player finds Amulet of Yendor.
 
@@ -82,6 +83,43 @@ Takes following arguments:
   * Shared card : the card
   * integer : extra damage value
 
+##### **`s_load` & `s_save`**
+
+Runned after a save loaded (`s_load`) or created/updated (`s_save`).
+
+No return type.
+Takes 1 string argument: save data as json.
+
+Example save data:
+```json
+{
+    "_filepath": "/home/melon/.local/share/crogue/saves/7992049797823664169_1786440919.json",
+    "created_with_plugins": {
+        "test": "local",
+        "vanilla": "https://codeberg.org/HasanAgitUnal/CROGUE-Vanilla.git"
+    },
+    "hp": 100,
+    "inventory": [
+        "vanilla:teleporter",
+        "vanilla:apple",
+        null,
+        "vanilla:apple",
+        "vanilla:apple",
+        null,
+        null,
+        null,
+        null,
+        null
+    ],
+    "last_played": 1786440919,
+    "level": 1,
+    "name": "No name",
+    "plugins_changed": false,
+    "seed": 7992049797823664169
+}
+```
+
+
 ## Examples
 
 ```lua
@@ -109,42 +147,6 @@ cr.hook("slot", function(slot_id)
 
     return false
 end)
-```
-
-##### **`s_load` & `s_save`**
-
-Runned after a save loaded (`s_load`) or created/updated (`s_save`).
-
-No return type.
-Takes 1 string argument: save data as json.
-
-Example save data:
-```json
-{
-    "_filepath": "/home/melon/.local/share/crogue/saves/7992049797823664169_1786440919.json",
-    "created_with_plugins": {
-        "test": "local",
-        "vanilla": "https://codeberg.org/HasanAgitUnal/CROGUE-Vanilla.git"
-    },
-    "hp": 100,
-    "inventory": [
-        "vanilla:teleporter",
-        "vanilla:apple",
-        "vanilla:apple",
-        "vanilla:apple",
-        "vanilla:apple",
-        null,
-        null,
-        null,
-        null,
-        null
-    ],
-    "last_played": 1786440919,
-    "level": 1,
-    "name": "No name",
-    "plugins_changed": false,
-    "seed": 7992049797823664169
-}
 ```
 
 
