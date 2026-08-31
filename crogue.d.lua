@@ -66,19 +66,19 @@
 
 --- CROGUE Plugin API
 --- @class cr
---- @field card_type cr.card_type       Used to set card type
---- @field log_type cr.log_type         Used to set log type
+--- @field card_type cr.card_type
+--- @field log_type cr.log_type
 --
---- @field obj cr.obj                   Crogue Objects
+--- @field obj cr.obj
 --
---- @field shared cr.shared             Normal to shared object converter functions
+--- @field shared cr.shared
 --
---- @field stat cr.stat                 Game Status Variables
---- @field player cr.player             Player Variables
+--- @field stat cr.stat
+--- @field player cr.player
 --
---- @field tui cr.tui                   CROGUE TUI Functions
+--- @field tui cr.tui
 --
---- @field curses cr.curses             NCurses Access for plugins. Things under this table is not documented there, see official NCurses documentation.
+--- @field curses cr.curses
 --
 --- @field ask fun(what: string):integer                                Ask for a key to user
 --- @field ask_string fun(what: string):string                          Ask for a text to user
@@ -125,7 +125,7 @@ cr.card_type = {
 cr.log_type = {
         NORMAL = 0,     -- Displayed normaly
         WARN = 1,       -- Displayed yellow
-        EXIT = 2,       -- Displayed red
+        IMPORTANT = 2,  -- Displayed red
 }
 
 -- stylua: ignore end
