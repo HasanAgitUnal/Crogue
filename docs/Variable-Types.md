@@ -29,10 +29,15 @@ Used to set urgency of the log with `cr.log` function and `cr.stat.logs` table.
 Urgency is color on the UI.
 
 | Type        | Color  |
-| :-:         | :-:    |
-| `NORMAL`    | White  |
-| `WARN`      | Yellow |
-| `IMPORTANT` | Red    |
+| :-:         | :-:           |
+| `NORMAL`    | White         |
+| `WARN`      | Yellow        |
+| `IMPORTANT` | Red           |
+| `DEBUG`     | Blue & Italic |
+
+
+> [!NOTE]
+> `DEBUG` logs are only displayed on debug build of CROGUE. Usefull for debugging your plugin.
 
 Example usage:
 

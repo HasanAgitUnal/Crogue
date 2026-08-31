@@ -121,6 +121,7 @@ cr.log_type = {
         NORMAL = 0,     -- Displayed normaly
         WARN = 1,       -- Displayed yellow
         IMPORTANT = 2,  -- Displayed red
+        DEBUG = 3       -- Displayed blue and italic. Displayed only on debug build of CROGUE, usefull to debug your plugin
 }
 
 -- stylua: ignore end

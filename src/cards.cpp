@@ -73,7 +73,18 @@ void reset_game(bool full) {
         }
 }
 
-void log(const std::string msg, const log_type type) {
+void log(std::string msg, const log_type type) {
+
+        if (type == _DEBUG) {
+#ifdef DEBUG
+                msg = "[D]: " + msg;
+                goto CONTINUE;
+#else
+                return;
+#endif
+        }
+
+CONTINUE:
         game::logs.push_back({type, msg});
         minilog::fdebugc("uilog", logfile, msg);
 

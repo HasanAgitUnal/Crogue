@@ -601,6 +601,9 @@ int print_logs(int line) {
                         case IMPORTANT:
                                 color |= COLOR_PAIR(2);
                                 break;
+                        case _DEBUG:
+                                color |= COLOR_PAIR(5) | A_ITALIC;
+                                break;
                 }
 
                 attron(color);

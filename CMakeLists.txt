@@ -152,14 +152,11 @@ target_link_libraries(${APPNAME} PRIVATE
 if(TEST_ENABLED)
         message(STATUS "Testing is enabled so configuring it")
         enable_testing()
-        find_package(GTest REQUIRED)
-        include(GoogleTest)
 
         file(GLOB_RECURSE TEST_SOURCE_FILES CONFIGURE_DEPENDS "test/*.c" "test/*.cpp")
 
         if(TEST_SOURCE_FILES)
                 add_executable(${TESTBIN} ${TEST_SOURCE_FILES})
-                target_link_libraries(${TESTBIN} PRIVATE GTest::gtest_main)
                 add_test(NAME all_tests COMMAND ${TESTBIN})
         else()
                 message(WARNING "Testing enabled but no test file found under test/ directory")

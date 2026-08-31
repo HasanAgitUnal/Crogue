@@ -40,7 +40,7 @@ const std::string logfile = "./build/debug.log";
 
 enum card_type { BASIC = 0, ITEM = 1, ENEMY = 2, EXIT = 3 };
 
-enum log_type { NORMAL = 0, WARN = 1, IMPORTANT = 2 };
+enum log_type { NORMAL = 0, WARN = 1, IMPORTANT = 2, _DEBUG = 3 };
 
 struct card_t {
         std::string id = "";

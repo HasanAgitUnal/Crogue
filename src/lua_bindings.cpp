@@ -145,7 +145,8 @@ void setup_lua() {
         crogue.new_enum("log_type",
                         "NORMAL", log_type::NORMAL,
                         "WARN", log_type::WARN,
-                        "IMPORTANT", log_type::IMPORTANT);
+                        "IMPORTANT", log_type::IMPORTANT,
+                        "DEBUG", log_type::_DEBUG);
 
         /*
          * Types
