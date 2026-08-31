@@ -7,7 +7,7 @@ BUILD_TYPE = -DCMAKE_BUILD_TYPE=Release
 CMAKE_TARGET_FLAGS = $(BUILD_TYPE)
 CMAKE_FLAGS = $(CMAKE_TARGET_FLAGS) -Wno-author
 
-all: clean build
+all: build
 
 build:
 	@sleep 0.3

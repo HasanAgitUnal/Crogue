@@ -53,8 +53,10 @@ static void segfault_handler(int sig) {
                 end_program();
         }
 
-#ifdef DEBUG
         minilog::err(minilog::msg::error, "=== SEGMENTATION FAULT ===\033[0m\n");
+
+#ifdef DEBUG
+        minilog::err("Wait for stacktrace...\n");
         minilog::err(boost::stacktrace::stacktrace());
 
 #endif

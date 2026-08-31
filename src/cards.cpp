@@ -347,8 +347,7 @@ void basic_card_event(const std::shared_ptr<card_t> card, const int extra) {
 
         minilog::fdebugc("event", logfile, "Calling event for card: ", card->name);
         int result = card->event();
-        game::hooks::trigger(game::hooks::damage,
-                             game::lua.create_table_with("id", card->id, "base", result, "extra", extra));
+        game::hooks::trigger(game::hooks::damage, card->id, result, extra);
         game::player::hp += result - extra;
 
         minilog::fdebugc("event", logfile, "card event result=", result);

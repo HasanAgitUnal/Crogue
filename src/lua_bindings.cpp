@@ -291,7 +291,9 @@ void setup_lua() {
                                 game::hooks::s_load.push_back(func.as<void(std::string)>());
 
                         } else if (event == "damage") {
-                                game::hooks::damage.push_back(func.as<void(sol::table)>());
+                                // manualy convert func to std::function to avoid segfault because of stupid sol2
+                                game::hooks::damage.push_back(
+                                    [func](std::string id, int base, int extra) { func(id, base, extra); });
 
                         } else if (event == "die") {
                                 game::hooks::die.push_back(func.as<void(void)>());

@@ -43,7 +43,7 @@ Handle the key with `string.char()` and `string.byte()` functions, and [`cr.curs
 ##### **`damage`**
 
 Runned after a card event runned and before changing HP (with card event return value and extra damage).
-Takes a table argument with fields:
+Takes these arguments in order:
 | Field | Type | Description |
 | :-- | :-: | :-- |
 | `id` | string | ID of the card |
@@ -51,7 +51,7 @@ Takes a table argument with fields:
 | `extra` | integer | Extra damage |
 
 > [!NOTE]
-> `base` or `extra` may be empty.
+> `base` or `extra` may be 0.
 
 ##### **`level_up`**
 

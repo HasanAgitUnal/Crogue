@@ -24,11 +24,6 @@
 --- @field run nil
 --- @field new nil
 
---- @class _ARGS_damage_hook_data
---- @field id string                                    ID of the atacker card
---- @field base integer                                 Base hp change
---- @field extra integer                                Extra damage
-
 --- @class _log
 --- @field first cr.log_type                            Log type
 --- @field second string                                Log message
@@ -394,7 +389,7 @@ function cr.is_game_running() end
 --- @overload fun(event: "card_event", func: fun(card: _SHARED_card, extra: integer): boolean)          Runned when `cr.basic_card_event` called. Has bool return type: if true, card event is canceled. Takes arguments: the card (shared card), extra damage value (integer).
 --- @overload fun(event: "s_save", func: fun(data: string))                                             Runned after a save created/updated. No return type, Takes 1 string argument: save data as json. See https://github.com/HasanAgitUnal/CROGUE/wiki/Hooks for example save data
 --- @overload fun(event: "s_load", func: fun(data: string))                                             Runned after a save loaded. No return type, Takes 1 string argument: save data as json. See https://github.com/HasanAgitUnal/CROGUE/wiki/Hooks for example save data
---- @overload fun(event: "damage", func: fun(data: _ARGS_damage_hook_data))                             Runned after a card event runned and before changing HP (with card event return value and extra damage).
+--- @overload fun(event: "damage", func: fun(id: string, base: integer, extra: integer))                Runned after a card event runned and before changing HP (with card event return value and extra damage).
 function cr.hook(event, func) end
 
 -- ============================================
