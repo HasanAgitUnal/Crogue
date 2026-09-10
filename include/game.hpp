@@ -174,8 +174,16 @@ inline std::vector<std::function<bool(std::shared_ptr<card_t>, int)>> card_event
 inline std::vector<std::function<void(std::string)>> s_save;
 inline std::vector<std::function<void(std::string)>> s_load;
 
-// arg: id, base, extra
-inline std::vector<std::function<void(std::string, int, int)>> damage;
+// arg: table with these fields:
+// id: atacker card id
+// raw_base: original base hp change
+// raw_extra: original extra damage
+// base: base hp change can be changed by hooks
+// extra: extra damage can be change by hooks
+//
+// NOTE: hooks can modify the base and extra fields given inside the table to modify damage will be applied.
+// WARN: SHOULDN'T CHANGE raw_* AND id.
+inline std::vector<std::function<void(sol::table table)>> hp_change;
 
 template <typename... Args>
 inline void trigger(const std::vector<std::function<void(Args...)>> &hooks, Args... args) {
@@ -193,6 +201,40 @@ inline bool trigger_bool(const std::vector<std::function<bool(Args...)>> &hooks,
                 }
         }
         return canceled;
+}
+
+inline sol::table trigger_hp_change(const std::string &id, int raw_base, int raw_extra) {
+        // clang-format off
+        sol::table table = game::lua.create_table_with(
+                                "id", id,
+                                "raw_base", raw_base,
+                                "raw_extra", raw_extra,
+                                "base", raw_base,
+                                "extra", raw_extra
+        );
+        // clang-format on
+
+        for (auto &hook : game::hooks::hp_change) {
+                // tables are referance types. hooks can modify their arguments
+                hook(table);
+
+                // restore raw_* and id
+                table["id"] = id;
+                table["raw_base"] = raw_base;
+                table["raw_extra"] = raw_extra;
+        }
+
+        // test if base and extra exists
+        try {
+                table.get<int>("base");
+                table.get<int>("extra");
+        } catch (sol::error &e) {
+                throw std::runtime_error(
+                    "A 'hp_change' hook removed or changed type of 'base' or 'extra' field."
+                    "These fields should be integer");
+        }
+
+        return table;
 }
 
 }  // namespace hooks

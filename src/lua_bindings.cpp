@@ -303,10 +303,9 @@ void setup_lua() {
                         } else if (event == "s_load") {
                                 game::hooks::s_load.push_back(func.as<void(std::string)>());
 
-                        } else if (event == "damage") {
+                        } else if (event == "hp_change") {
                                 // manualy convert func to std::function to avoid segfault because of stupid sol2
-                                game::hooks::damage.push_back(
-                                    [func](std::string id, int base, int extra) { func(id, base, extra); });
+                                game::hooks::hp_change.push_back([func](sol::table table) { func(table); });
 
                         } else if (event == "die") {
                                 game::hooks::die.push_back(func.as<void(void)>());

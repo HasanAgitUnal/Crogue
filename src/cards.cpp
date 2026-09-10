@@ -70,6 +70,7 @@ void reset_game(bool full) {
                 game::hooks::slot.clear();
                 game::hooks::die.clear();
                 game::hooks::draw.clear();
+                game::hooks::hp_change.clear();
         }
 }
 
@@ -358,8 +359,8 @@ void basic_card_event(const std::shared_ptr<card_t> card, const int extra) {
 
         minilog::fdebugc("event", logfile, "Calling event for card: ", card->name);
         int result = card->event();
-        game::hooks::trigger(game::hooks::damage, card->id, result, extra);
-        game::player::hp += result - extra;
+        sol::table table = game::hooks::trigger_hp_change(card->id, result, extra);
+        game::player::hp += table.get<int>("base") - table.get<int>("extra");
 
         minilog::fdebugc("event", logfile, "card event result=", result);
         minilog::fdebugc("event", logfile, "game::player::hp=", game::player::hp);

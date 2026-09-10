@@ -40,18 +40,39 @@ Takes an integer argument: the key pressed.
 
 Handle the key with `string.char()` and `string.byte()` functions, and [`cr.curses.KEY_` variables](./ncurses.md). 
 
-##### **`damage`**
+##### **`hp_change`**
 
 Runned after a card event runned and before changing HP (with card event return value and extra damage).
-Takes these arguments in order:
-| Field | Type | Description |
-| :-- | :-: | :-- |
-| `id` | string | ID of the card |
-| `base` | integer | Base HP change (card event return value) |
-| `extra` | integer | Extra damage |
+Takes a table argument contains these fields:
+| Field         | Type      | Description |
+| :--           | :-:       | :-- |
+| `id`          | string    | ID of the card |
+| `raw_base`    | integer   | Original Base HP change (card event return value) |
+| `raw_extra`   | integer   | Extra damage |
+| `base`        | integer   | Modifiable Base HP change |
+| `extra`       | integer   | Modifiable Extra damage   |
+
+`base` is a *HP change*, not damage. Positive = heal, negative = damage.
+Shield/damage-reduction hooks should check `base < 0`.
+You can modify `base` and `extra` fields.
+
+An example hook for a shield:
+```lua
+cr.hook("hp_change", function(t)
+    -- absorb half of the damage
+    if t.base < 0 then
+        t.base = math.ceil(t.base / 2)
+    end
+
+    if t.extra ~= 0 then
+        t.extra = math.ceil(t.extra / 2)
+    end
+end)
+```
 
 > [!NOTE]
-> `base` or `extra` may be 0.
+> Any field can be 0. `base == 0` means no HP change, `extra == 0` means no bonus damage.
+> Always check signs: heals are `base > 0`, damage is `base < 0`.
 
 ##### **`level_up`**
 

@@ -7,6 +7,7 @@
   * [Metadata](./Metadata)
   * [Settings](./Settings)
   * [Debugging](./Debugging)
+  - [Compatibility Notes](./Compatibility-Notes)
 
 * **Variable Types and Variables**
 
