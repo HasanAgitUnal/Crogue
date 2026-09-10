@@ -67,8 +67,8 @@ Generates `cr.stat.levels` from `cr.stat.biomes`.
 
 #### `cr.draw_cards()`
 
-Generates `cr.stat.cards` randomly from `cr.stat.deck` using game seed and current level.
-**Only run if `cr.stat.cards` is empty. If its not empty, function will does not clears it.**
+Generates `cr.stat.card_set` randomly from `cr.stat.deck` using game seed and current level.
+**Only run if `cr.stat.card_set` is empty. If its not empty, function will does not clears it.**
 
 #### `cr.draw_slots()`
 

@@ -8,3 +8,14 @@ I need help to support PDcurses. Please fork this project and wrap some features
 > Which Lua version I should target on my plugin?
 
 CROGUE supports Lua 5.1-5.4. You should target Lua 5.1 for highest compatibility.
+
+> Terminal Support?
+
+Most of the POSIX terminals are supported.
+You should target terminals supporting:
+
+* 256-color palette
+* UTF-8
+* ANSI
+
+Default windows terminals (cmd.exe, powershell) are not supported.

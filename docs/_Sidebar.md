@@ -27,5 +27,5 @@
   * [Interacting With Game](./Interacting-With-Game)
   * [TUI Functions](./TUI-Functions)
   * [ANSI Support](./ANSI-Support)
-  * [Using NCurses](./NCurses)
+  * [Using Ncurses](./Ncurses)
   * [Scenes](./Scenes)

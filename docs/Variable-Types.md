@@ -72,7 +72,7 @@ Always use `cr.create_` functions.
 ###### Time-to-live
 
 `cr.obj.card_slot_t` has `_lived` field. If `_lived` value equals `ttl` value of the card at front of the slot, card event will be called.
-And also an extra damage will be applied. Extra damage calculated with: `power + (_lived * power / _lived) + (ttl / 2)`. If you dont want extra damage, you must manualy increase `cr.player.hp` to revert change.
+And also an extra damage will be applied. Extra damage calculated with: `power + (_lived * power / ttl) + (_lived / 2)`. If you dont want extra damage, you must manualy increase `cr.player.hp` to revert change.
 
 Best practice is using `ttl` **ALWAYS on negative** effecting cards.
 

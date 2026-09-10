@@ -95,7 +95,7 @@ cr.log("Current level name: " .. current_level.name, cr.log_type.NORMAL)
 
 ### `cr.stat.buffs`
 
-A table contains shared levels. When `cr.create_buff()` is used new buffs will go to this container.
+A table contains shared buffs. When `cr.create_buff()` is used new buffs will go to this container.
 Every turn game checks this container. If one of the buffs level is not 0, its event will be called.
 
 ### `cr.stat.logs`

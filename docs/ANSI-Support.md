@@ -6,7 +6,7 @@ The ANSI code must be given without ESC and '[' character (example: "3;31m").
 
 
 
-| Code      | NCurses Style     | Description                   |
+| Code      | Ncurses Style     | Description                   |
 | :-:       | :--               | ---                           |
 | 0m        | A_NORMAL          | Reset style                   |
 | 38;5;Xm   | COLOR_PAIR(X+1)   | X foreground color (256-color)|

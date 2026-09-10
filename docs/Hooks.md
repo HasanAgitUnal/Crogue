@@ -38,7 +38,7 @@ Runned when a key pressed on main game loop.
 No return type.
 Takes an integer argument: the key pressed.
 
-Handle the key with `string.char()` and `string.byte()` functions, and [`cr.curses.KEY_` variables](./ncurses.md). 
+Handle the key with `string.char()` and `string.byte()` functions, and [`cr.curses.KEY_` variables](./Ncurses.md). 
 
 ##### **`hp_change`**
 
@@ -48,7 +48,7 @@ Takes a table argument contains these fields:
 | :--           | :-:       | :-- |
 | `id`          | string    | ID of the card |
 | `raw_base`    | integer   | Original Base HP change (card event return value) |
-| `raw_extra`   | integer   | Extra damage |
+| `raw_extra`   | integer   | Original Extra damage |
 | `base`        | integer   | Modifiable Base HP change |
 | `extra`       | integer   | Modifiable Extra damage   |
 
@@ -73,6 +73,9 @@ end)
 > [!NOTE]
 > Any field can be 0. `base == 0` means no HP change, `extra == 0` means no bonus damage.
 > Always check signs: heals are `base > 0`, damage is `base < 0`.
+
+> [!IMPORTANT]
+> buff events are not effected, buffs directly changes HP via cr.player.set_hp()
 
 ##### **`level_up`**
 

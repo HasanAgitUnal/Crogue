@@ -1,7 +1,7 @@
-# NCurses (`cr.curses`)
+# Ncurses (`cr.curses`)
 
-To allow plugins managing TUI completely, CROGUE opens some NCurses functions for plugins.
-Usage of them is not shown here. Look at NCurses documentation for them.
+To allow plugins managing TUI completely, CROGUE opens some Ncurses functions for plugins.
+Usage of them is not shown here. Look at Ncurses documentation for them.
 
 `stdscr` is defined as `cr.curses.stdscr`.
 
@@ -17,7 +17,7 @@ The functions you expect to have is avaible under `cr.curses`. But some function
 
 > [!WARNING]
 > `cr.curses.getyx`, `cr.curses.getbegyx`, `cr.curses.getparyx`, `cr.curses.getmaxyx`
-> functions **are not used as in normal NCurses**.
+> functions **are not used as in normal Ncurses**.
 > They take a window (or `cr.curses.stdscr`) and return a table with `x`, `y` values.
 > Usage:
 > ```lua
@@ -33,7 +33,7 @@ The functions you expect to have is avaible under `cr.curses`. But some function
 
 ## Macros
 
-Avaible NCurses macros:
+Avaible Ncurses macros:
 
 * `cr.curses.COLS()`
 * `cr.curses.LINES()`
@@ -42,7 +42,7 @@ Avaible NCurses macros:
 
 ## `cr.curses.attr_t` and ANSI
 
-You can use `cr.curses.attr_t` as NCurses `attr_t`.
+You can use `cr.curses.attr_t` as Ncurses `attr_t`.
 If you hate ncurses attrs like me you can use `cr.curses.ansi2attr` function to get ncurses attrs:
 ```lua
 local red = cr.curses.ansi2attr("38;5;1m")
@@ -55,8 +55,8 @@ See [ANSI Support][./ANSI-Support] for the full list of supported ansi codes.
 
 ## Keyboard Handling, `KEY_` variables
 
-All of the NCurses `KEY_` variables are accessible from `cr.curses`.
-See NCurses documentation or `ncurses.h` header on your system for full list of `KEY_` variables.
+All of the Ncurses `KEY_` variables are accessible from `cr.curses`.
+See Ncurses documentation or `ncurses.h` header on your system for full list of `KEY_` variables.
 Example:
 ```lua
 local c = cr.curses
