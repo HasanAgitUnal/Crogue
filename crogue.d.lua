@@ -53,7 +53,15 @@
 --- @field pairs fun(self: _CONTAINER<T>, ): fun(), _CONTAINER<T>, nil          Lua 5.2+ only; use c:pairs() in Lua 5.1/LuaJIT.
 --- @field ipairs fun(self: _CONTAINER<T>, ): fun(), _CONTAINER<T>, integer     Lua 5.2+ only; use c:ipairs() in Lua 5.1/LuaJIT.
 
---- @alias _HOOK_EVENT "before_refresh" | "after_refresh" | "start" | "game_start" | "game_end" | "game_quit" | "reload" | "ending" | "draw" | "level_gen" | "die" | "key" | "level_up" | "slot" | "item" | "card_event" | "s_save" | "s_load" | "damage"
+--- @alias _HOOK_EVENT "before_refresh" | "after_refresh" | "start" | "game_start" | "game_end" | "game_quit" | "reload" | "ending" | "draw" | "level_gen" | "die" | "key" | "level_up" | "slot" | "item" | "card_event" | "s_save" | "s_load" | "hp_change"
+
+--- Data for hp_change hook
+--- @class _HP_CHANGE_DATA
+--- @field id string            Effecter Card ID
+--- @field raw_base integer     Original HP change
+--- @field raw_extra integer    Original extra damage
+--- @field base integer         Modifiable HP change
+--- @field extra integer        Modifiable extra damage
 
 -- ============================================
 -- Main Table
@@ -393,7 +401,7 @@ function cr.is_game_running() end
 --- @overload fun(event: "card_event", func: fun(card: _SHARED_card, extra: integer): boolean)          Runned when `cr.basic_card_event` called. Has bool return type: if true, card event is canceled. Takes arguments: the card (shared card), extra damage value (integer).
 --- @overload fun(event: "s_save", func: fun(data: string))                                             Runned after a save created/updated. No return type, Takes 1 string argument: save data as json. See https://github.com/HasanAgitUnal/CROGUE/wiki/Hooks for example save data
 --- @overload fun(event: "s_load", func: fun(data: string))                                             Runned after a save loaded. No return type, Takes 1 string argument: save data as json. See https://github.com/HasanAgitUnal/CROGUE/wiki/Hooks for example save data
---- @overload fun(event: "damage", func: fun(id: string, base: integer, extra: integer))                Runned after a card event runned and before changing HP (with card event return value and extra damage).
+--- @overload fun(event: "hp_change", func: fun(data: _HP_CHANGE_DATA))                                 Runned after a card event runned and before changing HP
 function cr.hook(event, func) end
 
 -- ============================================
