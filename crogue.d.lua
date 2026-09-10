@@ -61,6 +61,9 @@
 
 --- CROGUE Plugin API
 --- @class cr
+---
+--- @field debug boolean                Is debug build of crogue?
+---
 --- @field card_type cr.card_type
 --- @field log_type cr.log_type
 --
@@ -77,7 +80,7 @@
 --
 --- @field ask fun(what: string):integer                                Ask for a key to user
 --- @field ask_string fun(what: string):string                          Ask for a text to user
---- @field log fun(msg: string, type: cr.log_type)                      Display a log with given urgency
+--- @field log fun(msg: string, type?: cr.log_type)                     Display a log with given urgency
 --
 --- @field create_card fun(table: _ARGS_create_card):_SHARED_card       Creates a shared card, adds to cr.stat.deck and returns the card.
 --- @field create_buff fun(table: _ARGS_create_buff):_SHARED_buff       Creates a shared buff, adds to cr.stat.buffs, and returns the biome

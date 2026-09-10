@@ -24,7 +24,7 @@
 
 void reset_game(bool full);
 
-void log(std::string msg, const log_type type);
+void log(std::string msg, const log_type type = NORMAL);
 
 bool check_die();
 

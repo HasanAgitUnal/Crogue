@@ -132,6 +132,14 @@ void setup_lua() {
         // main table
         sol::table crogue = game::lua.create_table();
 
+        // is debug build?
+        crogue["debug"] =
+#ifdef DEBUG
+                true;
+#else
+                false;
+#endif
+
         /*
          * Enums
          */
@@ -211,7 +219,11 @@ void setup_lua() {
         crogue["ask"] = &ask;
         crogue["ask_string"] = &ask_string;
 
-        crogue["log"] = [](const std::string &msg, log_type type) { log(msg, type); };
+        // clang-format off
+        crogue["log"] = [](const std::string &msg, sol::optional<log_type> type) {
+                log(msg, type.value_or(NORMAL));
+        };
+        // clang-format on
 
         crogue["create_card"] = [](sol::table table) { return create_card(table); };
         crogue["create_buff"] = [](sol::table table) { return create_buff(table); };

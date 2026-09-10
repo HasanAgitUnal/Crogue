@@ -2,17 +2,17 @@
 
   * [Getting Started](./Getting-Started)
 
-* **Metadata**
+* **Metadata & Other**
 
   * [Metadata](./Metadata)
   * [Settings](./Settings)
+  * [Debugging](./Debugging)
 
 * **Variable Types and Variables**
 
   * [Variable Types](./Variable-Types)
   * [Shared Types](./Shared-Types)
   * [Create Functions](./Create-Functions)
-
 
 * **Game Status**
 
