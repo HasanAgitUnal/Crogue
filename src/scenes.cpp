@@ -453,10 +453,10 @@ void game() {
                                 break;
                         }
                         case 'i': {
-                                char slot = ask("Which slot? [a/b/c]: ");
+                                char c = ask("Which card? [a/b/c/0-9]: ");
                                 std::shared_ptr<card_t> card;
                                 bool end = false;
-                                switch (slot) {
+                                switch (c) {
                                         case 'a':
                                                 card = game::slot1.front;
                                                 break;
@@ -468,6 +468,12 @@ void game() {
                                         case 'c':
                                                 card = game::slot3.front;
                                                 break;
+
+                                        case '0' ... '9': {
+                                                int index = c - '0';
+                                                card = game::player::inventory[index];
+                                                break;
+                                        }
 
                                         default:
                                                 end = true;
