@@ -75,6 +75,7 @@ struct buff_t {
         std::string name = "";
         std::function<void(std::shared_ptr<buff_t>)> event = nullptr;
         int level = 0;
+        std::string id = "";
 };
 
 namespace game {
@@ -135,6 +136,7 @@ inline sol::state lua;
 inline std::map<std::string, std::string> plugin_errors;
 
 inline std::vector<std::string> used_card_ids;
+inline std::vector<std::string> used_buff_ids;
 
 namespace player {
 

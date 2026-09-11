@@ -43,7 +43,8 @@ static std::string check_save_data(const json &save) {
         }
 
         static const std::vector<std::string> required = {
-            "name", "seed", "hp", "level", "last_played", "created_with_plugins", "plugins_changed", "inventory"};
+            "name",      "seed", "hp", "level", "last_played", "created_with_plugins", "plugins_changed",
+            "inventory", "buffs"};
 
         for (auto key : required) {
                 if (!save.contains(key)) {
@@ -86,7 +87,7 @@ static std::string check_save_data(const json &save) {
         }
 
         if (!save["inventory"].is_array()) {
-                return "\"inventory\" is not an object";
+                return "\"inventory\" is not an array";
         }
 
         if (save["inventory"].size() != 10) {
@@ -96,6 +97,16 @@ static std::string check_save_data(const json &save) {
         for (const json &item : save["inventory"]) {
                 if (!item.is_string() && !item.is_null()) {
                         return "An inventory item is not a string or null";
+                }
+        }
+
+        if (!save["buffs"].is_object()) {
+                return "\"buffs\" is not an object";
+        }
+
+        for (auto &[key, value] : save["buffs"].items()) {
+                if (!value.is_number_integer()) {
+                        return "\"saves." + key + "\" is not an integer";
                 }
         }
 
@@ -136,6 +147,25 @@ inline static json get_inventory() {
         return inventory;
 }
 
+// return format:
+// {
+//      "myp:buff1": 1, // buff level
+//      ...
+// }
+inline static json get_buffs() {
+        json buffs = json::object();
+
+        for (auto &buff : game::buffs) {
+                if (buff->level == 0) {
+                        continue;
+                }
+
+                buffs[buff->id] = buff->level;
+        }
+
+        return buffs;
+}
+
 std::string save_curr() {
         json plugins = json::object();
         if (game::_curr_save_created_with_plugins.empty()) {
@@ -160,6 +190,7 @@ std::string save_curr() {
         save_data["created_with_plugins"] = plugins;
         save_data["plugins_changed"] = game::_plugins_changed;
         save_data["inventory"] = get_inventory();
+        save_data["buffs"] = get_buffs();
 
         return save(save_data);
 }
@@ -206,6 +237,16 @@ static std::shared_ptr<card_t> find_item(const std::string &id) {
         return nullptr;
 }
 
+static std::shared_ptr<buff_t> find_buff(const std::string &id) {
+        for (auto &buff : game::buffs) {
+                if (buff->id == id) {
+                        return buff;
+                }
+        }
+
+        return nullptr;
+}
+
 void apply_save(const json &save) {
         minilog::fdebugc("saves", logfile, "applying a save with name: ", save["name"].get<std::string>());
         game::seed = save["seed"].get<uint64_t>();
@@ -215,6 +256,7 @@ void apply_save(const json &save) {
         game::player::inventory.clear();
         game::player::inventory.resize(10, nullptr);
 
+        // apply inventory
         for (int i = 0; i < 10; i++) {
                 const json &item = save["inventory"][i];
                 if (!item.is_null()) {
@@ -224,6 +266,14 @@ void apply_save(const json &save) {
                         }
 
                         game::player::inventory[i] = card;
+                }
+        }
+
+        // apply buffs
+        for (auto &[buffid, level] : save["buffs"].items()) {
+                auto buff = find_buff(buffid);
+                if (buff) {
+                        buff->level = level;
                 }
         }
 

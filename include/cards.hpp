@@ -47,7 +47,8 @@ std::shared_ptr<card_t> create_card(const sol::table &table);
 
 std::shared_ptr<level_t> create_level(const std::string &name);
 
-std::shared_ptr<buff_t> create_buff(const std::string name, std::function<void(std::shared_ptr<buff_t>)> event);
+std::shared_ptr<buff_t> create_buff(const std::string name, const std::string id,
+                                    std::function<void(std::shared_ptr<buff_t>)> event);
 std::shared_ptr<buff_t> create_buff(const sol::table &table);
 
 std::shared_ptr<biome_t> create_biome(const int difficulty, const std::vector<std::shared_ptr<level_t>> &levels);

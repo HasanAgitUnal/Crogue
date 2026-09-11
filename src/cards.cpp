@@ -214,12 +214,18 @@ void generate_levels() {
  * Buffs
  */
 
-std::shared_ptr<buff_t> create_buff(const std::string name, std::function<void(std::shared_ptr<buff_t>)> event) {
-        auto new_buff = std::make_shared<buff_t>(buff_t{name, event, 0});
+std::shared_ptr<buff_t> create_buff(const std::string name, const std::string id,
+                                    std::function<void(std::shared_ptr<buff_t>)> event) {
+        auto new_buff = std::make_shared<buff_t>(buff_t{name, event, 0, id});
+
+        if (std::find(game::used_buff_ids.begin(), game::used_buff_ids.end(), id) != game::used_buff_ids.end()) {
+                throw sol::error::runtime_error("This buff id is used");
+        }
 
         new_buff->name = name;
         new_buff->event = event;
         new_buff->level = 0;
+        new_buff->id = id;
 
         game::buffs.push_back(new_buff);
         return new_buff;
@@ -230,10 +236,12 @@ std::shared_ptr<buff_t> create_buff(const sol::table &table) {
         try {
                 return create_buff(
                                 table.get<std::string>("name"),
+                                table.get<std::string>("id"),
                                 table.get<std::function<void(std::shared_ptr<buff_t>)>>("event"));
 
         } catch (const sol::error &e) {
-                minilog::fdebug(logfile, "something is wrong!! ", e.what());
+                throw sol::error::runtime_error("Invalid fields to cr.create_buff, should include name (string), id (string) and event (function) fields");
+                minilog::fdebug(logfile, "Error while creating buff: ", e.what());
         }
 
         return nullptr;

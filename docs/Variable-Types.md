@@ -125,6 +125,7 @@ Buffs are things like poison, zombification etc.
 | Field     | Type      | Description                                                   |
 | :-:       | :-:       | ---                                                           |
 | `name`    | string    | Buff name.                                                    |
+| `id`      | string    | Buff ID. `<plugin>:<name>` is recommended.                    |
 | `event`   | function  | Buff event (see below)                                        |
 | `level`   | integer   | Buff level. Bigger is stronger effect. If 0 buff is cleared   | 
 
@@ -138,6 +139,7 @@ Examples for buffs:
 -- Everly turn decreases player health and its level by 1
 local poison_buff = cr.create_buff({
     name = "Poison",
+    id = "example:poison",
     event = function(self)
         cr.player.set_hp(cr.player.get_hp() - 1)
         self.level = self.level - 1
@@ -147,6 +149,7 @@ local poison_buff = cr.create_buff({
 -- Kills player if player kills 10 zombie
 local zombie_buff = cr.create_buff({
     name = "Zombification",
+    id = "example:zombification",
     event = function(self)
         if self.level == 10 then
             cr.player.set_hp(0)
