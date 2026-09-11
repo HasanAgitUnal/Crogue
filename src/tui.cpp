@@ -691,4 +691,6 @@ void print_ui() {
 
         // after everything because of the drawing the box drawing characters
         print_stats(0);
+
+        refresh();
 }
