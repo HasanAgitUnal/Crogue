@@ -347,6 +347,13 @@ int ask(std::string what) {
         int key = getch();
         curs_set(0);
 
+        // clean the text
+        for (int i = 0; i < what.size(); i++) {
+                what[i] = ' ';
+        }
+        mvaddstr(max_y - 5, 0, what.c_str());
+        refresh();
+
         minilog::fdebugc("ask", logfile, "char: ", key);
         return key;
 }
@@ -382,7 +389,8 @@ std::string ask_string(std::string what) {
         while ((ch = getch()) != '\n' && ch != KEY_ENTER) {
                 if (ch == 27) {
                         curs_set(0);
-                        return "\033";  // return esc
+                        input = "\033";  // return esc
+                        break;
 
                 } else if (ch == KEY_BACKSPACE || ch == 127 || ch == 8) {
                         if (!input.empty()) {
@@ -399,6 +407,14 @@ std::string ask_string(std::string what) {
         }
 
         curs_set(0);
+
+        // clean the text
+        std::string cleanup = "";
+        for (int i = 0; i < (what.size() + input.size()); i++) {
+                cleanup += " ";
+        }
+        mvaddstr(max_y - 5, 0, cleanup.c_str());
+        refresh();
 
         minilog::fdebugc("ask", logfile, "string: ", input);
         return input;
