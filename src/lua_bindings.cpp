@@ -112,6 +112,17 @@ static sol::table get_settings(const std::string plugin) {
         return table;
 }
 
+// uses lua's format function
+// used to handle variadic arguments of printw
+static std::string lua_format(sol::variadic_args va) {
+        if (va.size() == 0)
+                return "";
+        sol::protected_function_result result = game::lua["string"]["format"](sol::as_args(va));
+        if (!result.valid())
+                return "";
+        return result;
+}
+
 void setup_lua() {
         // clang-format off
         game::lua.open_libraries(
@@ -523,10 +534,23 @@ void setup_lua() {
         curses["isendwin"] = &isendwin;
 
         // printing
-        curses["printw"] = &printw;
-        curses["wprintw"] = &wprintw;
-        curses["mvprintw"] = &mvprintw;
-        curses["mvwprintw"] = &mvwprintw;
+        // clang-format off
+        curses["printw"] = [](sol::variadic_args va) {
+                return addstr(lua_format(va).c_str());
+        };
+
+        curses["wprintw"] = [](WINDOW* win, sol::variadic_args va) {
+                return waddstr(win, lua_format(va).c_str());
+        };
+
+        curses["mvprintw"] = [](int y, int x, sol::variadic_args va) {
+                return mvaddstr(y, x, lua_format(va).c_str());
+        };
+
+        curses["mvwprintw"] = [](WINDOW* win, int y, int x, sol::variadic_args va) {
+                return mvwaddstr(win, y, x, lua_format(va).c_str());
+        };
+        // clang-format on
 
         curses["addch"] = &addch;
         curses["waddch"] = &waddch;
