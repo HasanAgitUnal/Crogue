@@ -113,7 +113,7 @@ static std::string check_save_data(const json &save) {
         return "";
 }
 
-std::string save(const json &save_data) {
+std::string save(json save_data) {
         minilog::fdebugc("saves", logfile, "Saving a save with name: ", save_data["name"].get<std::string>());
         fs::create_directories(game::_data_directory / "saves");
 
@@ -124,6 +124,8 @@ std::string save(const json &save_data) {
         std::ofstream file(save_path);
         file << save_data.dump(4);
         file.close();
+
+        save_data["_filepath"] = save_path.string();
 
         game::hooks::trigger(game::hooks::s_save, save_data.dump());
 
