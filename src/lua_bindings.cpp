@@ -117,10 +117,17 @@ static sol::table get_settings(const std::string plugin) {
 static std::string lua_format(sol::variadic_args va) {
         if (va.size() == 0)
                 return "";
+
         sol::protected_function_result result = game::lua["string"]["format"](sol::as_args(va));
+
         if (!result.valid())
                 return "";
-        return result;
+
+        // do not make implicit conversion
+        if (result.get_type() != sol::type::string)
+                return "";
+
+        return result.get<std::string>();
 }
 
 void setup_lua() {
@@ -309,17 +316,17 @@ void setup_lua() {
                                     func.as<std::function<bool(std::shared_ptr<card_t>, int)>>());
 
                         } else if (event == "s_save") {
-                                game::hooks::s_save.push_back(func.as<void(std::string)>());
+                                game::hooks::s_save.push_back(func.as<std::function<void(std::string)>>());
 
                         } else if (event == "s_load") {
-                                game::hooks::s_load.push_back(func.as<void(std::string)>());
+                                game::hooks::s_load.push_back(func.as<std::function<void(std::string)>>());
 
                         } else if (event == "hp_change") {
                                 // manualy convert func to std::function to avoid segfault because of stupid sol2
                                 game::hooks::hp_change.push_back([func](sol::table table) { func(table); });
 
                         } else if (event == "die") {
-                                game::hooks::die.push_back(func.as<void(void)>());
+                                game::hooks::die.push_back(func.as<std::function<void(void)>>());
 
                         } else {
                                 throw sol::error::runtime_error("Invalid hook event: " + event);

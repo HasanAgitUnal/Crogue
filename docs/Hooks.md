@@ -135,6 +135,10 @@ Example save data:
         null,
         null
     ],
+    "buffs": {
+        "vanilla:absorption": 2,
+        "vanilla:golem_pet": 5
+    },
     "last_played": 1786440919,
     "level": 1,
     "name": "No name",

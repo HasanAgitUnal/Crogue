@@ -38,7 +38,11 @@
 #define DEBUG_TAG ""
 #endif
 
-#define CROGUE_VERSION "0.1" DEBUG_TAG
+#define CROGUE_MAJOR "0"
+#define CROGUE_MINOR "1"
+#define CROGUE_PATCH "0"
+
+#define CROGUE_VERSION CROGUE_MAJOR "." CROGUE_MINOR "." CROGUE_PATCH DEBUG_TAG
 
 
 bool game_running = false;
