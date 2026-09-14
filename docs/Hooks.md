@@ -53,7 +53,6 @@ Or with this visualized graph:
 ```mermaid
 flowchart TB
     subgraph S1["🚀 Startup"]
-        direction LR
         A[Start] --> B[start]
         B --> C{Save via CLI?}
         C -- Y --> D[s_load] --> H
@@ -68,7 +67,6 @@ flowchart TB
     end
 
     subgraph S2["🔁 Loop"]
-        direction LR
         H[game_start] --> N[before_refresh]
         N --> O[UI refresh]
         O --> P[after_refresh]
@@ -85,7 +83,6 @@ flowchart TB
     end
 
     subgraph S3["🎴 Actions"]
-        direction LR
         T -- N --> I1{Item used?}
         I1 -- Y --> I2[item] --> CE
         I1 -- N --> CE2{Card event?}
@@ -97,7 +94,6 @@ flowchart TB
     end
 
     subgraph S4["🏁 Level End"]
-        direction LR
         L1{Level done?}
         L1 -- Y --> LU[level_up]
         LU --> L2{All levels?}
