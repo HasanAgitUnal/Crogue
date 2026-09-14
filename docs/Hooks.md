@@ -11,6 +11,108 @@ end)
 
 ## Events
 
+The game logic can be shown with this simple tree:
+
+1. game starts and parses cli arguments, main menu starts and loads plugins
+2. run hook: **`start`**
+3. if a save file given with from cli arguments: 
+    1. load save, run hook: **`s_load`**
+    2. jump to 8
+4. if --skip-menu flag given:
+    1. jump to 8
+5. if plugins reloaded, run hook: **`reload`**
+6. if a save loaded from "Continue" menu:
+    1. load save, run hook: **`s_load`**
+    2. jump to 8
+7. player creates a new game
+    1. levels generetad, run hook: **`level_gen`** .
+    2. cards generated, run hook: **`draw`**
+8. game starts: **`game_start`**
+9. game loop starts:
+    * run hook: **`before_refresh`**
+    * refresh ui completely
+    * run hook: **`after_refresh`**
+    * get a key, run hook **`key`**
+    * if user quits from game, run hook: **`game_quit`**. exit from loop
+    * if player picks a slot
+        1. run hook **`slot`**. if hook cancels with return value, get back to loop
+        2. if item added to inventory, get back to loop.
+        3. else card event is runned. run hook: **`card_event`**. if not canceled, run hook **`hp_change`**
+    * if player uses a item from inventory
+        1. run hook: **`item`**
+        3. else card event is runned. run hook: **`card_event`**. if not canceled, run hook **`hp_change`**
+    * if any of the two things above happens, card events are runned depending on card ttl values and slot _lived fields. if card event is runned, run hook: **`card_event`**. if not canceled run hook: **`hp_change`**
+    * if level completed
+        1. run hook: **`level_up`**
+        2. if all levels are completed, run hook: **`ending`**. exit from loop
+        3. if player saves progress, run hook **`s_save`**
+    * if player died, run hook: **`die`** and exit from loop
+10. game ends, run hook: **`game_end`**
+
+Or with this visualized graph:
+```mermaid
+flowchart TB
+    subgraph S1["🚀 Startup"]
+        direction LR
+        A[Start] --> B[start]
+        B --> C{Save via CLI?}
+        C -- Y --> D[s_load] --> H
+        C -- N --> E{--skip-menu?}
+        E -- Y --> H
+        E -- N --> F{Reload?}
+        F -- Y --> G[reload] --> I
+        F -- N --> I{Continue save?}
+        I -- Y --> J[s_load] --> H
+        I -- N --> K[New game]
+        K --> L[level_gen] --> M[draw] --> H
+    end
+
+    subgraph S2["🔁 Loop"]
+        direction LR
+        H[game_start] --> N[before_refresh]
+        N --> O[UI refresh]
+        O --> P[after_refresh]
+        P --> Q[key]
+        Q --> R{Quit?}
+        R -- Y --> S[game_quit] --> U
+        R -- N --> T{Slot?}
+        T -- Y --> T1[slot]
+        T1 --> T2{Canceled?}
+        T2 -- Y --> N
+        T2 -- N --> T3{Item added?}
+        T3 -- Y --> N
+        T3 -- N --> CE
+    end
+
+    subgraph S3["🎴 Actions"]
+        direction LR
+        T -- N --> I1{Item used?}
+        I1 -- Y --> I2[item] --> CE
+        I1 -- N --> CE2{Card event?}
+        CE2 -- Y --> CE
+        CE2 -- N --> L1
+        CE[card_event] --> CE1{Canceled?}
+        CE1 -- N --> HP[hp_change] --> N
+        CE1 -- Y --> N
+    end
+
+    subgraph S4["🏁 Level End"]
+        direction LR
+        L1{Level done?}
+        L1 -- Y --> LU[level_up]
+        LU --> L2{All levels?}
+        L2 -- Y --> EN[ending] --> U
+        L2 -- N --> SV{Saved?}
+        SV -- Y --> SS[s_save] --> N
+        SV -- N --> N
+        L1 -- N --> D1{Died?}
+        D1 -- Y --> DI[die] --> U
+        D1 -- N --> N
+    end
+
+    U[game_end]
+```
+
 ### No return and no argument events
 
 These events does not take any argument and does not return a value.
