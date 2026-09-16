@@ -47,6 +47,7 @@ The game logic can be shown with this simple tree:
         2. if all levels are completed, run hook: **`ending`**. exit from loop
         3. if player saves progress, run hook **`s_save`**
     * if player died, run hook: **`die`** and exit from loop
+    * run hook: **`game_loop`**
 10. game ends, run hook: **`game_end`**
 
 Or with this visualized graph:
@@ -76,9 +77,9 @@ flowchart TB
         R -- N --> T{Slot?}
         T -- Y --> T1[slot]
         T1 --> T2{Canceled?}
-        T2 -- Y --> N
+        T2 -- Y --> GL
         T2 -- N --> T3{Item added?}
-        T3 -- Y --> N
+        T3 -- Y --> GL
         T3 -- N --> CE
     end
 
@@ -89,8 +90,8 @@ flowchart TB
         CE2 -- Y --> CE
         CE2 -- N --> L1
         CE[card_event] --> CE1{Canceled?}
-        CE1 -- N --> HP[hp_change] --> N
-        CE1 -- Y --> N
+        CE1 -- N --> HP[hp_change] --> GL
+        CE1 -- Y --> GL
     end
 
     subgraph S4["🏁 Level End"]
@@ -99,13 +100,14 @@ flowchart TB
         LU --> L2{All levels?}
         L2 -- Y --> EN[ending] --> U
         L2 -- N --> SV{Saved?}
-        SV -- Y --> SS[s_save] --> N
-        SV -- N --> N
+        SV -- Y --> SS[s_save] --> GL
+        SV -- N --> GL
         L1 -- N --> D1{Died?}
         D1 -- Y --> DI[die] --> U
-        D1 -- N --> N
+        D1 -- N --> GL
     end
 
+    GL[game_loop] --> N
     U[game_end]
 ```
 
@@ -121,7 +123,8 @@ These events does not take any argument and does not return a value.
 - `before_refresh`: Always runned before UI refresh.
 - `game_start`: When a new game starts.
 - `game_end`: When a game ends.
-- game_quit: When user quits from game.
+- `game_quit`: When user quits from game.
+- `game_loop`: Runned at end of each game loop.
 - `die`: Runned when player dies.
 - `ending`: Runned when player finds Amulet of Yendor.
 
@@ -129,7 +132,7 @@ These events does not take any argument and does not return a value.
 
 These events takes arguments in varius types and may return a bool value.
 
-##### **`key`**
+* **`key`**
 
 Runned when a key pressed on main game loop.
 
@@ -138,7 +141,7 @@ Takes an integer argument: the key pressed.
 
 Handle the key with `string.char()` and `string.byte()` functions, and [`cr.curses.KEY_` variables](./Ncurses.md). 
 
-##### **`hp_change`**
+* **`hp_change`**
 
 Runned after a card event runned and before changing HP (with card event return value and extra damage).
 Takes a table argument contains these fields:
@@ -175,28 +178,28 @@ end)
 > [!IMPORTANT]
 > buff events are not effected, buffs directly changes HP via cr.player.set_hp()
 
-##### **`level_up`**
+* **`level_up`**
 
 Runned when exit gate found.
 
 No return type.
 Takes an integer argument: current level index.
 
-##### **`slot`**
+* **`slot`**
 
 Runned when a slot picked.
 
 Has bool return type: if true, slot will be skipped for now.
 Takes an integer argument: slots number (1, 2, 3)
 
-##### **`item`**
+* **`item`**
 
 Runned when user wants to use an item.
 
 Has bool return type: if true, using item is canceled.
 Takes an shared card argument: the item used.
 
-##### **`card_event`**
+* **`card_event`**
 
 Runned when `cr.basic_card_event` called.
 
@@ -205,7 +208,7 @@ Takes following arguments:
   * Shared card : the card
   * integer : extra damage value
 
-##### **`s_load` & `s_save`**
+* **`s_load` & `s_save`**
 
 Runned after a save loaded (`s_load`) or created/updated (`s_save`).
 

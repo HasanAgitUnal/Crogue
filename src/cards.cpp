@@ -100,7 +100,7 @@ bool check_die() {
 
                 log("You died!", IMPORTANT);
 
-                game::hooks::trigger(game::hooks::die);
+                TRIGGER_HOOK(die);
 
                 clear();
                 print_ui();
@@ -205,7 +205,7 @@ void generate_levels() {
                 }
         }
 
-        game::hooks::trigger(game::hooks::level_gen);
+        TRIGGER_HOOK(level_gen);
 
         minilog::fdebugc("setup", logfile, "Levels generated and sorted. Count: ", (int)game::levels.size());
 }
@@ -350,7 +350,7 @@ void draw_cards() {
         std::mt19937_64 rng(game::seed ^ (game::player::level + 1));  // some randomizing
         std::shuffle(game::card_set.begin(), game::card_set.end(), rng);
 
-        game::hooks::trigger(game::hooks::draw);
+        TRIGGER_HOOK(draw);
 
         minilog::fdebugc("setup", logfile, "card_set generated. Count: ", (int)game::card_set.size());
 }

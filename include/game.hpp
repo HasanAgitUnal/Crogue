@@ -149,10 +149,12 @@ inline std::vector<std::shared_ptr<card_t>> inventory;
 
 /// hooks ///
 
+#define TRIGGER_HOOK(hook) game::hooks::trigger(game::hooks::hook)
+
 namespace hooks {
 
 inline std::vector<std::function<void(void)>> after_refresh, before_refresh, start, game_start, game_end, game_quit,
-    reload, die, draw, level_gen, ending;
+    game_loop, reload, die, draw, level_gen, ending;
 
 // arg: key
 inline std::vector<std::function<void(int)>> key;

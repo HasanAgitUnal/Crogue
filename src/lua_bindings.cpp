@@ -267,68 +267,49 @@ void setup_lua() {
 
         crogue["get_data_dir"] = [&]() -> std::string { return game::_data_directory.string(); };
 
+#define CASE_HOOK_(ev, hook, funcsignature, func)                                     \
+        if ((ev) == #hook) {                                                          \
+                game::hooks::hook.push_back(func.as<std::function<funcsignature>>()); \
+        }
+
+#define CASE_HOOK(ev, hook, funcsignature, func)                                      \
+        else if ((ev) == #hook) {                                                     \
+                game::hooks::hook.push_back(func.as<std::function<funcsignature>>()); \
+        }
+
         crogue["hook"] = [](std::string event, sol::function func) {
                 try {
-                        if (event == "before_refresh") {
-                                game::hooks::before_refresh.push_back(func.as<std::function<void(void)>>());
+                        CASE_HOOK_(event, before_refresh, void(void), func)
+                        CASE_HOOK(event, after_refresh, void(void), func)
+                        CASE_HOOK(event, start, void(void), func)
+                        CASE_HOOK(event, game_start, void(void), func)
+                        CASE_HOOK(event, game_end, void(void), func)
+                        CASE_HOOK(event, game_quit, void(void), func)
+                        CASE_HOOK(event, game_loop, void(void), func)
+                        CASE_HOOK(event, reload, void(void), func)
+                        CASE_HOOK(event, ending, void(void), func)
+                        CASE_HOOK(event, draw, void(void), func)
+                        CASE_HOOK(event, level_gen, void(void), func)
+                        CASE_HOOK(event, die, void(void), func)
 
-                        } else if (event == "after_refresh") {
-                                game::hooks::after_refresh.push_back(func.as<std::function<void(void)>>());
+                        CASE_HOOK(event, key, void(int), func)
+                        CASE_HOOK(event, level_up, void(int), func)
 
-                        } else if (event == "start") {
-                                game::hooks::start.push_back(func.as<std::function<void(void)>>());
+                        CASE_HOOK(event, slot, bool(int), func)
 
-                        } else if (event == "game_start") {
-                                game::hooks::game_start.push_back(func.as<std::function<void(void)>>());
+                        CASE_HOOK(event, item, bool(std::shared_ptr<card_t>), func)
 
-                        } else if (event == "game_end") {
-                                game::hooks::game_end.push_back(func.as<std::function<void(void)>>());
+                        CASE_HOOK(event, card_event, bool(std::shared_ptr<card_t>, int), func)
 
-                        } else if (event == "game_quit") {
-                                game::hooks::game_quit.push_back(func.as<std::function<void(void)>>());
+                        CASE_HOOK(event, s_save, void(std::string), func)
+                        CASE_HOOK(event, s_load, void(std::string), func)
 
-                        } else if (event == "reload") {
-                                game::hooks::reload.push_back(func.as<std::function<void(void)>>());
-
-                        } else if (event == "ending") {
-                                game::hooks::ending.push_back(func.as<std::function<void(void)>>());
-
-                        } else if (event == "key") {
-                                game::hooks::key.push_back(func.as<std::function<void(int)>>());
-
-                        } else if (event == "level_up") {
-                                game::hooks::level_up.push_back(func.as<std::function<void(int)>>());
-
-                        } else if (event == "slot") {
-                                game::hooks::slot.push_back(func.as<std::function<bool(int)>>());
-
-                        } else if (event == "item") {
-                                game::hooks::item.push_back(func.as<std::function<bool(std::shared_ptr<card_t>)>>());
-
-                        } else if (event == "draw") {
-                                game::hooks::draw.push_back(func.as<std::function<void(void)>>());
-
-                        } else if (event == "level_gen") {
-                                game::hooks::level_gen.push_back(func.as<std::function<void(void)>>());
-
-                        } else if (event == "card_event") {
-                                game::hooks::card_event.push_back(
-                                    func.as<std::function<bool(std::shared_ptr<card_t>, int)>>());
-
-                        } else if (event == "s_save") {
-                                game::hooks::s_save.push_back(func.as<std::function<void(std::string)>>());
-
-                        } else if (event == "s_load") {
-                                game::hooks::s_load.push_back(func.as<std::function<void(std::string)>>());
-
-                        } else if (event == "hp_change") {
-                                // manualy convert func to std::function to avoid segfault because of stupid sol2
+                        // manualy convert func to std::function to avoid segfault because of stupid sol2
+                        else if (event == "hp_change") {
                                 game::hooks::hp_change.push_back([func](sol::table table) { func(table); });
+                        }
 
-                        } else if (event == "die") {
-                                game::hooks::die.push_back(func.as<std::function<void(void)>>());
-
-                        } else {
+                        else {
                                 throw sol::error::runtime_error("Invalid hook event: " + event);
                         }
 
@@ -337,6 +318,9 @@ void setup_lua() {
                         throw sol::error::runtime_error("Invalid hook function type");
                 }
         };
+
+#undef CASE_HOOK_
+#undef CASE_HOOK
 
         // Shared
 

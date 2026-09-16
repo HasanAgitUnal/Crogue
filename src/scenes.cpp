@@ -50,7 +50,7 @@ void main_menu() {
         setup_lua();
         load_plugins();
         plugin_errors();
-        game::hooks::trigger(game::hooks::start);
+        TRIGGER_HOOK(start);
 
         if (!game::_launched_save_file.empty()) {
                 if (!fs::exists(game::_launched_save_file) || !fs::is_regular_file(game::_launched_save_file)) {
@@ -68,7 +68,7 @@ void main_menu() {
                 }
 
                 game();
-                game::hooks::trigger(game::hooks::game_end);
+                TRIGGER_HOOK(game_end);
                 game::_curr_save_loaded = "";
                 reset_game(false);
                 return;
@@ -79,7 +79,7 @@ void main_menu() {
                 game::_curr_save_loaded = "";
                 reset_game(false);
                 game();
-                game::hooks::trigger(game::hooks::game_end);
+                TRIGGER_HOOK(game_end);
                 game::_curr_save_loaded = "";
                 reset_game(false);
                 return;
@@ -147,7 +147,7 @@ void main_menu() {
                                         minilog::fdebugc("setup", logfile, "Starting game.");
                                         reset_game(false);
                                         game();
-                                        game::hooks::trigger(game::hooks::game_end);
+                                        TRIGGER_HOOK(game_end);
                                         game::_curr_save_loaded = "";
                                         reset_game(false);
 
@@ -162,7 +162,7 @@ void main_menu() {
                                                 minilog::fdebugc("setup", logfile, "Starting game.");
                                                 game();
                                                 reset_game(false);
-                                                game::hooks::trigger(game::hooks::game_end);
+                                                TRIGGER_HOOK(game_end);
                                                 game::_curr_save_loaded = "";
                                         }
 
@@ -213,7 +213,7 @@ void main_menu() {
                                         setup_lua();
                                         load_plugins();
                                         plugin_errors();
-                                        game::hooks::trigger(game::hooks::reload);
+                                        TRIGGER_HOOK(reload);
 
                                         int max_y, max_x;
                                         getmaxyx(stdscr, max_y, max_x);
@@ -241,7 +241,7 @@ static bool on_level_complete(int curr_level) {
                 mvprintw(1, 0, "And exiting from dungeon with your loot!");
                 attroff(COLOR_PAIR(4));
 
-                game::hooks::trigger(game::hooks::ending);
+                TRIGGER_HOOK(ending);
 
                 refresh();
                 getch();
@@ -367,7 +367,7 @@ void game() {
         minilog::fdebugc("setup", logfile, "card_set size: ", game::card_set.size());
         draw_slots();
 
-        game::hooks::trigger(game::hooks::game_start);
+        TRIGGER_HOOK(game_start);
 
         game::game_is_running = true;
 
@@ -378,13 +378,13 @@ void game() {
                         break;
                 }
 
-                game::hooks::trigger(game::hooks::before_refresh);
+                TRIGGER_HOOK(before_refresh);
 
                 clear();
                 print_ui();
                 refresh();
 
-                game::hooks::trigger(game::hooks::after_refresh);
+                TRIGGER_HOOK(after_refresh);
 
                 // keyboard handling
                 key = getch();
@@ -528,7 +528,7 @@ void game() {
                                         int key = ask("Realy quit? [y/n]: ");
 
                                         if (key == 'y') {
-                                                game::hooks::trigger(game::hooks::game_quit);
+                                                TRIGGER_HOOK(game_quit);
                                                 return;
                                         } else if (key == 'n') {
                                                 break;
@@ -587,6 +587,8 @@ void game() {
                 }
 
                 last_level = game::player::level;
+
+                TRIGGER_HOOK(game_loop);
         }
 }
 
