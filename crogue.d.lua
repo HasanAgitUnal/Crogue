@@ -270,7 +270,7 @@ cr.stat = {}
 
 --- Player Variables
 --- @class cr.player
---- @field inventory _CONTAINER<_SHARED_card>                   Player inventory. Contains collected items
+--- @field inventory _CONTAINER<_SHARED_card>|_CONTAINER<nil>   Player inventory. Contains collected items
 --- @field get_hp fun():integer                                 Get player hp
 --- @field set_hp fun(value: integer)                           Set player hp
 --- @field get_level fun():integer                              Get current level index (for cr.stat.levels)
