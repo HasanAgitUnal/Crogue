@@ -49,11 +49,11 @@
 --- @field erase fun(self: _CONTAINER<T>, target: integer)                      Erases the element at the given index. (For sequence containers, the target is an index.)
 --- @field insert fun(self: _CONTAINER<T>, target: integer, value: T)           Inserts a value at the specified index. (For sequence containers, the target is an index.)
 --- @field add fun(self: _CONTAINER<T>, value: T)                               Adds a value to the end of the container.
---- @field clear fun(self: _CONTAINER<T> )                                     Removes all elements from the container.
---- @field pairs fun(self: _CONTAINER<T> ): fun(), _CONTAINER<T>, nil          Lua 5.2+ only; use c:pairs() in Lua 5.1/LuaJIT.
---- @field ipairs fun(self: _CONTAINER<T> ): fun(), _CONTAINER<T>, integer     Lua 5.2+ only; use c:ipairs() in Lua 5.1/LuaJIT.
+--- @field clear fun(self: _CONTAINER<T> )                                      Removes all elements from the container.
+--- @field pairs fun(self: _CONTAINER<T> ): fun(), _CONTAINER<T>, nil           Lua 5.2+ only; use c:pairs() in Lua 5.1/LuaJIT.
+--- @field ipairs fun(self: _CONTAINER<T> ): fun(), _CONTAINER<T>, integer      Lua 5.2+ only; use c:ipairs() in Lua 5.1/LuaJIT.
 
---- @alias _HOOK_EVENT "before_refresh" | "after_refresh" | "start" | "game_start" | "game_end" | "game_quit" | "reload" | "ending" | "draw" | "level_gen" | "die" | "key" | "level_up" | "slot" | "item" | "card_event" | "s_save" | "s_load" | "hp_change"
+--- @alias _HOOK_EVENT "before_refresh" | "after_refresh" | "start" | "game_start" | "game_end" | "game_quit" | "game_loop" | "reload" | "ending" | "draw" | "level_gen" | "die" | "key" | "level_up" | "slot" | "item" | "card_event" | "s_save" | "s_load" | "hp_change"
 
 --- Data for hp_change hook
 --- @class _HP_CHANGE_DATA
@@ -389,6 +389,7 @@ function cr.is_game_running() end
 --- @overload fun(event: "game_start", func: fun())                                                     When a new game starts.
 --- @overload fun(event: "game_end", func: fun())                                                       When a game ends.
 --- @overload fun(event: "game_quit", func: fun())                                                      When user quits from game.
+--- @overload fun(event: "game_loop", func: fun())                                                      When user quits from game.
 --- @overload fun(event: "reload", func: fun())                                                         Runned when plugins are reloaded.
 --- @overload fun(event: "ending", func: fun())                                                         Runned when player finds Amulet of Yendor.
 --- @overload fun(event: "draw", func: fun())                                                           Runned after `cr.draw_cards()`.
