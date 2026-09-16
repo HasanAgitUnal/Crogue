@@ -32,6 +32,61 @@
                 )
 // clang-format on
 
+namespace sol {
+template <>
+struct usertype_container<std::array<std::shared_ptr<card_t>, 10>>
+    : container_detail::usertype_container_default<std::array<std::shared_ptr<card_t>, 10>> {
+
+        using T = std::array<std::shared_ptr<card_t>, 10>;
+
+        static int set(lua_State *L_) {
+                T *self_ptr = stack::unqualified_get<T *>(L_, 1);
+                std::ptrdiff_t idx = stack::unqualified_get<std::ptrdiff_t>(L_, 2) - 1;  // 1-based Lua index
+                if (idx < 0 || idx >= static_cast<std::ptrdiff_t>(T{}.size())) {
+                        return luaL_error(L_, "sol: index out of bounds for set on inventory");
+                }
+
+                if (lua_isnoneornil(L_, 3)) {
+                        (*self_ptr)[idx] = nullptr;
+                        return 0;
+                }
+
+                (*self_ptr)[idx] = stack::unqualified_get<std::shared_ptr<card_t>>(L_, 3);
+                return 0;
+        }
+
+        static int index_set(lua_State *L_) {
+                return set(L_);
+        }
+};
+}  // namespace sol
+
+/*
+// override sol2 array:set behavior to directly assign values (do not erase on nil, set to nullptr)
+namespace sol {
+template <>
+struct usertype_container<std::array<std::shared_ptr<card_t>, 10>>
+    : container_detail::usertype_container_default<std::array<std::shared_ptr<card_t>, 10>> {
+
+        using T = std::array<std::shared_ptr<card_t>, 10>;
+
+        static int set(lua_State *L_) {
+                T *self_ptr = stack::unqualified_get<T *>(L_, 1);
+                std::ptrdiff_t idx = stack::unqualified_get<std::ptrdiff_t>(L_, 2) - 1;  // 1-based Lua index
+                if (idx < 0 || idx >= static_cast<std::ptrdiff_t>(T{}.size())) {
+                        return luaL_error(L_, "sol: index out of bounds for set on inventory");
+                }
+                (*self_ptr)[idx] = stack::unqualified_get<std::shared_ptr<card_t>>(L_, 3);
+                return 0;
+        }
+
+        static int index_set(lua_State *L_) {
+                return set(L_);
+        }
+};
+}  // namespace sol
+*/
+
 /*
  * Wrapper Things
  */
@@ -184,6 +239,7 @@ void setup_lua() {
                         "count", &card_t::count,
                         "name", &card_t::name,
                         "id", &card_t::id,
+                        "info", &card_t::info,
                         "type", &card_t::type,
                         "level_ids", &card_t::level_ids,
                         "logmsg", &card_t::logmsg,

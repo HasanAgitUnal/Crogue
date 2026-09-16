@@ -53,6 +53,18 @@
 --- @field pairs fun(self: _CONTAINER<T> ): fun(), _CONTAINER<T>, nil           Lua 5.2+ only; use c:pairs() in Lua 5.1/LuaJIT.
 --- @field ipairs fun(self: _CONTAINER<T> ): fun(), _CONTAINER<T>, integer      Lua 5.2+ only; use c:ipairs() in Lua 5.1/LuaJIT.
 
+--- A class representing sol2's fixed-array container overrides (std::array / T[n])
+--- Methods "erase", "add", "insert", and "clear" throw a Lua error when called; they are unsupported on fixed-size arrays.
+--- @class _ARRAY<T>
+--- @field [integer] T
+--- @field size fun(self: _ARRAY<T>): integer                                   Returns std::extent<T>::value, the fixed array size.
+--- @field set fun(self: _ARRAY<T>, key: integer, value: T)                     Assigns via operator[] with bounds checking. NOT erase-on-nil; NOT insert-at-size+1.
+--- @field at fun(self: _ARRAY<T>, key: integer): T                             Returns nil if out of bounds instead of erroring.
+--- @field get fun(self: _ARRAY<T>, key: integer): T                            Returns nil if out of bounds instead of erroring.
+--- @field find fun(self: _ARRAY<T>, target: T): boolean                        Linear search; errors if T has no comparison operator.
+--- @field pairs fun(self: _ARRAY<T>): fun(), _ARRAY<T>, nil                    Lua 5.2+ only; use c:pairs() in Lua 5.1/LuaJIT.
+--- @field ipairs fun(self: _ARRAY<T>): fun(), _ARRAY<T>, integer               Lua 5.2+ only; use c:ipairs() in Lua 5.1/LuaJIT.
+
 --- @alias _HOOK_EVENT "before_refresh" | "after_refresh" | "start" | "game_start" | "game_end" | "game_quit" | "game_loop" | "reload" | "ending" | "draw" | "level_gen" | "die" | "key" | "level_up" | "slot" | "item" | "card_event" | "s_save" | "s_load" | "hp_change"
 
 --- Data for hp_change hook
@@ -270,7 +282,7 @@ cr.stat = {}
 
 --- Player Variables
 --- @class cr.player
---- @field inventory _CONTAINER<_SHARED_card>|_CONTAINER<nil>   Player inventory. Contains collected items
+--- @field inventory _ARRAY<_SHARED_card>|_ARRAY<nil>           Player inventory. Contains collected items
 --- @field get_hp fun():integer                                 Get player hp
 --- @field set_hp fun(value: integer)                           Set player hp
 --- @field get_level fun():integer                              Get current level index (for cr.stat.levels)

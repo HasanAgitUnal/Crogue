@@ -31,8 +31,7 @@ void reset_game(bool full) {
 
         game::player::hp = 100;
         game::player::level = 0;
-        game::player::inventory.clear();
-        game::player::inventory.resize(10, nullptr);
+        game::player::inventory.fill(nullptr);  // tek satır yeter
 
         game::card_set.clear();
         game::logs.clear();
@@ -399,7 +398,7 @@ void card_event(const std::shared_ptr<card_t> card, const int extra) {
                         log("You found item: " + card->name, NORMAL);
 
                         bool added = false;
-                        for (int i = 0; i < 10; i++) {
+                        for (int i = 0; i < game::player::inventory.size(); i++) {
                                 if (game::player::inventory[i] == nullptr) {
                                         game::player::inventory[i] = card;
                                         added = true;

@@ -68,11 +68,16 @@ cr.log("randomnumber: " .. tostring(randomnumber), cr.log_type.NORMAL)
 > cr.stat.deck:erase(1)
 > ```
 
+
+### `cr.player.inventory`
+
+Player inventory. Contains shared cards. **Size is always 10 and some container operations are not supported** (like `:clear()`, see `crogue.d.lua` file at CROGUE source code for details).
+
 ### `cr.stat.deck`
 
 A table contains [shared](./Shared-Types) cards. Used to generate `cr.stat.card_set` content. When `cr.create_card()` is used, new cards will be added to this container.
 
-##### `cr.stat.card_set`
+### `cr.stat.card_set`
 
 A table contains shared cards. Contains duplicate cards. When a card in slot used, new card will came from this container.
 

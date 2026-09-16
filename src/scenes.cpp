@@ -471,7 +471,12 @@ void game() {
 
                                         case '0' ... '9': {
                                                 int index = c - '0';
-                                                card = game::player::inventory[index];
+                                                if (index < game::player::inventory.size()) {
+                                                        card = game::player::inventory[index];
+                                                } else {
+                                                        card = nullptr;
+                                                }
+
                                                 break;
                                         }
 

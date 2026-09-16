@@ -143,7 +143,7 @@ namespace player {
 inline int hp = 100;
 inline int level = 0;
 
-inline std::vector<std::shared_ptr<card_t>> inventory;
+inline std::array<std::shared_ptr<card_t>, 10> inventory;
 
 }  // namespace player
 

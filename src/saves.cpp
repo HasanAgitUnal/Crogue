@@ -255,8 +255,7 @@ void apply_save(const json &save) {
         game::player::hp = save["hp"].get<int>();
         game::player::level = save["level"].get<int>();
 
-        game::player::inventory.clear();
-        game::player::inventory.resize(10, nullptr);
+        game::player::inventory.fill(nullptr);
 
         // apply inventory
         for (int i = 0; i < 10; i++) {

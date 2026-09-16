@@ -39,7 +39,7 @@ void cleanup_lua() {
         game::card_set.clear();
         game::biomes.clear();
         game::levels.clear();
-        game::player::inventory.clear();
+        game::player::inventory.fill(nullptr);
 
         // Clear card slots which also contain card_t with Lua references
         game::slot1.back = nullptr;
