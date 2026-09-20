@@ -231,7 +231,7 @@ void main_menu() {
         }
 }
 
-static bool on_level_complete(int curr_level) {
+static bool on_level_complete(int curr_level, int &quit) {
         game::hooks::trigger(game::hooks::level_up, game::player::level);
 
         if (game::player::level == (int)game::levels.size()) {
@@ -247,6 +247,7 @@ static bool on_level_complete(int curr_level) {
                 getch();
 
                 minilog::fdebugc("setup", logfile, "player reached last level");
+                quit = true;
                 return true;
         }
 
@@ -307,7 +308,8 @@ static bool on_level_complete(int curr_level) {
         }
 
 QUIT:
-        return true;
+        quit = true;
+        return false;
 
 CONTINUE:
 
@@ -544,9 +546,15 @@ void game() {
                 // check if level changed
                 if (last_level != game::player::level) {
                         // remove save and return if amulet of yendor found
-                        if (on_level_complete(game::player::level)) {
-                                game::game_is_running = false;
+                        int quit = false;
+                        if (on_level_complete(game::player::level, quit)) {
                                 fs::remove(game::_curr_save_loaded);
+                                quit = true;
+                                return;
+                        }
+
+                        if (quit) {
+                                game::game_is_running = false;
                                 game::_curr_save_loaded = "";
                                 return;
                         }
@@ -583,7 +591,10 @@ void game() {
 
                 // check again
                 if (last_level != game::player::level) {
-                        if (on_level_complete(game::player::level)) {
+                        int quit = false;
+                        on_level_complete(game::player::level, quit);
+
+                        if (quit) {
                                 return;
                         }
 
