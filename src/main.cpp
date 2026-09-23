@@ -30,20 +30,7 @@
 #include "package.hpp"
 #include "scenes.hpp"
 #include "tui.hpp"
-
-
-#ifdef DEBUG
-#define DEBUG_TAG "-debug"
-#else
-#define DEBUG_TAG ""
-#endif
-
-#define CROGUE_MAJOR "0"
-#define CROGUE_MINOR "1"
-#define CROGUE_PATCH "0"
-
-#define CROGUE_VERSION CROGUE_MAJOR "." CROGUE_MINOR "." CROGUE_PATCH DEBUG_TAG
-
+#include "version.hpp"
 
 bool game_running = false;
 
@@ -109,7 +96,7 @@ static void handle_cli(int argc, char **argv) {
         // parse options before subcommands //
         app.parse_complete_callback([&]() {
                 if (version) {
-                        minilog::out("CROGUE " CROGUE_VERSION "\nCard Based Roguelike Game");
+                        minilog::out("CROGUE " CROGUE_VERSION_STRING "\nCard Based Roguelike Game");
                         exit(0);
                 }
 

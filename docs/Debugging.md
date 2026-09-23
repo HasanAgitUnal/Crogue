@@ -1,9 +1,21 @@
+You can get CROGUE version via `cr.debug.version` table:
+```lua
+-- Lets say we are running CROGUE v0.1.2
+cr.debug.version.major -- will return 0
+cr.debug.version.minor -- will return 1
+cr.debug.version.patch -- will returnn 2
+
+-- will return "0.1.2" string on release build
+-- if debug build of crogue running (CROGUE v0.1.2-debug for example), it will return "0.1.2-debug"
+cr.debug.version.string
+```
+
 Debug build of CROGUE is very usefull for plugin developers.
 On debug build, you can see logs and maybe do some cheat mode stuff on debug build.
 
 To check if debug build of CROGUE is running with lua API:
 ```lua
-if cr.debug then
+if cr.debug.is_debug_build then
     -- something...
 end
 ```

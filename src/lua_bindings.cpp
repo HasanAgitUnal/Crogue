@@ -21,6 +21,7 @@
 #include "game.hpp"
 #include "lua.hpp"
 #include "tui.hpp"
+#include "version.hpp"
 
 // clang-format off
 #define SHARED_PTR(self_type, type, member)\
@@ -205,17 +206,30 @@ void setup_lua() {
         // main table
         sol::table crogue = game::lua.create_table();
 
-        // is debug build?
-        crogue["debug"] =
+        // version
+        bool is_debug_build = 
 #ifdef DEBUG
-                true;
+            true;
 #else
-                false;
+            false;
 #endif
+
+        crogue["debug"] = game::lua.create_table_with(
+                "version", game::lua.create_table_with(
+                        "major", CROGUE_VERSION_MAJOR,
+                        "minor", CROGUE_VERSION_MINOR,
+                        "patch", CROGUE_VERSION_PATCH,
+                        "string", CROGUE_VERSION_STRING
+                ),
+
+                "is_debug_build", is_debug_build
+        );
 
         /*
          * Enums
          */
+
+        // clang-format: off
 
         crogue.new_enum("card_type",
                         "BASIC", card_type::BASIC,

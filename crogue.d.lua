@@ -82,7 +82,7 @@
 --- CROGUE Plugin API
 --- @class cr
 ---
---- @field debug boolean                Is debug build of crogue?
+--- @field debug cr.debug       Debugging information, see https://github.com/HasanAgitUnal/Crogue/wiki/Debugging
 ---
 --- @field card_type cr.card_type
 --- @field log_type cr.log_type
@@ -122,6 +122,18 @@
 --- @field is_game_running fun():boolean                                Returns true if a game is running. Usefull for async jobs.
 --- @field hook fun(event: _HOOK_EVENT, func: function)                 Creates a hook for event
 cr = {}
+
+--- @class cr.debug
+--- @field is_debug_build boolean       Is debug build of CROGUE
+--- @field version cr.debug.version     CROGUE version table
+cr.debug = {}
+
+--- @class cr.debug.version
+--- @field major integer                Major number, (0 on v0.1.2)
+--- @field minor integer                Minor number, (1 on v0.1.2)
+--- @field patch integer                Patch number, (2 on v0.1.2)
+--- @field string string                As string with -debug tag included on debug build, ("0.1.2" on v0.1.2, "0.1.2-debug" on v0.1.2-debug)
+cr.debug.version = {}
 
 -- ============================================
 -- Enums
