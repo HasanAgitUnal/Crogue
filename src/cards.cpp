@@ -134,8 +134,10 @@ int generate_unique_level_id() {
         while (true) {
                 int new_id = dist(id_rng);
 
-                if (std::find(used_ids.begin(), used_ids.end(), 2) == used_ids.end())
+                if (std::find(used_ids.begin(), used_ids.end(), new_id) == used_ids.end()) {
+                        used_ids.push_back(new_id);
                         return new_id;
+                }
         }
 }
 
@@ -198,10 +200,16 @@ void generate_levels() {
             );
         // clang-format on
 
+        // merge
         for (auto &biome : sorted_biomes) {
                 for (auto &level : biome->levels) {
                         game::levels.push_back(level);
                 }
+        }
+
+        // set level id
+        if (game::player::level >= 0 && game::player::level < (int)game::levels.size()) {
+                game::levelid = game::levels[game::player::level]->id;
         }
 
         TRIGGER_HOOK(level_gen);

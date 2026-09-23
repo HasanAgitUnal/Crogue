@@ -360,7 +360,6 @@ void game() {
                 return;
         }
 
-        game::levelid = game::levels[0]->id;
         log("You are now at level: " + game::levels[game::player::level]->name, WARN);
 
         minilog::fdebugc("setup", logfile, "deck size: ", game::deck.size());

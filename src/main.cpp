@@ -52,6 +52,15 @@ bool game_running = false;
 #include <boost/stacktrace.hpp>
 #endif
 
+static void at_exit() {
+        static bool runned = false;
+        if (runned) {
+                return;
+        }
+        runned = true;
+        minilog::fout(logfile, "--- END ---");
+}
+
 static void segfault_handler(int sig) {
         if (game_running) {
                 end_program();
@@ -221,9 +230,14 @@ static void handle_cli(int argc, char **argv) {
  */
 
 int main(int argc, char **argv) {
+        // signal handlers
         signal(SIGSEGV, segfault_handler);
         signal(SIGTERM, interrupt_handler);
         signal(SIGINT, interrupt_handler);
+        signal(SIGHUP, interrupt_handler);
+        signal(SIGABRT, interrupt_handler);
+        signal(SIGQUIT, interrupt_handler);
+        signal(SIGPIPE, interrupt_handler);
 
 #ifdef DEBUG
         // debug logs
@@ -243,6 +257,10 @@ int main(int argc, char **argv) {
         minilog::categories["cli"] = "38;5;178m";
         minilog::categories["saves"] = "38;5;101m";
 #endif
+
+        minilog::fout(logfile, "--- START ---");
+        std::atexit(at_exit);
+        std::set_terminate(at_exit);
 
         handle_cli(argc, argv);
 
